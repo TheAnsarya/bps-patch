@@ -1,4 +1,4 @@
-﻿using Force.Crc32;
+using Force.Crc32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,22 +6,19 @@ using System.Text;
 
 namespace bps_patch {
 	class Decoder {
+		public const int MIN_PATCH_SIZE = 19;
+
 		// Returns list of warning messages, if any
 		public static List<string> ApplyPatch(FileInfo sourceFile, FileInfo patchFile, FileInfo targetFile) {
-			// Check patch size		
-			if (patchFile.Length < 19) {
+			// Check patch size
+			if (patchFile.Length < MIN_PATCH_SIZE) {
 				throw new PatchFormatException("beat size mismatch");
 			}
 
 			// Get streams for the source and patch
 			using var source = sourceFile.OpenRead();
 			using var patch = patchFile.OpenRead();
-
-			// Target needs read and write access using different streams
-			using var target = targetFile.Open(FileMode.Append, FileAccess.Write, FileShare.Read);
-			using var targetReader = targetFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-
+			
 			// Verify patch header and version to make sure this is a BPS version 1 patch file
 			if ((patch.ReadByte() != 'B') || (patch.ReadByte() != 'P') || (patch.ReadByte() != 'S')) {
 				throw new PatchFormatException("beat header invalid");
@@ -69,14 +66,18 @@ namespace bps_patch {
 			// TODO: check against output
 			uint targetSize = (uint)decodePatch();
 
+			// Target is created in memory since reading from the file as it is written
+			// can causes issues due to unflushed data
+			var targetData = new byte[targetSize];
+			using var target = new MemoryStream(targetData, true);
+
+
 			// Fetch manifest from patch
 			// TODO: make sure int is appropriate size (should be) as original is uint
 			int metadataSize = (int)decodePatch();
-			var manifestBuilder = new StringBuilder(metadataSize);
-			for (int n = 0; n < metadataSize; n++) {
-				byte data = readPatch();
-				manifestBuilder.Append((char)data);
-			}
+			var metadata = new byte[metadataSize];
+			patch.Read(metadata.AsSpan());
+			var manifest = Encoding.UTF8.GetString(metadata);
 
 			// The last 12 bytes of the patch are hashes
 			var readUntil = patchFile.Length - 12;
@@ -88,9 +89,9 @@ namespace bps_patch {
 			patch.Position = patchPos;
 
 			// sourceRelativeOffset was uint
-			int sourceRelativeOffset = 0, targetRelativeOffset = 0;
+			long sourceRelativeOffset = 0, targetRelativeOffset = 0;
 			while (patch.Position < readUntil) {
-				uint length = (uint)decodePatch();
+				int length = (int)decodePatch();
 				var mode = (PatchAction)(length & 3);
 				length = (length >> 2) + 1;
 
@@ -106,9 +107,8 @@ namespace bps_patch {
 					}
 				} else if (mode == PatchAction.TargetRead) {
 					// Copy from the patch file
-					while (length-- > 0) {
-						target.WriteByte(readPatch());
-					}
+					patch.Read(targetData.AsSpan().Slice((int)target.Position, length));
+					target.Position += length;
 				} else {
 					int offset = (int)decodePatch();
 					offset = ((offset & 1) != 0) ? -(offset >> 1) : (offset >> 1);
@@ -116,29 +116,25 @@ namespace bps_patch {
 						// Copy from another part of the source file
 						sourceRelativeOffset += offset;
 						source.Position = sourceRelativeOffset;
-						while (length-- > 0) {
-							var read = source.ReadByte();
-							if (read == -1) {
-								throw new Exception("hit end of source file unexpectedly");
-							}
-							target.WriteByte((byte)read);
-							sourceRelativeOffset++;
-						}
+						source.Read(targetData.AsSpan().Slice((int)target.Position, (int)target.Position + length));
+						target.Position += length;
+						sourceRelativeOffset += length;
 					} else {
 						// Copy from another part of the target file
 						targetRelativeOffset += offset;
-						targetReader.Position = targetRelativeOffset;
-						while (length-- > 0) {
-							var read = targetReader.ReadByte();
-							if (read == -1) {
-								throw new Exception("hit end of target file unexpectedly");
-							}
-							target.WriteByte((byte)read);
-							targetRelativeOffset++;
+						var targetReader = targetData.AsSpan().Slice((int)targetRelativeOffset, length);
+						targetRelativeOffset += length;
+						// Have to copy by single bytes as the source read may only be one byte behind the write
+						for (int i = 0; i < length; i++){
+							target.WriteByte(targetReader[i]);
 						}
 					}
 				}
 			}
+
+			using var targetWriter = targetFile.OpenWrite();
+			targetWriter.Write(targetData.AsSpan());
+			targetWriter.Close();
 
 			// Check possible problems
 			var warnings = new List<string>();
@@ -157,5 +153,5 @@ namespace bps_patch {
 
 			return warnings;
 		}
-	}
+	} 
 }

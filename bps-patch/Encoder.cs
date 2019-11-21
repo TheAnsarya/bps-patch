@@ -1,65 +1,91 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace bps_patch {
 	class Encoder {
 		// Returns list of warning messages, if any
-		public static List<string> CreatePatch(FileInfo sourceFile, FileInfo patchFile, FileInfo targetFile) {
+		public static void CreatePatch(FileInfo sourceFile, FileInfo patchFile, FileInfo targetFile, string manifest) {
 			if (targetFile.Length == 0) {
 				throw new ArgumentException($"{nameof(targetFile)} is zero bytes");
 			}
+			if (targetFile.Length > int.MaxValue) {
+				throw new ArgumentException($"{nameof(targetFile)} is larger than maximum size of {int.MaxValue} bytes");
+			}
+			if (sourceFile.Length > int.MaxValue) {
+				throw new ArgumentException($"{nameof(sourceFile)} is larger than maximum size of {int.MaxValue} bytes");
+			}
 
-			using var source = sourceFile.OpenRead();
-			using var target = targetFile.OpenRead();
-			using var targetReader = targetFile.OpenRead();
-			using var patch = patchFile.OpenRead();
+			// Read source and target into memory
+			// WARNING: Large files obviously will use large amounts of memory
+			var sourceData = new byte[sourceFile.Length];
+			var source = new ReadOnlySpan<byte>(sourceData);
+			using (var sourceStream = sourceFile.OpenRead()) {
+				sourceStream.Read(sourceData, 0, sourceData.Length);
+			}
+			var targetData = new byte[targetFile.Length];
+			var target = new ReadOnlySpan<byte>(targetData);
+			using (var targetStream = targetFile.OpenRead()) {
+				targetStream.Read(targetData, 0, sourceData.Length);
+			}
 
-			// TODO: write the patch header and stuff
+			// Patch is directly written to file
+			using var patch = patchFile.OpenWrite();
 
-			long targetReadLength = 0;
-			long targetReadStart = -1;
+			// Write patch header
+			patch.Write(Encoding.UTF8.GetBytes("BPS1"));
+			patch.Write(EncodeNumber((ulong)sourceFile.Length));
+			patch.Write(EncodeNumber((ulong)targetFile.Length));
+			patch.Write(EncodeNumber((ulong)manifest.Length));
+			// NOTE: Officially, manifest/metadata should be XML version 1.0 encoding UTF-8 data
+			// but could be anything so this might read as garbage or error
+			patch.Write(Encoding.UTF8.GetBytes(manifest));
 
-			while (target.Position < target.Length) {
-				(PatchAction mode, long length, long start) = FindNextRun(source, target, targetReader);
+			int targetReadLength = 0;
+			int targetReadStart = -1;
+			int targetPosition = 0;
+			while (targetPosition < target.Length) {
+				(PatchAction mode, int length, int start) = FindNextRun(source, target, targetPosition);
 				if (mode == PatchAction.TargetRead) {
 					targetReadLength++;
 					if (targetReadStart == -1) {
 						targetReadStart = start;
 					}
 				} else {
-					WriteTargetReadCommand();
-					var command = EncodeNumber((ulong)(((targetReadLength - 1) << 2) + ((byte)mode)));
+					WriteTargetReadCommand(target);
+					var command = EncodeNumber((ulong)(((length - 1) << 2) + ((byte)mode)));
 					patch.Write(command);
-					var offset = start - target.Position;
-					var negative = (offset < 0) ? 1 : 0;
-					var offsetBytes = EncodeNumber((ulong)((offset << 1) + negative));
-					target.Position += length;
-					patch.Write(command);
+
+					// SourceCopy and TargetCopy have an offset
+					if (mode != PatchAction.SourceRead) {
+						var offset = start - targetPosition;
+						var isNegative = offset < 0;
+						var offsetValue = ((ulong)Math.Abs(offset) << 1) + (isNegative ? 1UL : 0);
+						var offsetBytes = EncodeNumber(offsetValue);
+						patch.Write(offsetBytes);
+					}
+
+					targetPosition += length;
 				}
 			}
 
-			WriteTargetReadCommand();
-			
-			// TOSO: write hashes
+			WriteTargetReadCommand(target);
+			patch.Flush();
 
-			void WriteTargetReadCommand() {
+			// Write file hashes
+			patch.Write(Utilities.ComputeCRC32Bytes(sourceFile));
+			patch.Write(Utilities.ComputeCRC32Bytes(targetFile));
+			patch.Write(Utilities.ComputeCRC32Bytes(patchFile));
+
+			void WriteTargetReadCommand(ReadOnlySpan<byte> target) {
 				if (targetReadLength > 0) {
 					var command = EncodeNumber((ulong)(((targetReadLength - 1) << 2) + ((byte)PatchAction.TargetRead)));
 					patch.Write(command);
-					target.Position = targetReadStart;
-
-					while (targetReadLength > 0) {
-						var targetByte = target.ReadByte();
-
-						if (targetByte == -1) {
-							throw new Exception($"{nameof(target)} is at end of file while copying run");
-						}
-
-						patch.WriteByte((byte)targetByte);
-						targetReadLength--;
-					}
+					patch.Write(target.Slice((int)targetReadStart, (int)targetReadLength));
+					targetPosition += targetReadLength;
+					targetReadLength = 0;
 				}
 			}
 		}
@@ -78,14 +104,14 @@ namespace bps_patch {
 			}
 		}
 
-		public static (PatchAction Mode, long Length, long Start) FindNextRun(FileStream source, FileStream target, FileStream targetReader) {
+		public static (PatchAction Mode, int Length, int Start) FindNextRun(ReadOnlySpan<byte> source, ReadOnlySpan<byte> target, int targetPosition) {
 			PatchAction mode = PatchAction.TargetRead;
-			long longestRun = 3;
-			long longestStart = -1;
+			int longestRun = 3;
+			int longestStart = -1;
 
 			// Check For Source Read
-			if (target.Position < source.Length) {
-				(long length, bool reachedEnd) = CheckRun(source, target, target.Position);
+			if (targetPosition < source.Length) {
+				(int length, bool reachedEnd) = CheckRun(source.Slice(targetPosition), target.Slice(targetPosition));
 				if (length > longestRun) {
 					mode = PatchAction.SourceRead;
 					longestRun = length;
@@ -98,7 +124,7 @@ namespace bps_patch {
 
 			// Check for Source Copy
 			{
-				(long length, long start, bool reachedEnd) = FindBestRun(source, target, longestRun + 1);
+				(int length, int start, bool reachedEnd) = FindBestRun(source, target.Slice(targetPosition), longestRun + 1);
 
 				if (length > longestRun) {
 					mode = PatchAction.SourceCopy;
@@ -113,7 +139,7 @@ namespace bps_patch {
 
 			// Check for Target Copy
 			{
-				(long length, long start, bool reachedEnd) = FindBestRun(targetReader, target, longestRun + 1, target.Position);
+				(int length, int start, bool reachedEnd) = FindBestRun(target, target.Slice(targetPosition), longestRun + 1);
 
 				if (length > longestRun) {
 					mode = PatchAction.TargetCopy;
@@ -129,17 +155,16 @@ namespace bps_patch {
 			return (mode, longestRun, longestStart);
 		}
 
-		public static (long Length, long Start, bool ReachedEnd) FindBestRun(FileStream source, FileStream target, long minimumLongestRun = 4, long checkUntilMax = -1) {
-			source.Position = 0;
+		public static (int Length, int Start, bool ReachedEnd) FindBestRun(ReadOnlySpan<byte> source, ReadOnlySpan<byte> target, int minimumLongestRun = 4, int checkUntilMax = -1) {
 			var checkUntil = (checkUntilMax == -1) ? (source.Length - minimumLongestRun) : Math.Min(checkUntilMax, (source.Length - minimumLongestRun));
 
-			long currentStart = 0;
-			long longestRun = 0;
-			long longestStart = -1;
+			int currentStart = 0;
+			int longestRun = 0;
+			int longestStart = -1;
 
 			// TODO: is checkUntil correct? check for off by one
 			while (currentStart < checkUntil) {
-				(long length, bool reachedEnd) = CheckRun(source, target, currentStart);
+				(int length, bool reachedEnd) = CheckRun(source.Slice(currentStart), target);
 				if (length > longestRun) {
 					longestRun = length;
 					longestStart = currentStart;
@@ -152,6 +177,7 @@ namespace bps_patch {
 				currentStart++;
 			}
 
+			// Found a new best run
 			if (longestRun >= minimumLongestRun) {
 				return (longestRun, longestStart, false);
 			}
@@ -160,36 +186,25 @@ namespace bps_patch {
 			return (0, -1, false);
 		}
 
-		public static (long Length, bool ReachedEnd) CheckRun(FileStream source, FileStream target, long sourceStart) {
-			if (sourceStart >= source.Length) {
-				throw new ArgumentException($"{nameof(sourceStart)} is after end of {nameof(source)} data");
-			}
-
-			var originalTargetPosition = target.Position;
-			source.Position = sourceStart;
-			long length = 0;
+		public static (int Length, bool ReachedEnd) CheckRun(ReadOnlySpan<byte> source, ReadOnlySpan<byte> target) {
+			int length = 0;
 			bool reachedEnd = false;
 
-			int sourceByte = source.ReadByte();
-			if (sourceByte == -1) {
-				// Should never happen since we checked the length
-				throw new Exception($"{nameof(source)} is at end of file");
+			while (source[length] == target[length]) {
+				length++;
+
+				// No sense to continue if we're out of target data
+				if (target.Length >= length) {
+					reachedEnd = true;
+					break;
+				}
+
+				// Out of source data
+				if (source.Length >= length) {
+					break;
+				}
 			}
 
-			int targetByte = target.ReadByte();
-			if (targetByte == -1) {
-				throw new Exception($"{nameof(target)} is at end of file - no data to find a run for");
-			}
-
-			if (targetByte == sourceByte) {
-				do {
-					length++;
-					sourceByte = source.ReadByte();
-					targetByte = target.ReadByte();
-				} while ((sourceByte != -1) && (targetByte != -1) && (sourceByte == targetByte));
-			}
-
-			target.Position = originalTargetPosition;
 			return (length, reachedEnd);
 		}
 	}
