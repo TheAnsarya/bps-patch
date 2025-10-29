@@ -1,13 +1,64 @@
 root = true
 
+# All files
 [*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 4
+
+# C# files
+[*.cs]
 indent_style = tab
 indent_size = 4
 charset = utf-8
-trim_trailing_whitespace = false
-insert_final_newline = false
+end_of_line = crlf
 
-[*.cs]
+# Code style rules
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
 
-# CA1303: Do not pass literals as localized parameters
+# Modern C# preferences
+csharp_prefer_simple_using_statement = true
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:warning
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_properties = true:warning
+csharp_style_expression_bodied_indexers = true:warning
+csharp_style_expression_bodied_accessors = true:warning
+csharp_style_pattern_matching_over_as_with_null_check = true:warning
+csharp_style_pattern_matching_over_is_with_cast_check = true:warning
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+dotnet_style_prefer_collection_expression = true:suggestion
+
+# Use var
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_var_elsewhere = true:suggestion
+
+# XML documentation
+dotnet_diagnostic.CS1591.severity = none
+
+# Code analysis
 dotnet_diagnostic.CA1303.severity = none
+dotnet_diagnostic.CA2022.severity = none
+
+# Project files
+[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
+indent_size = 2
+indent_style = space
+
+# JSON files
+[*.json]
+indent_size = 2
+indent_style = space
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false

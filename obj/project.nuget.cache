@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "oJ2/x2F2Dvg=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\me\\source\\repos\\bps-patch\\bps-patch\\bps-patch.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\me\\.nuget\\packages\\system.io.hashing\\9.0.0\\system.io.hashing.9.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
