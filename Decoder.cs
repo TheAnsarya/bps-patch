@@ -171,9 +171,9 @@ static class Decoder {
 				targetWriter.Write(targetData.AsSpan(0, (int)targetSize));
 
 				// Validate integrity with CRC32 checks
-				var warnings = new List<string>();
-
-				// Check patch file CRC32 (CRC32(patch_data + patch_crc32) == magic constant)
+				// Using collection expression [] for modern C# 12 syntax
+				// See: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions
+				List<string> warnings = [];             // Check patch file CRC32 (CRC32(patch_data + patch_crc32) == magic constant)
 				if (Utilities.ComputeCRC32(patchFile) != Utilities.CRC32_RESULT_CONSTANT) {
 					warnings.Add($"{nameof(patchFile)} hash mismatch");
 				}

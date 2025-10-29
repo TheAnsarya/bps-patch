@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("bps-patch")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a80de4af3f166ceecc86e5518039dc99a35711e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c740e68b4a93f0151c1cacb5dfd25014de62ad40")]
 [assembly: System.Reflection.AssemblyProductAttribute("bps-patch")]
 [assembly: System.Reflection.AssemblyTitleAttribute("bps-patch")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,4 @@
-﻿namespace bps_patch;
+namespace bps_patch;
 
 /// <summary>
 /// Defines the four types of patch operations used in BPS format.
