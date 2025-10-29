@@ -38,7 +38,7 @@ public class EncoderTests {
 		try {
 			byte[] testData = "Test Data for Identical Files"u8.ToArray();
 			File.WriteAllBytes(sourceFile, testData);
-			File.WriteAllBytes(targetFile, testData);			// Act: Create patch
+			File.WriteAllBytes(targetFile, testData);           // Act: Create patch
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
 				new FileInfo(patchFile),
