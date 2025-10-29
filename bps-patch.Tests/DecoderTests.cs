@@ -16,12 +16,10 @@ namespace bps_patch.Tests;
 /// </summary>
 public class DecoderTests {
 	/// <summary>
-	/// Creates a temporary file path and ensures it's deleted if it exists.
+	/// Creates a temporary file path that doesn't create the file.
 	/// </summary>
 	private static string GetCleanTempFile() {
-		var path = GetCleanTempFile();
-		File.Delete(path);
-		return path;
+		return Path.Combine(Path.GetTempPath(), $"bps_test_{Guid.NewGuid()}.tmp");
 	}
 
 	/// <summary>
