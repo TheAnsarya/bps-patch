@@ -121,34 +121,46 @@ uint hash = BitConverter.ToUInt32(hashBytes);
 
 ## 📚 BPS Format Specification
 
-### Header
+For complete technical details, see **[BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md)**.
+
+### Quick Overview
+
+**Header Structure:**
 ```
-"BPS1" (4 bytes)
+"BPS1" (4 bytes magic number)
 Source file size (variable-length encoded)
 Target file size (variable-length encoded)
 Metadata size (variable-length encoded)
 Metadata (UTF-8 text, typically XML)
 ```
 
-### Patch Commands
-- **SourceRead**: Copy bytes from source at current position
-- **TargetRead**: Read new bytes from patch file
-- **SourceCopy**: Copy bytes from elsewhere in source
-- **TargetCopy**: Copy bytes from earlier in target (RLE)
+**Patch Commands:**
+- **SourceRead** (0): Copy bytes from source at current position
+- **TargetRead** (1): Read new bytes from patch file
+- **SourceCopy** (2): Copy bytes from elsewhere in source
+- **TargetCopy** (3): Copy bytes from earlier in target (RLE)
 
-### Footer
+**Footer:**
 ```
 Source CRC32 (4 bytes)
 Target CRC32 (4 bytes)
 Patch CRC32 (4 bytes)
 ```
 
+**Key Constants:**
+- Magic number: `0x42505331` ("BPS1")
+- CRC32 validation constant: `0x2144df1c`
+- Maximum file size: `int.MaxValue` (2GB - 1 byte)
+- Minimum patch size: 19 bytes
+
 ### Variable-Length Encoding
 7 bits of data per byte, MSB indicates continuation:
 ```
-0xxxxxxx = final byte (MSB = 1 after encoding)
-xxxxxxxx = continuation byte (MSB = 0)
+0xxxxxxx = continuation byte (MSB = 0)
+1xxxxxxx = final byte (MSB = 1)
 ```
+
+**Example:** 255 = `0x7F 0x81` (saves 50% space vs fixed 4-byte integers)
 
 ## 🧪 Testing
 
@@ -205,10 +217,12 @@ Contributions are welcome! Areas of interest:
 
 ## 📖 References
 
-- [BPS Format Specification](https://github.com/blakesmith/ips_util/blob/master/README.md)
-- [Beat Patching Tool](https://github.com/byuu/beat)
+- **[BPS Format Specification](BPS_FORMAT_SPECIFICATION.md)** - Comprehensive technical documentation
+- [BPS Format (byuu)](https://github.com/blakesmith/ips_util/blob/master/README.md) - Original specification
+- [Beat Patching Tool](https://github.com/byuu/beat) - Reference implementation
 - [.NET Performance Tips](https://learn.microsoft.com/en-us/dotnet/core/extensions/high-performance-logging)
 - [System.Buffers Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.buffers)
+- [System.IO.Hashing.Crc32](https://learn.microsoft.com/en-us/dotnet/api/system.io.hashing.crc32)
 
 ## 🙏 Acknowledgments
 
