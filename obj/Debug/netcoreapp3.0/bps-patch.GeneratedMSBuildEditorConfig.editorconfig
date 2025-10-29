@@ -1,8 +1,0 @@
-is_global = true
-build_property.RootNamespace = bps_patch
-build_property.ProjectDir = C:\Users\me\source\repos\bps-patch\bps-patch\
-build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.CsWinRTUseWindowsUIXamlProjections = false
-build_property.EffectiveAnalysisLevelStyle = 
-build_property.EnableCodeStyleSeverity = 
