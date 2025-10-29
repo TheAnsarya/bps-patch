@@ -21,8 +21,8 @@ static class Utilities {
 	/// <param name="sourceFile">File to compute CRC32 for.</param>
 	/// <returns>CRC32 checksum as unsigned 32-bit integer.</returns>
 	public static uint ComputeCRC32(FileInfo sourceFile) {
-		// Open file for reading
-		using var source = sourceFile.OpenRead();
+		// Open file for reading with FileShare.ReadWrite to allow concurrent access
+		using var source = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
 		// Allocate 80KB buffer on stack for efficient I/O
 		// See: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/stackalloc
@@ -53,8 +53,8 @@ static class Utilities {
 	/// <param name="sourceFile">File to compute CRC32 for.</param>
 	/// <returns>CRC32 checksum as 4-byte array (little-endian).</returns>
 	public static byte[] ComputeCRC32Bytes(FileInfo sourceFile) {
-		// Open file for reading
-		using var source = sourceFile.OpenRead();
+		// Open file for reading with FileShare.ReadWrite to allow concurrent access
+		using var source = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
 		// Allocate 80KB buffer on stack for efficient I/O
 		Span<byte> buffer = stackalloc byte[81920];

@@ -23,14 +23,21 @@ static class Decoder {
 	/// <param name="targetFile">Output file to create.</param>
 	/// <returns>List of warnings (empty if all checks pass).</returns>
 	public static List<string> ApplyPatch(FileInfo sourceFile, FileInfo patchFile, FileInfo targetFile) {
+		// Refresh FileInfo to ensure up-to-date file system information
+		// This prevents file locking issues on Windows after recent file writes
+		sourceFile.Refresh();
+		patchFile.Refresh();
+		targetFile.Refresh();
+
 		// Validate patch file size
 		if (patchFile.Length < MIN_PATCH_SIZE) {
 			throw new PatchFormatException("Patch file too small (minimum 19 bytes)");
 		}
 
 		// Open source and patch files with buffering
-		using var source = sourceFile.OpenRead();
-		using var patch = new BufferedStream(patchFile.OpenRead(), BUFFER_SIZE);
+		// Use FileShare.ReadWrite to allow concurrent access (e.g., for CRC32 computation)
+		using var source = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+		using var patch = new BufferedStream(new FileStream(patchFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), BUFFER_SIZE);
 
 		// Verify BPS header: "BPS1"
 		// Using stackalloc for small temporary buffer (no heap allocation)

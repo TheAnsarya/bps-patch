@@ -24,6 +24,20 @@ public class IntegrationTests {
 	}
 
 	/// <summary>
+	/// Writes bytes to a file with proper file sharing to avoid locking issues on Windows.
+	/// </summary>
+	private static void WriteAllBytesWithSharing(string path, byte[] bytes) {
+		using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
+			stream.Write(bytes);
+			stream.Flush(true); // Force flush to disk
+		} // Explicit scope to ensure dispose completes
+
+		// Force garbage collection to ensure file handles are released (Windows quirk)
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+	}
+
+	/// <summary>
 	/// Tests a realistic ROM translation scenario: replacing ASCII text with UTF-8 text.
 	/// Simulates patching a game's dialogue strings.
 	/// </summary>
@@ -40,13 +54,13 @@ public class IntegrationTests {
 			byte[] originalRom = new byte[1024];
 			byte[] dialogue = "Hello, World! Welcome to the game."u8.ToArray();
 			Array.Copy(dialogue, 0, originalRom, 100, dialogue.Length);
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Translated ROM: "こんにちは！ゲームへようこそ。"
 			byte[] translatedRom = new byte[1024];
 			byte[] translatedDialogue = "こんにちは！ゲームへようこそ。"u8.ToArray();
 			Array.Copy(translatedDialogue, 0, translatedRom, 100, translatedDialogue.Length);
-			File.WriteAllBytes(targetFile, translatedRom);
+			WriteAllBytesWithSharing(targetFile, translatedRom);
 
 			// Act: Create patch
 			Encoder.CreatePatch(
@@ -93,14 +107,14 @@ public class IntegrationTests {
 			Random.Shared.NextBytes(originalRom);
 			originalRom[0x4A2C] = 0xFF; // Wrong jump offset (causes crash)
 			originalRom[0x4A2D] = 0xFF;
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Fixed ROM: Same data but corrected jump
 			byte[] fixedRom = new byte[32768];
 			Array.Copy(originalRom, fixedRom, originalRom.Length);
 			fixedRom[0x4A2C] = 0x20; // Correct jump offset
 			fixedRom[0x4A2D] = 0x30;
-			File.WriteAllBytes(targetFile, fixedRom);
+			WriteAllBytesWithSharing(targetFile, fixedRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -148,7 +162,7 @@ public class IntegrationTests {
 			// Original ROM: 256KB
 			byte[] originalRom = new byte[256 * 1024];
 			Random.Shared.NextBytes(originalRom);
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Expanded ROM: 512KB with new content
 			byte[] expandedRom = new byte[512 * 1024];
@@ -157,7 +171,7 @@ public class IntegrationTests {
 			for (int i = originalRom.Length; i < expandedRom.Length; i++) {
 				expandedRom[i] = (byte)(i % 256);
 			}
-			File.WriteAllBytes(targetFile, expandedRom);
+			WriteAllBytesWithSharing(targetFile, expandedRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -206,7 +220,7 @@ public class IntegrationTests {
 			for (int i = 0; i < 256; i++) {
 				originalRom[0x8000 + i] = 0xAA; // Checkerboard pattern
 			}
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Modified ROM: New tile graphics
 			byte[] modifiedRom = new byte[65536];
@@ -216,7 +230,7 @@ public class IntegrationTests {
 			for (int i = 0; i < 256; i++) {
 				modifiedRom[0x8000 + i] = 0x55; // Inverse checkerboard
 			}
-			File.WriteAllBytes(targetFile, modifiedRom);
+			WriteAllBytesWithSharing(targetFile, modifiedRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -266,7 +280,7 @@ public class IntegrationTests {
 			for (int i = 0; i < 4096; i++) {
 				originalRom[0x10000 + i] = (byte)((i / 16) % 128);
 			}
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Modified ROM: New music sequence
 			byte[] modifiedRom = new byte[131072];
@@ -276,7 +290,7 @@ public class IntegrationTests {
 			for (int i = 0; i < 4096; i++) {
 				modifiedRom[0x10000 + i] = (byte)((i / 8) % 96);
 			}
-			File.WriteAllBytes(targetFile, modifiedRom);
+			WriteAllBytesWithSharing(targetFile, modifiedRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -327,7 +341,7 @@ public class IntegrationTests {
 			originalRom[0x2010] = 15; // Enemy 2 HP
 			originalRom[0x2011] = 8;  // Enemy 2 Attack
 			originalRom[0x3000] = 100; // Player starting HP
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Hard mode ROM: Increased difficulty
 			byte[] hardRom = new byte[32768];
@@ -338,7 +352,7 @@ public class IntegrationTests {
 			hardRom[0x2010] = 40; // Enemy 2 HP (2.67x)
 			hardRom[0x2011] = 20; // Enemy 2 Attack (2.5x)
 			hardRom[0x3000] = 50; // Player starting HP (0.5x)
-			File.WriteAllBytes(targetFile, hardRom);
+			WriteAllBytesWithSharing(targetFile, hardRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -391,12 +405,12 @@ public class IntegrationTests {
 			for (int i = 0; i < originalRom.Length; i++) {
 				originalRom[i] = (byte)(i % 256);
 			}
-			File.WriteAllBytes(sourceFile, originalRom);
+			WriteAllBytesWithSharing(sourceFile, originalRom);
 
 			// Total conversion: Completely different data
 			byte[] convertedRom = new byte[16384];
 			Random.Shared.NextBytes(convertedRom);
-			File.WriteAllBytes(targetFile, convertedRom);
+			WriteAllBytesWithSharing(targetFile, convertedRom);
 
 			// Act: Create and apply patch
 			Encoder.CreatePatch(
@@ -442,8 +456,8 @@ public class IntegrationTests {
 			// Create simple patch with detailed metadata
 			byte[] source = "Original Game Data v1.0"u8.ToArray();
 			byte[] target = "Modified Game Data v2.0"u8.ToArray();
-			File.WriteAllBytes(sourceFile, source);
-			File.WriteAllBytes(targetFile, target);
+			WriteAllBytesWithSharing(sourceFile, source);
+			WriteAllBytesWithSharing(targetFile, target);
 
 			string metadata = "ROM Hack Name: Super Game DX\n" +
 			                 "Author: TheHacker\n" +
@@ -497,21 +511,21 @@ public class IntegrationTests {
 			byte[] v10 = new byte[8192];
 			Random.Shared.NextBytes(v10);
 			v10[100] = 1; // Version marker
-			File.WriteAllBytes(v10File, v10);
+			WriteAllBytesWithSharing(v10File, v10);
 
 			// v1.1: First update
 			byte[] v11 = new byte[8192];
 			Array.Copy(v10, v11, v10.Length);
 			v11[100] = 2; // Version marker
 			v11[500] = 0xFF; // Bug fix
-			File.WriteAllBytes(v11File, v11);
+			WriteAllBytesWithSharing(v11File, v11);
 
 			// v1.2: Second update
 			byte[] v12 = new byte[8192];
 			Array.Copy(v11, v12, v11.Length);
 			v12[100] = 3; // Version marker
 			v12[1000] = 0xAA; // Feature addition
-			File.WriteAllBytes(v12File, v12);
+			WriteAllBytesWithSharing(v12File, v12);
 
 			// Act: Create patches
 			Encoder.CreatePatch(
@@ -555,3 +569,4 @@ public class IntegrationTests {
 		}
 	}
 }
+

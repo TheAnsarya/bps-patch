@@ -39,6 +39,12 @@ static class Encoder {
 			throw new ArgumentException($"{nameof(sourceFile)} is larger than maximum size of {int.MaxValue} bytes");
 		}
 
+		// Refresh FileInfo to ensure up-to-date file system information
+		// This prevents file locking issues on Windows after recent file writes
+		sourceFile.Refresh();
+		targetFile.Refresh();
+		patchFile.Refresh();
+
 		// Rent buffers from ArrayPool to reduce GC pressure
 		// See: https://learn.microsoft.com/en-us/dotnet/standard/collections/thread-safe/how-to-create-an-object-pool
 		byte[] sourceData = ArrayPool<byte>.Shared.Rent((int)sourceFile.Length);
@@ -47,12 +53,13 @@ static class Encoder {
 		try {
 			// Load source file into buffer
 			// ReadExactly ensures all bytes are read (prevents partial reads)
-			using (var sourceStream = sourceFile.OpenRead()) {
+			// Use FileShare.ReadWrite to allow concurrent access (e.g., for CRC32 computation)
+			using (var sourceStream = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
 				sourceStream.ReadExactly(sourceData.AsSpan(0, (int)sourceFile.Length));
 			}
 
 			// Load target file into buffer
-			using (var targetStream = targetFile.OpenRead()) {
+			using (var targetStream = new FileStream(targetFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
 				targetStream.ReadExactly(targetData.AsSpan(0, (int)targetFile.Length));
 			}
 
