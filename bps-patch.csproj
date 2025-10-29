@@ -8,7 +8,14 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<EnablePreviewFeatures>false</EnablePreviewFeatures>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="bps-patch.Tests\**" />
+		<EmbeddedResource Remove="bps-patch.Tests\**" />
+		<None Remove="bps-patch.Tests\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="bps-patch.Tests" />

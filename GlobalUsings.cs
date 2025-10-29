@@ -6,5 +6,8 @@ global using System.Buffers;
 global using System.Collections.Generic;
 global using System.IO;
 global using System.Linq;
+global using System.Runtime.CompilerServices;
 global using System.Threading.Tasks;
 
+// Make internal classes visible to test project
+[assembly: InternalsVisibleTo("bps-patch.Tests")]

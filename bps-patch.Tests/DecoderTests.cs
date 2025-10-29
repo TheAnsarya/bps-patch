@@ -16,16 +16,25 @@ namespace bps_patch.Tests;
 /// </summary>
 public class DecoderTests {
 	/// <summary>
+	/// Creates a temporary file path and ensures it's deleted if it exists.
+	/// </summary>
+	private static string GetCleanTempFile() {
+		var path = GetCleanTempFile();
+		File.Delete(path);
+		return path;
+	}
+
+	/// <summary>
 	/// Tests the complete encode-decode round-trip.
 	/// Creates a patch from source to target, then applies it to verify correctness.
 	/// </summary>
 	[Fact]
 	public void ApplyPatch_RoundTrip_ReconstructsOriginalFile() {
 		// Arrange: Create source and target files
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] sourceData = "Original Data"u8.ToArray();
 			byte[] targetData = "Modified Data"u8.ToArray();
@@ -64,10 +73,10 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_EmptyFiles_ProducesEmptyTarget() {
 		// Arrange: Create empty source and target, generate patch
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			File.WriteAllBytes(sourceFile, []);
 			File.WriteAllBytes(targetFile, []);
@@ -103,10 +112,10 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_IdenticalFiles_ProducesIdenticalOutput() {
 		// Arrange: Create identical files
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] data = "Identical Content"u8.ToArray();
 			File.WriteAllBytes(sourceFile, data);
@@ -144,10 +153,10 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_CompletelyDifferentFiles_ReconstructsTarget() {
 		// Arrange: Create completely different files
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] sourceData = "XXXXXXXXXX"u8.ToArray();
 			byte[] targetData = "YYYYYYYYYY"u8.ToArray();
@@ -190,10 +199,10 @@ public class DecoderTests {
 	[InlineData(10240)]   // 10 KB
 	public void ApplyPatch_VariousFileSizes_ReconstructsCorrectly(int fileSize) {
 		// Arrange: Create files of specified size
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] sourceData = new byte[fileSize];
 			byte[] targetData = new byte[fileSize];
@@ -235,9 +244,9 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_InvalidPatchFile_ThrowsException() {
 		// Arrange: Create invalid patch file (too small)
-		var sourceFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
 		try {
 			File.WriteAllBytes(sourceFile, "Source"u8.ToArray());
 			File.WriteAllBytes(patchFile, "INVALID"u8.ToArray()); // Invalid patch
@@ -266,10 +275,10 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_SingleByteChange_ReconstructsCorrectly() {
 		// Arrange: Files differing by one byte
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] sourceData = "Hello World"u8.ToArray();
 			byte[] targetData = "Hello Warld"u8.ToArray(); // Changed 'o' to 'a'
@@ -308,10 +317,10 @@ public class DecoderTests {
 	[Fact]
 	public void ApplyPatch_RepeatingPattern_ReconstructsCorrectly() {
 		// Arrange: Create files with repeating patterns
-		var sourceFile = Path.GetTempFileName();
-		var targetFile = Path.GetTempFileName();
-		var patchFile = Path.GetTempFileName();
-		var decodedFile = Path.GetTempFileName();
+		var sourceFile = GetCleanTempFile();
+		var targetFile = GetCleanTempFile();
+		var patchFile = GetCleanTempFile();
+		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] sourceData = "ABC"u8.ToArray();
 			byte[] targetData = "ABCABCABCABC"u8.ToArray(); // Repeating pattern
