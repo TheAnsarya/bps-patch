@@ -266,8 +266,8 @@ static class Encoder {
 
 	/// <summary>
 	/// Finds the best matching run in source for the given target pattern.
-	/// Uses linear search with early termination and dynamic pruning.
-	/// Future: Could use suffix arrays or rolling hash for O(log n) or O(n) complexity.
+	/// Uses linear search (O(n²) worst case) - suitable for small files.
+	/// For large files, consider using FindBestRunRabinKarp() for O(n) average case.
 	/// See: https://en.wikipedia.org/wiki/Suffix_array
 	/// </summary>
 	/// <param name="source">Data to search in.</param>
@@ -276,6 +276,19 @@ static class Encoder {
 	/// <param name="checkUntilMax">Maximum position to check (-1 for all).</param>
 	/// <returns>Tuple of (match length, start position, reached end flag).</returns>
 	public static (int Length, int Start, bool ReachedEnd) FindBestRun(
+		ReadOnlySpan<byte> source,
+		ReadOnlySpan<byte> target,
+		int minimumLongestRun = MIN_MATCH_LENGTH,
+		int checkUntilMax = -1) {
+
+		return FindBestRunLinear(source, target, minimumLongestRun, checkUntilMax);
+	}
+
+	/// <summary>
+	/// Linear search implementation of FindBestRun (original algorithm).
+	/// O(n²) worst case, but simple and effective for small files.
+	/// </summary>
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunLinear(
 		ReadOnlySpan<byte> source,
 		ReadOnlySpan<byte> target,
 		int minimumLongestRun = MIN_MATCH_LENGTH,
@@ -295,7 +308,6 @@ static class Encoder {
 		int longestStart = -1;
 
 		// Linear search through source for best match
-		// TODO: Optimize with suffix array or rolling hash for large files
 		for (int currentStart = 0; currentStart <= checkUntil; currentStart++) {
 			(int length, bool reachedEnd) = CheckRun(source[currentStart..], target);
 
@@ -319,6 +331,19 @@ static class Encoder {
 		}
 
 		return (0, -1, false);
+	}
+
+	/// <summary>
+	/// Rabin-Karp rolling hash implementation of FindBestRun.
+	/// O(n) average case, excellent for large files with repetitive patterns.
+	/// </summary>
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunRabinKarp(
+		ReadOnlySpan<byte> source,
+		ReadOnlySpan<byte> target,
+		int minimumLongestRun = MIN_MATCH_LENGTH,
+		int checkUntilMax = -1) {
+
+		return RabinKarp.FindBestRun(source, target, minimumLongestRun, checkUntilMax);
 	}
 
 	/// <summary>
