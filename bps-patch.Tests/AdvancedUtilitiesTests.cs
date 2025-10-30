@@ -18,7 +18,7 @@ namespace bps_patch.Tests;
 /// <summary>
 /// Advanced tests for Utilities class CRC32 functionality.
 /// </summary>
-public class AdvancedUtilitiesTests {
+public class AdvancedUtilitiesTests : TestBase {
 	/// <summary>
 	/// Helper to create a clean temporary file path.
 	/// </summary>
@@ -38,7 +38,7 @@ public class AdvancedUtilitiesTests {
 		var tempFile = GetTempFile();
 		try {
 			var testString = "The quick brown fox jumps over the lazy dog"u8.ToArray();
-			File.WriteAllBytes(tempFile, testString);
+			WriteAllBytesWithSharing(tempFile, testString);
 
 			var result = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -59,7 +59,7 @@ public class AdvancedUtilitiesTests {
 		try {
 			var zeros = new byte[1000];
 			Array.Fill<byte>(zeros, 0x00);
-			File.WriteAllBytes(tempFile, zeros);
+			WriteAllBytesWithSharing(tempFile, zeros);
 
 			var result = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -80,7 +80,7 @@ public class AdvancedUtilitiesTests {
 		try {
 			var ones = new byte[1000];
 			Array.Fill<byte>(ones, 0xFF);
-			File.WriteAllBytes(tempFile, ones);
+			WriteAllBytesWithSharing(tempFile, ones);
 
 			var result = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -103,7 +103,7 @@ public class AdvancedUtilitiesTests {
 		var tempFile = GetTempFile();
 		try {
 			var data = "Deterministic Test Data"u8.ToArray();
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var result1 = Utilities.ComputeCRC32(new FileInfo(tempFile));
 			var result2 = Utilities.ComputeCRC32(new FileInfo(tempFile));
@@ -129,8 +129,8 @@ public class AdvancedUtilitiesTests {
 			var data1 = new byte[] { 0b10101010 }; // Binary: 10101010
 			var data2 = new byte[] { 0b10101011 }; // Binary: 10101011 (last bit flipped)
 
-			File.WriteAllBytes(tempFile1, data1);
-			File.WriteAllBytes(tempFile2, data2);
+			WriteAllBytesWithSharing(tempFile1, data1);
+			WriteAllBytesWithSharing(tempFile2, data2);
 
 			var crc1 = Utilities.ComputeCRC32(new FileInfo(tempFile1));
 			var crc2 = Utilities.ComputeCRC32(new FileInfo(tempFile2));
@@ -153,8 +153,8 @@ public class AdvancedUtilitiesTests {
 		var tempFile2 = GetTempFile();
 
 		try {
-			File.WriteAllBytes(tempFile1, "ABCD"u8.ToArray());
-			File.WriteAllBytes(tempFile2, "DCBA"u8.ToArray());
+			WriteAllBytesWithSharing(tempFile1, "ABCD"u8.ToArray());
+			WriteAllBytesWithSharing(tempFile2, "DCBA"u8.ToArray());
 
 			var crc1 = Utilities.ComputeCRC32(new FileInfo(tempFile1));
 			var crc2 = Utilities.ComputeCRC32(new FileInfo(tempFile2));
@@ -185,7 +185,7 @@ public class AdvancedUtilitiesTests {
 		try {
 			var data = new byte[fileSize];
 			Random.Shared.NextBytes(data);
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crc = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -207,7 +207,7 @@ public class AdvancedUtilitiesTests {
 			const int bufferSize = 81920; // 80 KB (80 * 1024)
 			var data = new byte[bufferSize];
 			Random.Shared.NextBytes(data);
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crc = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -228,7 +228,7 @@ public class AdvancedUtilitiesTests {
 			const int size = 81921; // 80 KB + 1 byte
 			var data = new byte[size];
 			Random.Shared.NextBytes(data);
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crc = Utilities.ComputeCRC32(new FileInfo(tempFile));
 
@@ -250,7 +250,7 @@ public class AdvancedUtilitiesTests {
 		var tempFile = GetTempFile();
 		try {
 			var data = "Test Data for CRC32 Bytes"u8.ToArray();
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crcUint = Utilities.ComputeCRC32(new FileInfo(tempFile));
 			var crcBytes = Utilities.ComputeCRC32Bytes(new FileInfo(tempFile));
@@ -272,7 +272,7 @@ public class AdvancedUtilitiesTests {
 		var tempFile = GetTempFile();
 		try {
 			var data = "Sample data"u8.ToArray();
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crcBytes = Utilities.ComputeCRC32Bytes(new FileInfo(tempFile));
 
@@ -290,7 +290,7 @@ public class AdvancedUtilitiesTests {
 		var tempFile = GetTempFile();
 		try {
 			var data = "123456789"u8.ToArray();
-			File.WriteAllBytes(tempFile, data);
+			WriteAllBytesWithSharing(tempFile, data);
 
 			var crcUint = Utilities.ComputeCRC32(new FileInfo(tempFile));
 			var crcBytes = Utilities.ComputeCRC32Bytes(new FileInfo(tempFile));
@@ -332,7 +332,7 @@ public class AdvancedUtilitiesTests {
 		try {
 			// Original data
 			var data = "Test data for CRC32 validation constant"u8.ToArray();
-			File.WriteAllBytes(tempFile1, data);
+			WriteAllBytesWithSharing(tempFile1, data);
 
 			// Compute CRC32 of original data
 			var crc1 = Utilities.ComputeCRC32Bytes(new FileInfo(tempFile1));
@@ -341,7 +341,7 @@ public class AdvancedUtilitiesTests {
 			var dataWithCRC = new byte[data.Length + 4];
 			data.CopyTo(dataWithCRC, 0);
 			crc1.CopyTo(dataWithCRC, data.Length);
-			File.WriteAllBytes(tempFile2, dataWithCRC);
+			WriteAllBytesWithSharing(tempFile2, dataWithCRC);
 
 			// Compute CRC32 of data+CRC32
 			var crc2 = Utilities.ComputeCRC32(new FileInfo(tempFile2));
@@ -401,8 +401,8 @@ public class AdvancedUtilitiesTests {
 			Random.Shared.NextBytes(data1);
 			Random.Shared.NextBytes(data2);
 
-			File.WriteAllBytes(tempFile1, data1);
-			File.WriteAllBytes(tempFile2, data2);
+			WriteAllBytesWithSharing(tempFile1, data1);
+			WriteAllBytesWithSharing(tempFile2, data2);
 
 			var crc1 = Utilities.ComputeCRC32(new FileInfo(tempFile1));
 			var crc2 = Utilities.ComputeCRC32(new FileInfo(tempFile2));
@@ -415,3 +415,4 @@ public class AdvancedUtilitiesTests {
 		}
 	}
 }
+

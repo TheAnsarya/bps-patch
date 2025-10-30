@@ -15,28 +15,7 @@ namespace bps_patch.Tests;
 /// Integration tests for BPS patching with realistic scenarios.
 /// Simulates actual ROM hacking use cases like translation patches, bug fixes, and enhancements.
 /// </summary>
-public class IntegrationTests {
-	/// <summary>
-	/// Creates a temporary file path that doesn't create the file.
-	/// </summary>
-	private static string GetCleanTempFile() {
-		return Path.Combine(Path.GetTempPath(), $"bps_test_{Guid.NewGuid()}.tmp");
-	}
-
-	/// <summary>
-	/// Writes bytes to a file with proper file sharing to avoid locking issues on Windows.
-	/// </summary>
-	private static void WriteAllBytesWithSharing(string path, byte[] bytes) {
-		using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
-			stream.Write(bytes);
-			stream.Flush(true); // Force flush to disk
-		} // Explicit scope to ensure dispose completes
-
-		// Force garbage collection to ensure file handles are released (Windows quirk)
-		GC.Collect();
-		GC.WaitForPendingFinalizers();
-	}
-
+public class IntegrationTests : TestBase {
 	/// <summary>
 	/// Tests a realistic ROM translation scenario: replacing ASCII text with UTF-8 text.
 	/// Simulates patching a game's dialogue strings.
@@ -76,8 +55,8 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Output matches translated ROM
-			byte[] output = File.ReadAllBytes(outputFile);
-			byte[] expected = File.ReadAllBytes(targetFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
+			byte[] expected = ReadAllBytesWithSharing(targetFile);
 			Assert.Equal(expected, output);
 			Assert.Empty(warnings);
 		} finally {
@@ -129,7 +108,7 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Bug is fixed
-			byte[] output = File.ReadAllBytes(outputFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
 			Assert.Equal(0x20, output[0x4A2C]);
 			Assert.Equal(0x30, output[0x4A2D]);
 			Assert.Empty(warnings);
@@ -186,7 +165,7 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: ROM expanded correctly
-			byte[] output = File.ReadAllBytes(outputFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
 			Assert.Equal(512 * 1024, output.Length);
 			Assert.Equal(expandedRom, output);
 			Assert.Empty(warnings);
@@ -245,7 +224,7 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Graphics replaced
-			byte[] output = File.ReadAllBytes(outputFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
 			for (int i = 0; i < 256; i++) {
 				Assert.Equal(0x55, output[0x8000 + i]);
 			}
@@ -305,8 +284,8 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Music replaced
-			byte[] output = File.ReadAllBytes(outputFile);
-			byte[] expected = File.ReadAllBytes(targetFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
+			byte[] expected = ReadAllBytesWithSharing(targetFile);
 			Assert.Equal(expected, output);
 			Assert.Empty(warnings);
 		} finally {
@@ -367,7 +346,7 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Difficulty modified
-			byte[] output = File.ReadAllBytes(outputFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
 			Assert.Equal(25, output[0x2000]);
 			Assert.Equal(12, output[0x2001]);
 			Assert.Equal(40, output[0x2010]);
@@ -425,7 +404,7 @@ public class IntegrationTests {
 				new FileInfo(outputFile));
 
 			// Assert: Complete replacement
-			byte[] output = File.ReadAllBytes(outputFile);
+			byte[] output = ReadAllBytesWithSharing(outputFile);
 			Assert.Equal(convertedRom, output);
 			Assert.Empty(warnings);
 
@@ -478,7 +457,7 @@ public class IntegrationTests {
 			Assert.True(patchInfo.Length > metadata.Length);
 
 			// Read patch file to verify it's valid BPS
-			byte[] patchData = File.ReadAllBytes(patchFile);
+			byte[] patchData = ReadAllBytesWithSharing(patchFile);
 			Assert.Equal((byte)'B', patchData[0]);
 			Assert.Equal((byte)'P', patchData[1]);
 			Assert.Equal((byte)'S', patchData[2]);
@@ -552,7 +531,7 @@ public class IntegrationTests {
 				new FileInfo(temp2File));
 
 			// Assert: Final version is correct
-			byte[] output = File.ReadAllBytes(temp2File);
+			byte[] output = ReadAllBytesWithSharing(temp2File);
 			Assert.Equal(3, output[100]);
 			Assert.Equal(0xFF, output[500]);
 			Assert.Equal(0xAA, output[1000]);
@@ -569,4 +548,5 @@ public class IntegrationTests {
 		}
 	}
 }
+
 

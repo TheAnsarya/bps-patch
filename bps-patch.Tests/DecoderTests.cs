@@ -14,13 +14,7 @@ namespace bps_patch.Tests;
 /// Tests for the Decoder class patch application functionality.
 /// Validates correct BPS patch application for various scenarios.
 /// </summary>
-public class DecoderTests {
-	/// <summary>
-	/// Creates a temporary file path that doesn't create the file.
-	/// </summary>
-	private static string GetCleanTempFile() {
-		return Path.Combine(Path.GetTempPath(), $"bps_test_{Guid.NewGuid()}.tmp");
-	}
+public class DecoderTests : TestBase {
 
 	/// <summary>
 	/// Tests the complete encode-decode round-trip.
@@ -36,8 +30,8 @@ public class DecoderTests {
 		try {
 			byte[] sourceData = "Original Data"u8.ToArray();
 			byte[] targetData = "Modified Data"u8.ToArray();
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			// Act: Create patch and apply it
 			Encoder.CreatePatch(
@@ -52,7 +46,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Decoded file should match target
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(targetData, decodedData);
 			Assert.Empty(warnings); // Should have no warnings with fresh patch
 		} finally {
@@ -76,8 +70,8 @@ public class DecoderTests {
 		var patchFile = GetCleanTempFile();
 		var decodedFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, []);
-			File.WriteAllBytes(targetFile, []);
+			WriteAllBytesWithSharing(sourceFile, []);
+			WriteAllBytesWithSharing(targetFile, []);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -116,8 +110,8 @@ public class DecoderTests {
 		var decodedFile = GetCleanTempFile();
 		try {
 			byte[] data = "Identical Content"u8.ToArray();
-			File.WriteAllBytes(sourceFile, data);
-			File.WriteAllBytes(targetFile, data);
+			WriteAllBytesWithSharing(sourceFile, data);
+			WriteAllBytesWithSharing(targetFile, data);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -132,7 +126,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Output should match input
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(data, decodedData);
 			Assert.Empty(warnings);
 		} finally {
@@ -158,8 +152,8 @@ public class DecoderTests {
 		try {
 			byte[] sourceData = "XXXXXXXXXX"u8.ToArray();
 			byte[] targetData = "YYYYYYYYYY"u8.ToArray();
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -174,7 +168,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Should reconstruct target exactly
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(targetData, decodedData);
 			Assert.Empty(warnings);
 		} finally {
@@ -207,8 +201,8 @@ public class DecoderTests {
 			Random.Shared.NextBytes(sourceData);
 			Random.Shared.NextBytes(targetData);
 
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -223,7 +217,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Should reconstruct target exactly
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(targetData, decodedData);
 			Assert.Empty(warnings);
 		} finally {
@@ -246,8 +240,8 @@ public class DecoderTests {
 		var patchFile = GetCleanTempFile();
 		var targetFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, "Source"u8.ToArray());
-			File.WriteAllBytes(patchFile, "INVALID"u8.ToArray()); // Invalid patch
+			WriteAllBytesWithSharing(sourceFile, "Source"u8.ToArray());
+			WriteAllBytesWithSharing(patchFile, "INVALID"u8.ToArray()); // Invalid patch
 
 			// Act & Assert: Should throw PatchFormatException
 			Assert.Throws<PatchFormatException>(() => {
@@ -280,8 +274,8 @@ public class DecoderTests {
 		try {
 			byte[] sourceData = "Hello World"u8.ToArray();
 			byte[] targetData = "Hello Warld"u8.ToArray(); // Changed 'o' to 'a'
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -296,7 +290,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Should reconstruct target exactly
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(targetData, decodedData);
 			Assert.Empty(warnings);
 		} finally {
@@ -322,8 +316,8 @@ public class DecoderTests {
 		try {
 			byte[] sourceData = "ABC"u8.ToArray();
 			byte[] targetData = "ABCABCABCABC"u8.ToArray(); // Repeating pattern
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			Encoder.CreatePatch(
 				new FileInfo(sourceFile),
@@ -338,7 +332,7 @@ public class DecoderTests {
 				new FileInfo(decodedFile));
 
 			// Assert: Should reconstruct repeating pattern correctly
-			byte[] decodedData = File.ReadAllBytes(decodedFile);
+			byte[] decodedData = ReadAllBytesWithSharing(decodedFile);
 			Assert.Equal(targetData, decodedData);
 			Assert.Empty(warnings);
 		} finally {

@@ -18,7 +18,7 @@ namespace bps_patch.Tests;
 /// <summary>
 /// Advanced tests for Encoder class focusing on edge cases, error conditions, and optimization scenarios.
 /// </summary>
-public class AdvancedEncoderTests {
+public class AdvancedEncoderTests : TestBase {
 	/// <summary>
 	/// Helper to create a clean temporary file path.
 	/// </summary>
@@ -46,11 +46,11 @@ public class AdvancedEncoderTests {
 			var largeData = new byte[testSize];
 			Random.Shared.NextBytes(largeData);
 
-			File.WriteAllBytes(source, largeData);
+			WriteAllBytesWithSharing(source, largeData);
 			// Modify a few bytes
 			largeData[testSize / 2] = 0xFF;
 			largeData[testSize / 4] = 0xAA;
-			File.WriteAllBytes(target, largeData);
+			WriteAllBytesWithSharing(target, largeData);
 
 			// Act: Create patch
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "Large file test");
@@ -79,8 +79,8 @@ public class AdvancedEncoderTests {
 
 		try {
 			// Single byte files
-			File.WriteAllBytes(source, [0x42]);
-			File.WriteAllBytes(target, [0x84]);
+			WriteAllBytesWithSharing(source, [0x42]);
+			WriteAllBytesWithSharing(target, [0x84]);
 
 			// Act
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "");
@@ -123,8 +123,8 @@ public class AdvancedEncoderTests {
 				targetData[i] = (byte)("ABCD"[i % 4]);
 			}
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target, targetData);
 
 			// Act
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "RLE test");
@@ -159,8 +159,8 @@ public class AdvancedEncoderTests {
 				targetData[i] = (i % 2 == 0) ? (byte)i : (byte)(i + 1);
 			}
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target, targetData);
 
 			// Act
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "");
@@ -190,8 +190,8 @@ public class AdvancedEncoderTests {
 
 		try {
 			var data = "Test data"u8.ToArray();
-			File.WriteAllBytes(source, data);
-			File.WriteAllBytes(target, data);
+			WriteAllBytesWithSharing(source, data);
+			WriteAllBytesWithSharing(target, data);
 
 			// Large metadata (4KB)
 			var largeMetadata = new string('X', 4096);
@@ -200,7 +200,7 @@ public class AdvancedEncoderTests {
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), largeMetadata);
 
 			// Assert: Patch should contain the metadata
-			var patchBytes = File.ReadAllBytes(patch);
+			var patchBytes = ReadAllBytesWithSharing(patch);
 			Assert.True(patchBytes.Length > 4096); // Must contain metadata
 		} finally {
 			File.Delete(source);
@@ -221,8 +221,8 @@ public class AdvancedEncoderTests {
 
 		try {
 			var data = "Test"u8.ToArray();
-			File.WriteAllBytes(source, data);
-			File.WriteAllBytes(target, data);
+			WriteAllBytesWithSharing(source, data);
+			WriteAllBytesWithSharing(target, data);
 
 			// Unicode metadata: Japanese, Emoji, etc.
 			var unicodeMetadata = "作者: John Doe 🎮 Version: 1.0";
@@ -232,7 +232,7 @@ public class AdvancedEncoderTests {
 
 			// Assert: Should encode without error
 			Assert.True(File.Exists(patch));
-			var patchBytes = File.ReadAllBytes(patch);
+			var patchBytes = ReadAllBytesWithSharing(patch);
 			Assert.Contains((byte)'J', patchBytes); // ASCII part should be present
 		} finally {
 			File.Delete(source);
@@ -274,8 +274,8 @@ public class AdvancedEncoderTests {
 			dataBlock.CopyTo(targetData, newHeader.Length); // Reuse data block
 			newFooter.CopyTo(targetData, newHeader.Length + dataBlock.Length);
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target, targetData);
 
 			// Act
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "SourceCopy test");
@@ -320,8 +320,8 @@ public class AdvancedEncoderTests {
 				}
 			}
 
-			File.WriteAllBytes(source, sourceTiles);
-			File.WriteAllBytes(target, targetTiles);
+			WriteAllBytesWithSharing(source, sourceTiles);
+			WriteAllBytesWithSharing(target, targetTiles);
 
 			// Act
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "Graphics hack");
@@ -352,8 +352,8 @@ public class AdvancedEncoderTests {
 		var patch = GetTempFile();
 
 		try {
-			File.WriteAllBytes(source, "source data"u8.ToArray());
-			File.WriteAllBytes(target, []); // Empty target
+			WriteAllBytesWithSharing(source, "source data"u8.ToArray());
+			WriteAllBytesWithSharing(target, []); // Empty target
 
 			// Act & Assert: Should throw
 			Assert.Throws<ArgumentException>(() => {
@@ -376,7 +376,7 @@ public class AdvancedEncoderTests {
 		var patch = GetTempFile();
 
 		try {
-			File.WriteAllBytes(target, "data"u8.ToArray());
+			WriteAllBytesWithSharing(target, "data"u8.ToArray());
 
 			// Act & Assert
 			Assert.Throws<FileNotFoundException>(() => {
@@ -398,7 +398,7 @@ public class AdvancedEncoderTests {
 		var patch = GetTempFile();
 
 		try {
-			File.WriteAllBytes(source, "data"u8.ToArray());
+			WriteAllBytesWithSharing(source, "data"u8.ToArray());
 
 			// Act & Assert
 			Assert.Throws<FileNotFoundException>(() => {
@@ -437,8 +437,8 @@ public class AdvancedEncoderTests {
 				targetData[i] = (byte)((i % 3) + 1);
 			}
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target, targetData);
 
 			// Act: Should use SourceRead since full file matches
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "");
@@ -453,3 +453,4 @@ public class AdvancedEncoderTests {
 		}
 	}
 }
+

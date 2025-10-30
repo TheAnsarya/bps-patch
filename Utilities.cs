@@ -53,23 +53,59 @@ static class Utilities {
 	/// <param name="sourceFile">File to compute CRC32 for.</param>
 	/// <returns>CRC32 checksum as 4-byte array (little-endian).</returns>
 	public static byte[] ComputeCRC32Bytes(FileInfo sourceFile) {
-		// Open file for reading with FileShare.ReadWrite to allow concurrent access
-		using var source = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+		// Retry logic for files that might still be being written
+		for (int attempt = 0; attempt < 5; attempt++) {
+			try {
+				// Open file for reading with FileShare.ReadWrite to allow concurrent access
+				using var source = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-		// Allocate 80KB buffer on stack for efficient I/O
-		Span<byte> buffer = stackalloc byte[81920];
+				// Allocate 80KB buffer on stack for efficient I/O
+				Span<byte> buffer = stackalloc byte[81920];
 
-		// Create CRC32 hasher instance
-		var crc32 = new Crc32();
+				// Create CRC32 hasher instance
+				var crc32 = new Crc32();
 
-		// Read file in chunks and update CRC32 incrementally
-		int bytesRead;
-		while ((bytesRead = source.Read(buffer)) > 0) {
-			// Append chunk to running CRC32 calculation
-			crc32.Append(buffer[..bytesRead]);
+				// Read file in chunks and update CRC32 incrementally
+				int bytesRead;
+				while ((bytesRead = source.Read(buffer)) > 0) {
+					// Append chunk to running CRC32 calculation
+					crc32.Append(buffer[..bytesRead]);
+				}
+
+				// Get final hash value as byte array
+				byte[] result = new byte[4];
+				crc32.GetHashAndReset(result);
+
+				return result;
+			} catch (IOException) when (attempt < 4) {
+				// File might still be locked by another stream, wait and retry
+				Thread.Sleep(50);
+			}
 		}
 
-		// Get final hash value as byte array
+		// Final attempt without catching - let exception propagate if it still fails
+		using var finalSource = new FileStream(sourceFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+		Span<byte> finalBuffer = stackalloc byte[81920];
+		var finalCrc32 = new Crc32();
+		int finalBytesRead;
+		while ((finalBytesRead = finalSource.Read(finalBuffer)) > 0) {
+			finalCrc32.Append(finalBuffer[..finalBytesRead]);
+		}
+		byte[] finalResult = new byte[4];
+		finalCrc32.GetHashAndReset(finalResult);
+		return finalResult;
+	}
+
+	/// <summary>
+	/// Computes CRC32 checksum for a data span and returns as byte array.
+	/// More efficient than file-based version when data is already in memory.
+	/// </summary>
+	/// <param name="data">Data to compute CRC32 for.</param>
+	/// <returns>CRC32 checksum as 4-byte array (little-endian).</returns>
+	public static byte[] ComputeCRC32Bytes(ReadOnlySpan<byte> data) {
+		var crc32 = new Crc32();
+		crc32.Append(data);
+
 		byte[] result = new byte[4];
 		crc32.GetHashAndReset(result);
 

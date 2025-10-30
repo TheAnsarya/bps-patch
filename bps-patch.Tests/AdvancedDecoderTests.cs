@@ -18,7 +18,7 @@ namespace bps_patch.Tests;
 /// <summary>
 /// Advanced tests for Decoder class focusing on error conditions, validation, and edge cases.
 /// </summary>
-public class AdvancedDecoderTests {
+public class AdvancedDecoderTests : TestBase {
 	/// <summary>
 	/// Helper to create a clean temporary file path.
 	/// </summary>
@@ -39,14 +39,14 @@ public class AdvancedDecoderTests {
 		var target = GetTempFile();
 
 		try {
-			File.WriteAllBytes(source, "test"u8.ToArray());
+			WriteAllBytesWithSharing(source, "test"u8.ToArray());
 
 			// Create invalid patch with wrong magic number
 			var invalidPatch = new byte[] {
 				0x49, 0x50, 0x53, 0x31, // "IPS1" instead of "BPS1"
 				0x00, 0x00, 0x00, 0x00
 			};
-			File.WriteAllBytes(patch, invalidPatch);
+			WriteAllBytesWithSharing(patch, invalidPatch);
 
 			// Act & Assert
 			Assert.Throws<PatchFormatException>(() => {
@@ -70,7 +70,7 @@ public class AdvancedDecoderTests {
 		var target = GetTempFile();
 
 		try {
-			File.WriteAllBytes(source, "test"u8.ToArray());
+			WriteAllBytesWithSharing(source, "test"u8.ToArray());
 
 			// Create patch file that's too small (only 10 bytes)
 			var tinyPatch = new byte[] {
@@ -78,7 +78,7 @@ public class AdvancedDecoderTests {
 				0x00, 0x00, 0x00, 0x00, // Only 4 more bytes
 				0x00, 0x00
 			};
-			File.WriteAllBytes(patch, tinyPatch);
+			WriteAllBytesWithSharing(patch, tinyPatch);
 
 			// Act & Assert
 			Assert.Throws<PatchFormatException>(() => {
@@ -102,7 +102,7 @@ public class AdvancedDecoderTests {
 		var target = GetTempFile();
 
 		try {
-			File.WriteAllBytes(source, "test"u8.ToArray());
+			WriteAllBytesWithSharing(source, "test"u8.ToArray());
 
 			// Create patch claiming file size > int.MaxValue
 			// Variable-length encoding for a very large number
@@ -117,7 +117,7 @@ public class AdvancedDecoderTests {
 				WriteVariableLengthInt(ms, (long)int.MaxValue + 100);
 
 				// Rest doesn't matter as it should fail before reading further
-				File.WriteAllBytes(patch, ms.ToArray());
+				WriteAllBytesWithSharing(patch, ms.ToArray());
 			}
 
 			// Act & Assert
@@ -149,12 +149,12 @@ public class AdvancedDecoderTests {
 
 		try {
 			// Create patch with source1
-			File.WriteAllBytes(source1, "original source"u8.ToArray());
-			File.WriteAllBytes(target1, "modified target"u8.ToArray());
+			WriteAllBytesWithSharing(source1, "original source"u8.ToArray());
+			WriteAllBytesWithSharing(target1, "modified target"u8.ToArray());
 			Encoder.CreatePatch(new FileInfo(source1), new FileInfo(patch), new FileInfo(target1), "");
 
 			// Apply patch with different source (source2)
-			File.WriteAllBytes(source2, "different source"u8.ToArray());
+			WriteAllBytesWithSharing(source2, "different source"u8.ToArray());
 
 			// Act: Apply patch with wrong source
 			var warnings = Decoder.ApplyPatch(new FileInfo(source2), new FileInfo(patch), new FileInfo(target2));
@@ -198,8 +198,8 @@ public class AdvancedDecoderTests {
 				targetData[i] = (byte)(i % 10); // Repeating pattern of 10 bytes
 			}
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target1, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target1, targetData);
 
 			// Create patch
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target1), "");
@@ -208,7 +208,7 @@ public class AdvancedDecoderTests {
 			var warnings = Decoder.ApplyPatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target2));
 
 			// Assert: Should reconstruct correctly
-			var result = File.ReadAllBytes(target2);
+			var result = ReadAllBytesWithSharing(target2);
 			Assert.Equal(targetData, result);
 		} finally {
 			File.Delete(source);
@@ -230,7 +230,7 @@ public class AdvancedDecoderTests {
 
 		try {
 			var data = "This is identical in source and target"u8.ToArray();
-			File.WriteAllBytes(source, data);
+			WriteAllBytesWithSharing(source, data);
 
 			// Create patch from source to itself
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(source), "Identity patch");
@@ -239,7 +239,7 @@ public class AdvancedDecoderTests {
 			var warnings = Decoder.ApplyPatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target));
 
 			// Assert
-			var result = File.ReadAllBytes(target);
+			var result = ReadAllBytesWithSharing(target);
 			Assert.Equal(data, result);
 		} finally {
 			File.Delete(source);
@@ -267,8 +267,8 @@ public class AdvancedDecoderTests {
 			var targetData = new byte[100];
 			Array.Fill<byte>(targetData, 0x55);
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target1, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target1, targetData);
 
 			// Create patch
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target1), "");
@@ -277,7 +277,7 @@ public class AdvancedDecoderTests {
 			var warnings = Decoder.ApplyPatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target2));
 
 			// Assert
-			var result = File.ReadAllBytes(target2);
+			var result = ReadAllBytesWithSharing(target2);
 			Assert.Equal(targetData, result);
 		} finally {
 			File.Delete(source);
@@ -314,8 +314,8 @@ public class AdvancedDecoderTests {
 				targetData[i] = (byte)((i / 1024) + 1);
 			}
 
-			File.WriteAllBytes(source, sourceData);
-			File.WriteAllBytes(target1, targetData);
+			WriteAllBytesWithSharing(source, sourceData);
+			WriteAllBytesWithSharing(target1, targetData);
 
 			// Create patch
 			Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target1), "Large file");
@@ -356,3 +356,4 @@ public class AdvancedDecoderTests {
 		stream.Write(bytes.ToArray());
 	}
 }
+

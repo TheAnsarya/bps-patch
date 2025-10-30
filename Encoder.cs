@@ -141,8 +141,10 @@ static class Encoder {
 
 			// Write CRC32 checksums for validation
 			// Format: source_crc32 | target_crc32 | patch_crc32
-			patch.Write(Utilities.ComputeCRC32Bytes(sourceFile));
-			patch.Write(Utilities.ComputeCRC32Bytes(targetFile));
+			// Use span-based CRC32 for source/target since data is already in memory
+			// This avoids reopening files which can cause file locking issues
+			patch.Write(Utilities.ComputeCRC32Bytes(source));
+			patch.Write(Utilities.ComputeCRC32Bytes(target));
 			patch.Write(Utilities.ComputeCRC32Bytes(patchFile));
 
 			// Local function to write accumulated TargetRead command

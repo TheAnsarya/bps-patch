@@ -14,13 +14,7 @@ namespace bps_patch.Tests;
 /// Tests for the Encoder class patch creation functionality.
 /// Validates correct BPS patch generation for various scenarios.
 /// </summary>
-public class EncoderTests {
-	/// <summary>
-	/// Creates a temporary file path that doesn't create the file.
-	/// </summary>
-	private static string GetCleanTempFile() {
-		return Path.Combine(Path.GetTempPath(), $"bps_test_{Guid.NewGuid()}.tmp");
-	}
+public class EncoderTests : TestBase {
 
 	/// <summary>
 	/// Tests that creating a patch from identical source and target produces a minimal patch.
@@ -33,27 +27,23 @@ public class EncoderTests {
 		var targetFile = GetCleanTempFile();
 		var patchFile = GetCleanTempFile();
 
-		try {
-			byte[] testData = "Test Data for Identical Files"u8.ToArray();
-			File.WriteAllBytes(sourceFile, testData);
-			File.WriteAllBytes(targetFile, testData);           // Act: Create patch
-			Encoder.CreatePatch(
-				new FileInfo(sourceFile),
-				new FileInfo(patchFile),
-				new FileInfo(targetFile),
-				"Test patch");
+		byte[] testData = "Test Data for Identical Files"u8.ToArray();
+		File.WriteAllBytes(sourceFile, testData);
+		File.WriteAllBytes(targetFile, testData);
 
-			// Assert: Patch file should exist and be small (mostly metadata + SourceRead)
-			var patchInfo = new FileInfo(patchFile);
-			Assert.True(patchInfo.Exists);
-			Assert.True(patchInfo.Length > 0);
-			Assert.True(patchInfo.Length < 200); // Should be small for identical files
-		} finally {
-			// Cleanup
-			File.Delete(sourceFile);
-			File.Delete(targetFile);
-			File.Delete(patchFile);
-		}
+		// Act: Create patch
+		Encoder.CreatePatch(
+			new FileInfo(sourceFile),
+			new FileInfo(patchFile),
+			new FileInfo(targetFile),
+			"Test patch");
+
+		// Assert: Patch file should exist and be small (mostly metadata + SourceRead)
+		var patchInfo = new FileInfo(patchFile);
+		Assert.True(patchInfo.Exists);
+		Assert.True(patchInfo.Length > 0);
+		Assert.True(patchInfo.Length < 200); // Should be small for identical files
+		// Note: Cleanup handled automatically by TestBase.Dispose()
 	}
 
 	/// <summary>
@@ -67,8 +57,8 @@ public class EncoderTests {
 		var targetFile = GetCleanTempFile();
 		var patchFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, []);
-			File.WriteAllBytes(targetFile, []);
+			WriteAllBytesWithSharing(sourceFile, []);
+			WriteAllBytesWithSharing(targetFile, []);
 
 			// Act: Create patch
 			Encoder.CreatePatch(
@@ -100,8 +90,8 @@ public class EncoderTests {
 		var targetFile = GetCleanTempFile();
 		var patchFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, "AAAAAAAAAA"u8.ToArray());
-			File.WriteAllBytes(targetFile, "BBBBBBBBBB"u8.ToArray());
+			WriteAllBytesWithSharing(sourceFile, "AAAAAAAAAA"u8.ToArray());
+			WriteAllBytesWithSharing(targetFile, "BBBBBBBBBB"u8.ToArray());
 
 			// Act: Create patch
 			Encoder.CreatePatch(
@@ -133,8 +123,8 @@ public class EncoderTests {
 		var targetFile = GetCleanTempFile();
 		var patchFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, "Source"u8.ToArray());
-			File.WriteAllBytes(targetFile, "Target"u8.ToArray());
+			WriteAllBytesWithSharing(sourceFile, "Source"u8.ToArray());
+			WriteAllBytesWithSharing(targetFile, "Target"u8.ToArray());
 			string metadata = "Test Metadata: v1.0";
 
 			// Act: Create patch with metadata
@@ -167,8 +157,8 @@ public class EncoderTests {
 		var targetFile = GetCleanTempFile();
 		var patchFile = GetCleanTempFile();
 		try {
-			File.WriteAllBytes(sourceFile, "Hello World"u8.ToArray());
-			File.WriteAllBytes(targetFile, "Hello Warld"u8.ToArray()); // Changed 'o' to 'a'
+			WriteAllBytesWithSharing(sourceFile, "Hello World"u8.ToArray());
+			WriteAllBytesWithSharing(targetFile, "Hello Warld"u8.ToArray()); // Changed 'o' to 'a'
 
 			// Act: Create patch
 			Encoder.CreatePatch(
@@ -209,8 +199,8 @@ public class EncoderTests {
 			Random.Shared.NextBytes(sourceData);
 			Random.Shared.NextBytes(targetData);
 
-			File.WriteAllBytes(sourceFile, sourceData);
-			File.WriteAllBytes(targetFile, targetData);
+			WriteAllBytesWithSharing(sourceFile, sourceData);
+			WriteAllBytesWithSharing(targetFile, targetData);
 
 			// Act: Create patch
 			Encoder.CreatePatch(

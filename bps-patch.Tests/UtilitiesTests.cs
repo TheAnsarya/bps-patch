@@ -14,7 +14,7 @@ namespace bps_patch.Tests;
 /// Tests for the Utilities class CRC32 computation.
 /// Validates correct CRC32 calculation for known test vectors.
 /// </summary>
-public class UtilitiesTests {
+public class UtilitiesTests : TestBase {
 	/// <summary>
 	/// Tests CRC32 computation with empty input.
 	/// Empty data should produce the CRC32 initialization value.
@@ -24,7 +24,7 @@ public class UtilitiesTests {
 		// Arrange: Create an empty temporary file
 		var tempFile = Path.GetTempFileName();
 		try {
-			File.WriteAllBytes(tempFile, []);
+			WriteAllBytesWithSharing(tempFile, []);
 
 			// Act: Compute CRC32 of empty file
 			uint result = Utilities.ComputeCRC32(new FileInfo(tempFile));
@@ -48,7 +48,7 @@ public class UtilitiesTests {
 		var tempFile = Path.GetTempFileName();
 		try {
 			byte[] testData = "123456789"u8.ToArray();
-			File.WriteAllBytes(tempFile, testData);
+			WriteAllBytesWithSharing(tempFile, testData);
 
 			// Act: Compute CRC32
 			uint result = Utilities.ComputeCRC32(new FileInfo(tempFile));
@@ -72,7 +72,7 @@ public class UtilitiesTests {
 		var tempFile = Path.GetTempFileName();
 		try {
 			byte[] testData = new byte[1024 * 1024]; // 1MB of zeros
-			File.WriteAllBytes(tempFile, testData);
+			WriteAllBytesWithSharing(tempFile, testData);
 
 			// Act: Compute CRC32
 			uint result = Utilities.ComputeCRC32(new FileInfo(tempFile));
@@ -96,8 +96,8 @@ public class UtilitiesTests {
 		var tempFile1 = Path.GetTempFileName();
 		var tempFile2 = Path.GetTempFileName();
 		try {
-			File.WriteAllBytes(tempFile1, "Hello World"u8.ToArray());
-			File.WriteAllBytes(tempFile2, "Hello world"u8.ToArray()); // Different case
+			WriteAllBytesWithSharing(tempFile1, "Hello World"u8.ToArray());
+			WriteAllBytesWithSharing(tempFile2, "Hello world"u8.ToArray()); // Different case
 
 			// Act: Compute CRC32 for both files
 			uint hash1 = Utilities.ComputeCRC32(new FileInfo(tempFile1));
@@ -123,8 +123,8 @@ public class UtilitiesTests {
 		var tempFile2 = Path.GetTempFileName();
 		try {
 			byte[] testData = "Test Data"u8.ToArray();
-			File.WriteAllBytes(tempFile1, testData);
-			File.WriteAllBytes(tempFile2, testData);
+			WriteAllBytesWithSharing(tempFile1, testData);
+			WriteAllBytesWithSharing(tempFile2, testData);
 
 			// Act: Compute CRC32 for both files
 			uint hash1 = Utilities.ComputeCRC32(new FileInfo(tempFile1));
@@ -151,3 +151,4 @@ public class UtilitiesTests {
 		Assert.Equal(0x2144DF1Cu, Utilities.CRC32_RESULT_CONSTANT);
 	}
 }
+
