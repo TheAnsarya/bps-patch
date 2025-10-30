@@ -173,11 +173,17 @@ static class Decoder {
 					}
 				}
 
-				// Write target file with buffering
-				using var targetWriter = new BufferedStream(targetFile.OpenWrite(), BUFFER_SIZE);
+			// Write target file with buffering
+			using (var targetWriter = new BufferedStream(targetFile.OpenWrite(), BUFFER_SIZE)) {
 				targetWriter.Write(targetData.AsSpan(0, (int)targetSize));
+				targetWriter.Flush(); // Ensure all data is written to disk
+			} // Close target file before validation
 
-				// Validate integrity with CRC32 checks
+			// Refresh FileInfo to get accurate file metadata after writing
+			// See: https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.refresh
+			targetFile.Refresh();
+
+			// Validate integrity with CRC32 checks
 				// Using collection expression [] for modern C# 12 syntax
 				// See: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions
 				List<string> warnings = [];             // Check patch file CRC32 (CRC32(patch_data + patch_crc32) == magic constant)

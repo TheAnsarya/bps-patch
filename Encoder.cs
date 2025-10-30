@@ -73,10 +73,26 @@ static class Encoder {
 			byte[] targetCopy = targetData;
 			int targetFileLength = (int)targetFile.Length;
 
-			// Create patch file with buffered output for performance
-			using var patch = new BufferedStream(patchFile.OpenWrite(), BUFFER_SIZE);
+		// Local function to write accumulated TargetRead command
+		// Defined before patch stream creation so it can be used in both scopes
+		void WriteTargetReadCommand(Stream patchStream, ref int targetPos, ref int readLength, ref int readStart) {
+			if (readLength > 0) {
+				// Encode TargetRead command
+				var command = EncodeNumber((ulong)(((readLength - 1) << 2) + (byte)PatchAction.TargetRead));
+				patchStream.Write(command);
 
-			// Write BPS header: "BPS1"
+				// Write raw bytes from target file
+				patchStream.Write(targetCopy.AsSpan(readStart, readLength));
+
+				targetPos += readLength;
+				readLength = 0;
+				readStart = -1;
+			}
+		}
+
+		// Create patch file with buffered output for performance
+		// Close stream before computing CRC32 to avoid file locking issues
+		using (var patch = new BufferedStream(patchFile.OpenWrite(), BUFFER_SIZE)) {			// Write BPS header: "BPS1"
 			// Using stackalloc for small temporary buffer (no heap allocation)
 			Span<byte> header = stackalloc byte[4];
 			Encoding.UTF8.GetBytes("BPS1", header);
@@ -110,11 +126,9 @@ static class Encoder {
 					if (targetReadStart == -1) {
 						targetReadStart = targetPosition;
 					}
-				} else {
-					// Write accumulated TargetRead command first (if any)
-					WriteTargetReadCommand();
-
-					// Encode command: (length - 1) << 2 | action_type
+			} else {
+				// Write accumulated TargetRead command first (if any)
+				WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);					// Encode command: (length - 1) << 2 | action_type
 					// See: https://github.com/blakesmith/beat/blob/master/doc/bps.txt
 					var command = EncodeNumber((ulong)(((length - 1) << 2) + (byte)mode));
 					patch.Write(command);
@@ -133,45 +147,43 @@ static class Encoder {
 
 					targetPosition += length;
 				}
-			}
-
-			// Write any remaining TargetRead data
-			WriteTargetReadCommand();
-			patch.Flush();
-
-			// Write CRC32 checksums for validation
-			// Format: source_crc32 | target_crc32 | patch_crc32
-			// Use span-based CRC32 for source/target since data is already in memory
-			// This avoids reopening files which can cause file locking issues
-			patch.Write(Utilities.ComputeCRC32Bytes(source));
-			patch.Write(Utilities.ComputeCRC32Bytes(target));
-			patch.Write(Utilities.ComputeCRC32Bytes(patchFile));
-
-			// Local function to write accumulated TargetRead command
-			void WriteTargetReadCommand() {
-				if (targetReadLength > 0) {
-					// Encode TargetRead command
-					var command = EncodeNumber((ulong)(((targetReadLength - 1) << 2) + (byte)PatchAction.TargetRead));
-					patch.Write(command);
-
-					// Write raw bytes from target file
-					patch.Write(targetCopy.AsSpan(targetReadStart, targetReadLength));
-
-					targetPosition += targetReadLength;
-					targetReadLength = 0;
-					targetReadStart = -1;
-				}
-			}
-		} finally {
-			// Always return rented arrays to pool (even on exception)
-			// See: https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return
-			ArrayPool<byte>.Shared.Return(sourceData);
-			ArrayPool<byte>.Shared.Return(targetData);
 		}
-	}
 
-	/// <summary>
-	/// Encodes a number using variable-length encoding (7 bits per byte).
+		// Write any remaining TargetRead data
+		WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);
+		patch.Flush();
+
+		// Write source and target CRC32s (but NOT patch CRC32 yet)
+		// Use span-based CRC32 for source/target since data is already in memory
+		byte[] sourceCrc = Utilities.ComputeCRC32Bytes(source);
+		byte[] targetCrc = Utilities.ComputeCRC32Bytes(target);
+		patch.Write(sourceCrc);
+		patch.Write(targetCrc);
+		patch.Flush();
+	} // Close patch file
+
+	// Refresh FileInfo and compute CRC32 of patch file (header + commands + source_crc + target_crc)
+	// See: https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.refresh
+	patchFile.Refresh();
+	byte[] patchCrc = Utilities.ComputeCRC32Bytes(patchFile);
+
+	// Reopen patch file in append mode to write final patch CRC32
+	// When decoder computes CRC32(entire_patch_including_patch_crc), result will be 0x2144df1c
+	// This is the CRC32 "residue" property - see BPS specification
+	using (var patchAppend = new FileStream(patchFile.FullName, FileMode.Append, FileAccess.Write, FileShare.Read)) {
+		patchAppend.Write(patchCrc);
+		patchAppend.Flush();
+	}
+} finally {
+	// Always return rented arrays to pool (even on exception)
+	// See: https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return
+	ArrayPool<byte>.Shared.Return(sourceData);
+	ArrayPool<byte>.Shared.Return(targetData);
+}
+}
+
+/// <summary>
+/// Encodes a number using variable-length encoding (7 bits per byte).
 	/// Uses stackalloc for zero heap allocation.
 	/// See: https://en.wikipedia.org/wiki/Variable-length_quantity
 	/// </summary>
