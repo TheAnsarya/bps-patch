@@ -18,6 +18,12 @@ using bps_patch;
 // Top-level statements replace the traditional Main() method in modern C# (C# 9+).
 // The 'args' string array is automatically available containing command-line arguments.
 //
+
+// Debug mode - run sequential patch debug
+if (args.Length == 1 && args[0] == "debug") {
+	DebugPatch.DebugSequentialPatch();
+	return;
+}
 // If no arguments are provided, we display usage instructions and run a test decoder
 // to validate the implementation with sample files.
 // ========================================================================================================

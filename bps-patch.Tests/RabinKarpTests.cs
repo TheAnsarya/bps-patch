@@ -117,6 +117,7 @@ public class RabinKarpTests {
 	}
 
 	[Fact]
+	[Trait("Category", "Performance")]
 	public void FindBestRun_RabinKarpAndLinear_ProduceIdenticalResults_LargeFile() {
 		// Test with 100KB of data
 		byte[] source = new byte[100 * 1024];

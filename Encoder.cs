@@ -171,9 +171,11 @@ static class Encoder {
 	}
 } finally {
 	// Always return rented arrays to pool (even on exception)
+	// NOTE: Not clearing arrays for performance (ArrayPool will handle it)
+	// The arrays are only used within this scope, so data leaks are not a concern
 	// See: https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return
-	ArrayPool<byte>.Shared.Return(sourceData);
-	ArrayPool<byte>.Shared.Return(targetData);
+	ArrayPool<byte>.Shared.Return(sourceData, clearArray: false);
+	ArrayPool<byte>.Shared.Return(targetData, clearArray: false);
 }
 }
 
@@ -353,6 +355,35 @@ static class Encoder {
 		int checkUntilMax = -1) {
 
 		return RabinKarp.FindBestRun(source, target, minimumLongestRun, checkUntilMax);
+	}
+
+	/// <summary>
+	/// Suffix array implementation of FindBestRun.
+	/// O(log n) binary search + O(m) match extension, excellent for large files.
+	/// Requires O(n log n) preprocessing to build suffix array, but amortizes over many queries.
+	/// For repeated pattern matching in the same source, reuse SuffixArray instance.
+	/// </summary>
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(
+		ReadOnlySpan<byte> source,
+		ReadOnlySpan<byte> target,
+		int minimumLongestRun = MIN_MATCH_LENGTH) {
+
+		// Build suffix array (can be cached if same source used repeatedly)
+		var suffixArray = new SuffixArray(source);
+		return suffixArray.FindLongestMatch(target, minimumLongestRun);
+	}
+
+	/// <summary>
+	/// Suffix array implementation using pre-built suffix array (for reuse).
+	/// O(log n) binary search + O(m) match extension.
+	/// Use this when you need to search multiple patterns in the same source.
+	/// </summary>
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(
+		SuffixArray suffixArray,
+		ReadOnlySpan<byte> target,
+		int minimumLongestRun = MIN_MATCH_LENGTH) {
+
+		return suffixArray.FindLongestMatch(target, minimumLongestRun);
 	}
 
 	/// <summary>

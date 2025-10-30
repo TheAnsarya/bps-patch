@@ -92,6 +92,7 @@ public class SimdTests {
 	}
 
 	[Fact]
+	[Trait("Category", "Performance")]
 	public void CheckRun_SIMDandScalar_ProduceIdenticalResults_LargeFile() {
 		// Test with 1MB of data
 		byte[] source = new byte[1024 * 1024];
