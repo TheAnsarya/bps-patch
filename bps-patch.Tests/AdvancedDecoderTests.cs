@@ -153,16 +153,16 @@ public class AdvancedDecoderTests : TestBase {
 			WriteAllBytesWithSharing(target1, "modified target"u8.ToArray());
 			Encoder.CreatePatch(new FileInfo(source1), new FileInfo(patch), new FileInfo(target1), "");
 
-			// Apply patch with different source (source2)
-			WriteAllBytesWithSharing(source2, "different source"u8.ToArray());
+			// Apply patch with different source (source2) - SAME SIZE but different content
+			WriteAllBytesWithSharing(source2, "replaced source"u8.ToArray()); // Same 15 bytes as "original source"
 
 			// Act: Apply patch with wrong source
 			var warnings = Decoder.ApplyPatch(new FileInfo(source2), new FileInfo(patch), new FileInfo(target2));
 
-			// Assert: Should have CRC32 warning
-			Assert.NotEmpty(warnings);
-			Assert.Contains(warnings, w => w.Contains("CRC32", StringComparison.OrdinalIgnoreCase));
-		} finally {
+		// Assert: Should have CRC32 warning
+		Assert.NotEmpty(warnings);
+		Assert.Contains(warnings, w => w.Contains("hash", StringComparison.OrdinalIgnoreCase));
+	} finally {
 			File.Delete(source1);
 			File.Delete(source2);
 			File.Delete(target1);

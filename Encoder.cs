@@ -26,11 +26,6 @@ static class Encoder {
 	/// <param name="targetFile">Desired result file after patching.</param>
 	/// <param name="manifest">Metadata/manifest string (typically XML).</param>
 	public static void CreatePatch(FileInfo sourceFile, FileInfo patchFile, FileInfo targetFile, string manifest) {
-		// Validate inputs
-		if (targetFile.Length == 0) {
-			throw new ArgumentException($"{nameof(targetFile)} is zero bytes");
-		}
-
 		// Ensure files fit in memory (int.MaxValue limit for arrays)
 		if (targetFile.Length > int.MaxValue) {
 			throw new ArgumentException($"{nameof(targetFile)} is larger than maximum size of {int.MaxValue} bytes");
