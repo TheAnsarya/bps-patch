@@ -17,9 +17,9 @@ using BenchmarkDotNet.Jobs;
 namespace bps_patch.Benchmarks;
 
 /// <summary>
-/// Benchmarks for Encoder patch creation operations.
+/// Benchmarks for Encoder operations.
 /// </summary>
-[SimpleJob(RuntimeMoniker.Net100)]
+[SimpleJob]
 [MemoryDiagnoser]
 [MarkdownExporter]
 public class EncoderBenchmarks {

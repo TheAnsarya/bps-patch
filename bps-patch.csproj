@@ -8,17 +8,20 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<EnablePreviewFeatures>false</EnablePreviewFeatures>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Compile Remove="bps-patch.Tests\**" />
 		<EmbeddedResource Remove="bps-patch.Tests\**" />
 		<None Remove="bps-patch.Tests\**" />
+		<Compile Remove="bps-patch.Benchmarks\**" />
+		<EmbeddedResource Remove="bps-patch.Benchmarks\**" />
+		<None Remove="bps-patch.Benchmarks\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="bps-patch.Tests" />
+		<InternalsVisibleTo Include="bps-patch.Benchmarks" />
 	</ItemGroup>
 
 	<ItemGroup>

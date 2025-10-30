@@ -18,7 +18,7 @@ namespace bps_patch.Benchmarks;
 /// <summary>
 /// Benchmarks for CRC32 computation operations.
 /// </summary>
-[SimpleJob(RuntimeMoniker.Net100)]
+[SimpleJob]
 [MemoryDiagnoser]
 [MarkdownExporter]
 public class CRC32Benchmarks {

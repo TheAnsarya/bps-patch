@@ -5,6 +5,8 @@
 // Reference: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-10.0/globalusingdirective
 // ========================================================================================================
 
+global using System;
+global using System.IO;
 global using BenchmarkDotNet.Attributes;
 global using BenchmarkDotNet.Jobs;
 global using BenchmarkDotNet.Running;
