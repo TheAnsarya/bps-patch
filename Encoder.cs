@@ -1,4 +1,5 @@
 using System.Text;
+using System.Numerics;
 
 namespace bps_patch;
 
@@ -322,7 +323,7 @@ static class Encoder {
 
 	/// <summary>
 	/// Checks how many consecutive bytes match between source and target.
-	/// Could be optimized with SIMD (Vector&lt;byte&gt;) for bulk comparison.
+	/// Uses SIMD (Vector&lt;byte&gt;) for bulk comparison when possible.
 	/// See: https://learn.microsoft.com/en-us/dotnet/api/system.numerics.vector-1
 	/// </summary>
 	/// <param name="source">First data span.</param>
@@ -338,8 +339,56 @@ static class Encoder {
 		int maxLength = Math.Min(source.Length, target.Length);
 		int length = 0;
 
+		// SIMD optimization: Use Vector<byte> for bulk comparison
+		// Process chunks of Vector<byte>.Count bytes at a time (typically 16 or 32 bytes)
+		if (Vector.IsHardwareAccelerated && maxLength >= Vector<byte>.Count) {
+			int vectorLength = Vector<byte>.Count;
+			int maxVectorIndex = maxLength - vectorLength;
+
+			// Process vectors while we have full-size chunks remaining
+			while (length <= maxVectorIndex) {
+				var sourceVec = new Vector<byte>(source.Slice(length, vectorLength));
+				var targetVec = new Vector<byte>(target.Slice(length, vectorLength));
+
+				// Compare entire vector at once
+				if (!Vector.EqualsAll(sourceVec, targetVec)) {
+					// Mismatch found in this vector - break to scalar comparison
+					break;
+				}
+
+				length += vectorLength;
+			}
+		}
+
+		// Scalar comparison for remaining bytes (or if SIMD not available)
+		while (length < maxLength && source[length] == target[length]) {
+			length++;
+		}
+
+		// Check if we matched entire target
+		bool reachedEnd = length == target.Length;
+
+		return (length, reachedEnd);
+	}
+
+	/// <summary>
+	/// Scalar (non-SIMD) version of CheckRun for benchmarking comparison.
+	/// Compares bytes one at a time without Vector optimizations.
+	/// </summary>
+	/// <param name="source">First data span.</param>
+	/// <param name="target">Second data span.</param>
+	/// <returns>Tuple of (match length, reached end flag).</returns>
+	public static (int Length, bool ReachedEnd) CheckRunScalar(ReadOnlySpan<byte> source, ReadOnlySpan<byte> target) {
+		// Handle empty spans
+		if (source.IsEmpty || target.IsEmpty) {
+			return (0, false);
+		}
+
+		// Find maximum possible match length
+		int maxLength = Math.Min(source.Length, target.Length);
+		int length = 0;
+
 		// Compare bytes until mismatch or end
-		// TODO: Use Vector<byte> for SIMD optimization
 		while (length < maxLength && source[length] == target[length]) {
 			length++;
 		}
