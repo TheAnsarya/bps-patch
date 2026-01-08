@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>BpsPatch.Core</RootNamespace>
+		<AssemblyName>BpsPatch.Core</AssemblyName>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnablePreviewFeatures>false</EnablePreviewFeatures>
+
+		<!-- NuGet Package Properties -->
+		<PackageId>BpsPatch.Core</PackageId>
+		<Version>1.1.0</Version>
+		<Authors>TheAnsarya</Authors>
+		<Company>BPS Patch Project</Company>
+		<Description>High-performance BPS (Binary Patch System) library for creating and applying binary patches. Features ArrayPool memory management, SIMD optimization, and multiple pattern matching algorithms.</Description>
+		<PackageTags>bps;patch;binary;diff;rom;hacking;encoding;decoding</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/TheAnsarya/bps-patch</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/TheAnsarya/bps-patch</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+		<!-- Assembly Info -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="BpsPatch.Tests" />
+		<InternalsVisibleTo Include="BpsPatch.Benchmarks" />
+		<InternalsVisibleTo Include="bps-patch.Tests" />
+		<InternalsVisibleTo Include="bps-patch.Benchmarks" />
+	</ItemGroup>
+
+</Project>
