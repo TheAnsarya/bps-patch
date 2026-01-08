@@ -204,7 +204,9 @@ public static class BpsEncoder
         byte[] encodeBuffer = new byte[VariableLengthInt.MaxEncodedLength];
 
         // Local function for writing accumulated TargetRead
-        void WriteTargetReadCommand(Stream patch, ref int targetPos, ref int readLength, ref int readStart)
+        // Note: targetPos is NOT incremented here because it was already advanced
+        // during the accumulation phase (one increment per byte)
+        void WriteTargetReadCommand(Stream patch, ref int readLength, ref int readStart)
         {
             if (readLength > 0)
             {
@@ -213,7 +215,6 @@ public static class BpsEncoder
                 patch.Write(encodeBuffer, 0, cmdLen);
                 patch.Write(targetArray, readStart, readLength);
 
-                targetPos += readLength;
                 readLength = 0;
                 readStart = -1;
             }
@@ -291,7 +292,7 @@ public static class BpsEncoder
                 else
                 {
                     // Write accumulated TargetRead first
-                    WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);
+                    WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);
 
                     // Encode command
                     ulong command = (ulong)(((length - 1) << 2) + (byte)mode);
@@ -329,7 +330,7 @@ public static class BpsEncoder
             }
 
             // Write remaining TargetRead
-            WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);
+            WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);
 
             // Write CRC32s
             byte[] sourceCrc = Crc32Calculator.ComputeBytes(source);
