@@ -1,4 +1,6 @@
-# BPS Patch Architecture Guide
+# 🏛️ BPS Patch Architecture Guide
+
+> 📚 **Navigation**: [← Back to README](../README.md) | [Algorithms](ALGORITHMS.md) | [Performance](PERFORMANCE.md) | [API Reference](API_REFERENCE.md)
 
 This document describes the internal architecture of the BPS Patch library, including design decisions, component organization, and extension points.
 

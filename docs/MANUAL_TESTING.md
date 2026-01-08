@@ -1,4 +1,6 @@
-# Manual Testing Guide
+# 🧪 Manual Testing Guide
+
+> 📚 **Navigation**: [← Back to README](../README.md) | [Usage Guide](../USAGE.md) | [Compression Testing](COMPRESSION_TESTING.md) | [Benchmarks](../BENCHMARKS_SETUP.md)
 
 This guide provides step-by-step instructions for manually testing the BPS Patch library. These tests are designed to complement the automated test suite and verify real-world behavior.
 

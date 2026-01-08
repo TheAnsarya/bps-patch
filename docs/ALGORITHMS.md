@@ -1,4 +1,6 @@
-# BPS Patch Algorithms Guide
+# 🧮 BPS Patch Algorithms Guide
+
+> 📚 **Navigation**: [← Back to README](../README.md) | [Architecture](ARCHITECTURE.md) | [Performance](PERFORMANCE.md) | [API Reference](API_REFERENCE.md)
 
 This document provides detailed explanations of the algorithms used in the BPS Patch library, including time/space complexity analysis and optimization strategies.
 

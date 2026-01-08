@@ -1,8 +1,10 @@
-# BPS Patch Library - Roadmap
+# 🗺️ BPS Patch Library - Roadmap
+
+> 📚 **Navigation**: [← Back to README](../README.md) | [Changelog](../CHANGELOG.md) | [TODO](../TODO.md) | [How to Finish](HOW_TO_FINISH.md)
 
 A comprehensive development roadmap for achieving a stable 1.0 release.
 
-**Created**: January 7, 2026  
+**Created**: January 7, 2026
 **Last Updated**: January 8, 2026
 
 ---

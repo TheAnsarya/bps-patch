@@ -1,8 +1,10 @@
-# BPS (Binary Patch System) File Format Specification
+# 📜 BPS (Binary Patch System) File Format Specification
 
-**Version**: 1.0  
-**Date**: October 29, 2025  
-**Implementation**: .NET 10 C#  
+> 📚 **Navigation**: [← Back to README](README.md) | [File Format Details](docs/FILE_FORMAT.md) | [Implementation](IMPLEMENTATION.md) | [Algorithms](docs/ALGORITHMS.md)
+
+**Version**: 1.0
+**Date**: January 8, 2026
+**Implementation**: .NET 10 C#
 **Status**: Production
 
 ---

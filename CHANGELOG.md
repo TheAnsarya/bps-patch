@@ -1,4 +1,6 @@
-# Changelog
+# 📝 Changelog
+
+> 📚 **Navigation**: [← Back to README](README.md) | [Roadmap](docs/ROADMAP.md) | [TODO](TODO.md)
 
 All notable changes to BPS Patch will be documented in this file.
 

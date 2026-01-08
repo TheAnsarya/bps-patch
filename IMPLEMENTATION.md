@@ -1,10 +1,12 @@
-# BPS Patch Implementation Guide
+# 🔧 BPS Patch Implementation Guide
+
+> 📚 **Navigation**: [← Back to README](README.md) | [Architecture](docs/ARCHITECTURE.md) | [Algorithms](docs/ALGORITHMS.md) | [Format Spec](BPS_FORMAT_SPECIFICATION.md)
 
 ## Architecture Overview
 
 This document describes the implementation details, algorithms, and optimizations used in the modern .NET 10 BPS patch implementation.
 
-**Last Updated**: October 30, 2025
+**Last Updated**: January 8, 2026
 
 ---
 
