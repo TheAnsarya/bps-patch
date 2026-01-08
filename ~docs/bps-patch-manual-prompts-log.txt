@@ -25,6 +25,21 @@ all of the code blocks in the `*.md` files should use TABS for indentation NOT S
 
 No, I do want the session logs tracked in git; flush out more documentation and make sure the research and references are all documented; work towards making this project complete; continue;
 
+work on more issues especially all of those that increase performance, continue updating documentation; make the 1.0 release full featured; speaking of, we are on a random branch, not the main/master branch why? what the hell? fix this and commit everything and push back to main merg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

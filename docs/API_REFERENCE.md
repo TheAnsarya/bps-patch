@@ -474,6 +474,91 @@ foreach (var pattern in patterns) {
 
 ---
 
+## Modern API (BpsPatch.Core)
+
+The modern API is located in the `BpsPatch.Core` namespace and provides additional features and optimizations.
+
+### BpsEncoderOptions Class
+
+Configuration options for BPS patch encoding.
+
+```csharp
+public sealed class BpsEncoderOptions {
+	public MatchingAlgorithm Algorithm { get; set; } = MatchingAlgorithm.Auto;
+	public int MinimumMatchLength { get; set; } = 4;
+	public int BufferSize { get; set; } = 81920;
+	public bool UseLazyMatching { get; set; } = false;
+	public bool UseCostBasedMatching { get; set; } = false;
+	public bool UseRleOptimization { get; set; } = true;
+	public bool UseParallelProcessing { get; set; } = false;
+	public int MaxDegreeOfParallelism { get; set; } = 0;
+	public IProgress<EncodingProgress>? Progress { get; set; }
+}
+```
+
+**Properties**:
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Algorithm` | `MatchingAlgorithm` | `Auto` | Pattern matching algorithm |
+| `MinimumMatchLength` | `int` | `4` | Minimum match length to consider |
+| `BufferSize` | `int` | `81920` | I/O buffer size in bytes |
+| `UseLazyMatching` | `bool` | `false` | Enable lazy matching for smaller patches |
+| `UseCostBasedMatching` | `bool` | `false` | Consider encoding cost in match selection |
+| `UseRleOptimization` | `bool` | `true` | Detect repeating byte sequences |
+| `UseParallelProcessing` | `bool` | `false` | Enable parallel processing |
+| `MaxDegreeOfParallelism` | `int` | `0` | Max parallel threads (0 = all cores) |
+| `Progress` | `IProgress<EncodingProgress>?` | `null` | Progress callback |
+
+### MatchingAlgorithm Enum
+
+```csharp
+public enum MatchingAlgorithm {
+	Auto,        // Auto-select based on file size
+	Linear,      // O(n²) - best for small files
+	RabinKarp,   // O(n) - dual-hash rolling hash
+	SuffixArray  // O(n log n) - SA-IS construction
+}
+```
+
+### Example: Maximum Compression
+
+```csharp
+using BpsPatch.Core;
+
+var options = new BpsEncoderOptions {
+	Algorithm = MatchingAlgorithm.SuffixArray,
+	UseLazyMatching = true,
+	UseCostBasedMatching = true,
+	UseRleOptimization = true,
+	Progress = new Progress<EncodingProgress>(p =>
+		Console.WriteLine($"Encoding: {p.Percentage:F1}%"))
+};
+
+BpsEncoder.CreatePatch(
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("modified.bin"),
+	"Maximum compression patch",
+	options);
+```
+
+### Example: Fast Encoding
+
+```csharp
+using BpsPatch.Core;
+
+var options = new BpsEncoderOptions {
+	Algorithm = MatchingAlgorithm.Linear,  // Fast for small files
+	MinimumMatchLength = 8,                // Skip small matches
+	UseLazyMatching = false                // Faster encoding
+};
+
+BpsEncoder.CreatePatch(source, patch, target, "", options);
+```
+
+---
+
 ## See Also
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture

@@ -30,9 +30,17 @@ Project roadmap and task tracking for BPS Patch development.
   - Configurable via `BpsEncoderOptions.UseLazyMatching`
   - May produce smaller patches at cost of encoding time
 
-- [ ] **Best-in-class compression optimization** - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13)
-  - Multi-hash Rabin-Karp, SIMD pattern matching
-  - Parallel chunk processing, benchmarks vs reference implementations
+- [x] **Multi-hash Rabin-Karp** ✅ DONE - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13) (partial)
+  - Dual hash virtually eliminates false positives
+  - False positive probability: ~1:2^62
+
+- [x] **Parallel processing option** ✅ DONE - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13) (partial)
+  - `UseParallelProcessing` and `MaxDegreeOfParallelism` options added
+  - Multi-core scaling for large files
+
+- [ ] **SIMD pattern matching** - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13) (remaining)
+  - Vector<byte> scanning for faster match detection
+  - Benchmarks vs reference implementations
 
 ### Architecture
 

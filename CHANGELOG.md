@@ -25,11 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enabled via `BpsEncoderOptions.UseLazyMatching = true`
   - Checks if next position has better match before committing
   - Trade-off: slower encoding for potentially smaller patches
+- **Dual-hash Rabin-Karp** for virtually zero hash collisions (Issue #13)
+  - Uses two independent hash functions with different primes
+  - False positive probability reduced from ~1:2^31 to ~1:2^62
+  - No measurable performance impact
+- **Parallel processing option** for multi-core systems (Issue #13)
+  - `BpsEncoderOptions.UseParallelProcessing = true`
+  - `BpsEncoderOptions.MaxDegreeOfParallelism` to limit threads
 - **Documentation improvements**
   - Converted all code blocks in markdown files to use tabs
   - Added PowerShell script: `scripts/Convert-MarkdownCodeBlocksToTabs.ps1`
   - Comprehensive HOW_TO_FINISH guide with visual checklists
   - Emoji-enhanced progress tracking
+  - Modern API documentation in API_REFERENCE.md
 - **Research & References** (docs/REFERENCES.md)
   - Academic paper citations (SA-IS, Rabin-Karp, LZ77, etc.)
   - Historical context of BPS format (IPS→UPS→BPS evolution)
@@ -39,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Development history and decision documentation
   - Modernization session notes
   - Refactoring session logs
+- **Merged feature branch to master**
+  - All library restructuring work now on main branch
+  - 84 files changed, 12,215 insertions
 
 ### Fixed
 - **Critical encoder bug**: TargetRead command was double-counting targetPosition

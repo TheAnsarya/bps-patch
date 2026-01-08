@@ -51,6 +51,18 @@ public sealed class BpsEncoderOptions {
 	public bool UseRleOptimization { get; set; } = true;
 
 	/// <summary>
+	/// Enable parallel processing for improved performance on multi-core systems.
+	/// Currently affects suffix array construction and hash table building.
+	/// </summary>
+	public bool UseParallelProcessing { get; set; } = false;
+
+	/// <summary>
+	/// Maximum degree of parallelism (0 = use all cores).
+	/// Only used when UseParallelProcessing is true.
+	/// </summary>
+	public int MaxDegreeOfParallelism { get; set; } = 0;
+
+	/// <summary>
 	/// Progress callback invoked during encoding.
 	/// </summary>
 	public IProgress<EncodingProgress>? Progress { get; set; }

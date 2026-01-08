@@ -1,34 +1,38 @@
 // ========================================================================================================
 // Rabin-Karp Matching Strategy
 // ========================================================================================================
-// Rolling hash algorithm for O(n) average-case pattern matching.
-// Good balance of performance and simplicity for medium-sized files.
+// Multi-hash rolling hash algorithm for O(n) average-case pattern matching.
+// Uses dual hashes to virtually eliminate false positives from hash collisions.
 //
 // References:
 // - Rabin-Karp Algorithm: https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm
+// - Karp, R.; Rabin, M. (1987). "Efficient randomized pattern-matching algorithms"
 // ========================================================================================================
 
 namespace BpsPatch.Core;
 
 /// <summary>
-/// Rabin-Karp rolling hash pattern matching strategy.
+/// Rabin-Karp rolling hash pattern matching strategy with dual-hash collision resistance.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Uses polynomial rolling hash to quickly identify potential matches.
-/// When hashes match, verifies with actual byte comparison to avoid false positives.
+/// Dual hash (two independent primes) virtually eliminates false positives.
+/// When hashes match, verifies with actual byte comparison for certainty.
 /// </para>
 /// <para>
-/// Time complexity: O(n + m) average, O(n × m) worst case (hash collisions)
+/// Time complexity: O(n + m) average, O(n × m) worst case (extremely rare with dual hash)
 /// Space complexity: O(1)
 /// </para>
 /// </remarks>
 public sealed class RabinKarpMatchingStrategy : IMatchingStrategy {
-	// Prime number for modular arithmetic (Mersenne prime for efficient modulo)
-	private const ulong Prime = 2147483647;  // 2^31 - 1
+	// Primary hash parameters (Mersenne prime for efficient modulo)
+	private const ulong Prime1 = 2147483647;  // 2^31 - 1
+	private const ulong Base1 = 257;          // Next prime after 256
 
-	// Base for polynomial hash (next prime after 256)
-	private const ulong Base = 257;
+	// Secondary hash parameters (different prime for collision resistance)
+	private const ulong Prime2 = 1073741789;  // Large prime < 2^30
+	private const ulong Base2 = 263;          // Different prime base
 
 	/// <inheritdoc/>
 	public string Name => "RabinKarp";
@@ -97,7 +101,7 @@ public sealed class RabinKarpMatchingStrategy : IMatchingStrategy {
 	}
 
 	/// <summary>
-	/// Finds a substring match using rolling hash.
+	/// Finds a substring match using dual rolling hash.
 	/// </summary>
 	private static (bool Found, int Position) FindMatchWithHash(
 		ReadOnlySpan<byte> source,
@@ -107,32 +111,35 @@ public sealed class RabinKarpMatchingStrategy : IMatchingStrategy {
 			return (false, -1);
 		}
 
-		// Calculate hash of pattern
-		ulong patternHash = ComputeHash(pattern);
+		// Calculate dual hash of pattern
+		var (patternHash1, patternHash2) = ComputeDualHash(pattern);
 
 		// Pre-compute BASE^(patternLength-1) % PRIME for rolling hash
-		ulong basePower = ModPow(Base, (ulong)(pattern.Length - 1), Prime);
+		ulong basePower1 = ModPow(Base1, (ulong)(pattern.Length - 1), Prime1);
+		ulong basePower2 = ModPow(Base2, (ulong)(pattern.Length - 1), Prime2);
 
-		// Calculate initial hash for first window
-		ulong sourceHash = ComputeHash(source[..pattern.Length]);
+		// Calculate initial dual hash for first window
+		var (sourceHash1, sourceHash2) = ComputeDualHash(source[..pattern.Length]);
 
 		// Check first window
-		if (sourceHash == patternHash) {
+		if (sourceHash1 == patternHash1 && sourceHash2 == patternHash2) {
 			if (source[..pattern.Length].SequenceEqual(pattern)) {
 				return (true, 0);
 			}
 		}
 
-		// Roll through source using rolling hash
+		// Roll through source using dual rolling hash
 		for (int i = 1; i <= maxPosition && i + pattern.Length <= source.Length; i++) {
-			// Remove leftmost byte from hash
-			sourceHash = (sourceHash + Prime - (source[i - 1] * basePower) % Prime) % Prime;
+			// Remove leftmost byte from both hashes
+			sourceHash1 = (sourceHash1 + Prime1 - (source[i - 1] * basePower1) % Prime1) % Prime1;
+			sourceHash2 = (sourceHash2 + Prime2 - (source[i - 1] * basePower2) % Prime2) % Prime2;
 
-			// Add rightmost byte to hash
-			sourceHash = (sourceHash * Base + source[i + pattern.Length - 1]) % Prime;
+			// Add rightmost byte to both hashes
+			sourceHash1 = (sourceHash1 * Base1 + source[i + pattern.Length - 1]) % Prime1;
+			sourceHash2 = (sourceHash2 * Base2 + source[i + pattern.Length - 1]) % Prime2;
 
-			// Check if hashes match
-			if (sourceHash == patternHash) {
+			// Check if both hashes match (virtually eliminates false positives)
+			if (sourceHash1 == patternHash1 && sourceHash2 == patternHash2) {
 				if (source.Slice(i, pattern.Length).SequenceEqual(pattern)) {
 					return (true, i);
 				}
@@ -143,14 +150,17 @@ public sealed class RabinKarpMatchingStrategy : IMatchingStrategy {
 	}
 
 	/// <summary>
-	/// Computes polynomial rolling hash for a byte sequence.
+	/// Computes dual polynomial rolling hash for a byte sequence.
+	/// Using two independent hashes virtually eliminates false positives.
 	/// </summary>
-	private static ulong ComputeHash(ReadOnlySpan<byte> data) {
-		ulong hash = 0;
+	private static (ulong Hash1, ulong Hash2) ComputeDualHash(ReadOnlySpan<byte> data) {
+		ulong hash1 = 0;
+		ulong hash2 = 0;
 		foreach (byte b in data) {
-			hash = (hash * Base + b) % Prime;
+			hash1 = (hash1 * Base1 + b) % Prime1;
+			hash2 = (hash2 * Base2 + b) % Prime2;
 		}
-		return hash;
+		return (hash1, hash2);
 	}
 
 	/// <summary>

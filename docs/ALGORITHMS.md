@@ -101,15 +101,25 @@ Uses a polynomial rolling hash to quickly identify potential matches, then verif
 3. Roll through source, updating hash in O(1) per step
 4. When hashes match, verify bytes to avoid false positives
 
-**Implementation** (`RabinKarp.FindBestRun`):
+**Implementation** (`RabinKarpMatchingStrategy`):
+
+The implementation uses **dual-hash** for virtually eliminating false positives:
 
 ```csharp
-// Rolling hash update
-sourceHash = (sourceHash + PRIME - (source[i-1] * basePower) % PRIME) % PRIME;
-sourceHash = (sourceHash * BASE + source[i + patternLength - 1]) % PRIME;
+// Dual hash parameters for collision resistance
+private const ulong Prime1 = 2147483647;  // 2^31 - 1
+private const ulong Prime2 = 1073741789;  // Different large prime
+private const ulong Base1 = 257;          // Next prime after 256
+private const ulong Base2 = 263;          // Different prime base
 
-if (sourceHash == patternHash) {
-	// Verify match
+// Rolling hash update with dual hash
+sourceHash1 = (sourceHash1 + Prime1 - (source[i-1] * basePower1) % Prime1) % Prime1;
+sourceHash1 = (sourceHash1 * Base1 + source[i + patternLength - 1]) % Prime1;
+sourceHash2 = (sourceHash2 + Prime2 - (source[i-1] * basePower2) % Prime2) % Prime2;
+sourceHash2 = (sourceHash2 * Base2 + source[i + patternLength - 1]) % Prime2;
+
+// Only verify when BOTH hashes match
+if (sourceHash1 == patternHash1 && sourceHash2 == patternHash2) {
 	if (source.Slice(i, patternLength).SequenceEqual(pattern))
 		return (true, i);
 }
@@ -122,30 +132,31 @@ hash(s[0..n]) = (s[0] × BASE^(n-1) + s[1] × BASE^(n-2) + ... + s[n-1]) mod PRI
 ```
 
 Where:
-- `BASE = 257` (next prime after 256)
-- `PRIME = 2^31 - 1` (Mersenne prime for efficient modulo)
+- Primary: `BASE = 257`, `PRIME = 2^31 - 1` (Mersenne prime for efficient modulo)
+- Secondary: `BASE = 263`, `PRIME = 1073741789` (independent hash)
 
 **Complexity**:
-- **Time**: O(n + m) average, O(nm) worst case (many hash collisions)
+- **Time**: O(n + m) average, O(nm) worst case (extremely rare with dual hash)
 - **Space**: O(1)
 
 **Advantages**:
 - ✅ O(n) average case - much faster than linear for large files
 - ✅ No preprocessing required
 - ✅ Constant space usage
+- ✅ **Dual hash** virtually eliminates false positives
 
 **Disadvantages**:
-- ❌ Hash collisions require verification
 - ❌ Not optimal for finding *longest* match (designed for exact pattern search)
-- ❌ Worst case same as linear search
+- ❌ Worst case same as linear search (extremely rare)
 
-**Collision Probability**:
+**Collision Probability with Dual Hash**:
 
-With PRIME = 2^31 - 1 and random data:
-- Single comparison: ~1 in 2 billion false positive
-- For 1MB file with 4-byte pattern: expected ~500 false positives
+With dual independent hashes:
+- Single hash collision: ~1 in 2^31
+- Dual hash collision: ~1 in 2^62 (virtually impossible)
+- For 1MB file: expected ~0 false positives
 
-Each false positive requires O(m) verification, but this is rare in practice.
+The dual-hash approach provides the same collision resistance as using a single 62-bit hash, but with more efficient computation.
 
 ---
 
