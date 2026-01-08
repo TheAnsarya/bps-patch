@@ -70,7 +70,8 @@ static class Encoder {
 
 		// Local function to write accumulated TargetRead command
 		// Defined before patch stream creation so it can be used in both scopes
-		void WriteTargetReadCommand(Stream patchStream, ref int targetPos, ref int readLength, ref int readStart) {
+		// Note: targetPos is NOT modified here - the main loop handles position tracking
+		void WriteTargetReadCommand(Stream patchStream, ref int readLength, ref int readStart) {
 			if (readLength > 0) {
 				// Encode TargetRead command
 				var command = EncodeNumber((ulong)(((readLength - 1) << 2) + (byte)PatchAction.TargetRead));
@@ -79,7 +80,6 @@ static class Encoder {
 				// Write raw bytes from target file
 				patchStream.Write(targetCopy.AsSpan(readStart, readLength));
 
-				targetPos += readLength;
 				readLength = 0;
 				readStart = -1;
 			}
@@ -121,9 +121,11 @@ static class Encoder {
 					if (targetReadStart == -1) {
 						targetReadStart = targetPosition;
 					}
+					// Advance position for this TargetRead byte
+					targetPosition++;
 			} else {
 				// Write accumulated TargetRead command first (if any)
-				WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);					// Encode command: (length - 1) << 2 | action_type
+				WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);					// Encode command: (length - 1) << 2 | action_type
 					// See: https://github.com/blakesmith/beat/blob/master/doc/bps.txt
 					var command = EncodeNumber((ulong)(((length - 1) << 2) + (byte)mode));
 					patch.Write(command);
@@ -145,7 +147,7 @@ static class Encoder {
 		}
 
 		// Write any remaining TargetRead data
-		WriteTargetReadCommand(patch, ref targetPosition, ref targetReadLength, ref targetReadStart);
+		WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);
 		patch.Flush();
 
 		// Write source and target CRC32s (but NOT patch CRC32 yet)
