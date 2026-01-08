@@ -11,6 +11,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!-- Exclude all subfolders - this is the legacy root project -->
 		<Compile Remove="bps-patch.Tests\**" />
 		<EmbeddedResource Remove="bps-patch.Tests\**" />
 		<None Remove="bps-patch.Tests\**" />
@@ -20,6 +21,14 @@
 		<Compile Remove="src\**" />
 		<EmbeddedResource Remove="src\**" />
 		<None Remove="src\**" />
+		<Compile Remove="legacy\**" />
+		<EmbeddedResource Remove="legacy\**" />
+		<None Remove="legacy\**" />
+	</ItemGroup>
+
+	<!-- Include legacy files for the root project to compile -->
+	<ItemGroup>
+		<Compile Include="legacy\*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

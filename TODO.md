@@ -2,7 +2,7 @@
 
 Project roadmap and task tracking for BPS Patch development.
 
-**Last Updated**: January 7, 2026 (Updated with GitHub issue references)
+**Last Updated**: January 7, 2026 (Updated with all GitHub issue references)
 
 ---
 
@@ -29,6 +29,10 @@ Project roadmap and task tracking for BPS Patch development.
   - Check next position before committing to match
   - Expected: 5-15% smaller patches
 
+- [ ] **Best-in-class compression optimization** - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13)
+  - Multi-hash Rabin-Karp, SIMD pattern matching
+  - Parallel chunk processing, benchmarks vs reference implementations
+
 ### Architecture
 
 - [x] **Create class library project structure** ✅ DONE
@@ -41,6 +45,11 @@ Project roadmap and task tracking for BPS Patch development.
   - Extensible for custom algorithms
   - Created: `src/BpsPatch.Core/IMatchingStrategy.cs`
   - Implementations: Linear, Rabin-Karp, Suffix Array
+
+- [x] **Restructure project folders** ✅ DONE - [Issue #10](https://github.com/TheAnsarya/bps-patch/issues/10)
+  - Legacy code moved to `legacy/` folder
+  - New library structure in `src/`
+  - Solution references updated
 
 ---
 
@@ -130,7 +139,18 @@ Project roadmap and task tracking for BPS Patch development.
 
 ## ✅ Completed
 
-### January 7, 2026
+### January 7, 2026 (Session 2)
+
+- [x] Add test timeout configuration - [Issue #11](https://github.com/TheAnsarya/bps-patch/issues/11) ✅
+- [x] Add GitHub Actions CI workflows (disabled by default) - [Issue #6](https://github.com/TheAnsarya/bps-patch/issues/6) ✅
+- [x] Create CI activation documentation - `docs/CI_ACTIVATION.md`
+- [x] Move legacy files to `legacy/` folder - [Issue #10](https://github.com/TheAnsarya/bps-patch/issues/10)
+- [x] Create comprehensive roadmap - `docs/ROADMAP.md`
+- [x] Create "how to finish" guide - `docs/HOW_TO_FINISH.md`
+- [x] Create compression testing plan - `docs/COMPRESSION_TESTING.md`
+- [x] Create all GitHub issues for tracking
+
+### January 7, 2026 (Session 1)
 
 - [x] Analyze current codebase architecture
 - [x] Review existing compression algorithms
@@ -148,7 +168,28 @@ Project roadmap and task tracking for BPS Patch development.
 - [x] Add Rabin-Karp rolling hash
 - [x] Add Suffix Array pattern matching
 - [x] Create benchmark infrastructure
-- [x] Create test suite (116+ tests)
+- [x] Create test suite (70+ tests in new structure)
+
+---
+
+## GitHub Issues Summary
+
+| Issue | Title | Status |
+|-------|-------|--------|
+| #1 | External bug report (SourceCopy slice) | Open |
+| #2 | SA-IS suffix array O(n) construction | Open |
+| #3 | Lazy matching optimization | Open |
+| #4 | Large file tests (>10MB) | Open |
+| #5 | Fuzz testing | Open |
+| #6 | GitHub Actions CI | ✅ Closed |
+| #7 | Code coverage with Coverlet | Open |
+| #8 | XML documentation coverage | Open |
+| #9 | Streaming encoder/decoder | Open |
+| #10 | Project folder restructure | Open |
+| #11 | Test timeouts | ✅ Closed |
+| #12 | BPS file format documentation | Open |
+| #13 | Best-in-class compression | Open |
+| #14 | Stable v1.0 release | Open |
 
 ---
 
