@@ -1,0 +1,108 @@
+# ========================================================================================================
+# BPS Patch - Release Workflow
+# ========================================================================================================
+# Creates releases and publishes NuGet packages.
+#
+# STATUS: DISABLED BY DEFAULT
+# This workflow only runs on manual trigger to avoid accidental releases.
+# See docs/CI_ACTIVATION.md for instructions on enabling automatic releases.
+# ========================================================================================================
+
+name: Release
+
+# DISABLED: Only runs on manual trigger
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+      publish_nuget:
+        description: 'Publish to NuGet.org'
+        required: false
+        default: 'false'
+        type: boolean
+      create_github_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: 'true'
+        type: boolean
+
+  # UNCOMMENT TO ENABLE TAG-BASED RELEASES:
+  # push:
+  #   tags:
+  #     - 'v*'
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for changelog generation
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore bps-patch.sln
+
+    - name: Build Release
+      run: dotnet build src/BpsPatch.Core/BpsPatch.Core.csproj --configuration Release -p:Version=${{ github.event.inputs.version }}
+
+    - name: Run tests
+      run: dotnet test src/BpsPatch.Core.Tests/BpsPatch.Core.Tests.csproj --configuration Release --no-build
+
+    - name: Pack NuGet package
+      run: |
+        dotnet pack src/BpsPatch.Core/BpsPatch.Core.csproj \
+          --configuration Release \
+          --no-build \
+          -p:PackageVersion=${{ github.event.inputs.version }} \
+          --output ./artifacts
+
+    - name: Upload NuGet package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: ./artifacts/*.nupkg
+
+    - name: Publish to NuGet.org
+      if: github.event.inputs.publish_nuget == 'true'
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+    - name: Create GitHub Release
+      if: github.event.inputs.create_github_release == 'true'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        name: Release v${{ github.event.inputs.version }}
+        draft: true
+        files: ./artifacts/*.nupkg
+        body: |
+          ## BpsPatch v${{ github.event.inputs.version }}
+          
+          ### Installation
+          ```bash
+          dotnet add package BpsPatch --version ${{ github.event.inputs.version }}
+          ```
+          
+          ### Changes
+          See [CHANGELOG.md](CHANGELOG.md) for details.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

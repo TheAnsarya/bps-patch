@@ -1,0 +1,82 @@
+# ========================================================================================================
+# BPS Patch - Code Coverage Workflow
+# ========================================================================================================
+# Generates code coverage reports using Coverlet and optionally uploads to Codecov.
+#
+# STATUS: DISABLED BY DEFAULT
+# This workflow only runs on manual trigger to avoid costs.
+# See docs/CI_ACTIVATION.md for instructions on enabling automatic coverage.
+# ========================================================================================================
+
+name: Code Coverage
+
+# DISABLED: Only runs on manual trigger
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_codecov:
+        description: 'Upload results to Codecov'
+        required: false
+        default: 'false'
+        type: boolean
+
+  # UNCOMMENT TO ENABLE AUTOMATIC COVERAGE:
+  # push:
+  #   branches: [ master, main ]
+  # pull_request:
+  #   branches: [ master, main ]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  coverage:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore bps-patch.sln
+
+    - name: Run tests with coverage
+      run: |
+        dotnet test src/BpsPatch.Core.Tests/BpsPatch.Core.Tests.csproj \
+          --configuration Release \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+    - name: Generate coverage report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool || true
+        reportgenerator \
+          -reports:"./coverage/**/coverage.cobertura.xml" \
+          -targetdir:"./coverage/report" \
+          -reporttypes:"Html;Badges;TextSummary"
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage/report/
+
+    - name: Upload to Codecov
+      if: github.event.inputs.upload_to_codecov == 'true'
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage/**/coverage.cobertura.xml
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: Coverage summary
+      run: cat ./coverage/report/Summary.txt || echo "Summary not generated"

@@ -76,9 +76,11 @@ Project roadmap and task tracking for BPS Patch development.
 
 ### CI/CD
 
-- [ ] **Add GitHub Actions workflow** - [Issue #6](https://github.com/TheAnsarya/bps-patch/issues/6)
-  - Build, test, benchmark on PR
-  - Release automation
+- [x] **Add GitHub Actions workflow** ✅ DONE - [Issue #6](https://github.com/TheAnsarya/bps-patch/issues/6)
+  - CI: `.github/workflows/ci.yml` (build & test on 3 platforms)
+  - Coverage: `.github/workflows/coverage.yml` (Coverlet reports)
+  - Release: `.github/workflows/release.yml` (NuGet publishing)
+  - **Disabled by default** - see `docs/CI_ACTIVATION.md`
 
 - [ ] **Add code coverage reporting** - [Issue #7](https://github.com/TheAnsarya/bps-patch/issues/7)
   - Target: 90%+ coverage
