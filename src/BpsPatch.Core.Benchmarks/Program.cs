@@ -16,7 +16,7 @@ BenchmarkRunner.Run<AlgorithmBenchmarks>();
 BenchmarkRunner.Run<VariableLengthIntBenchmarks>();
 
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob]
 public class EncoderBenchmarks
 {
     private FileInfo _sourceFile = null!;
@@ -91,7 +91,7 @@ public class EncoderBenchmarks
 }
 
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob]
 public class DecoderBenchmarks
 {
     private FileInfo _sourceFile = null!;
@@ -151,7 +151,7 @@ public class DecoderBenchmarks
 }
 
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob]
 public class AlgorithmBenchmarks
 {
     private byte[] _data = null!;
@@ -208,7 +208,7 @@ public class AlgorithmBenchmarks
 }
 
 [MemoryDiagnoser]
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob]
 public class VariableLengthIntBenchmarks
 {
     private byte[] _buffer = new byte[10];
