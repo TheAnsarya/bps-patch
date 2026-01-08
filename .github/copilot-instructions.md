@@ -59,9 +59,9 @@ uint value = BitConverter.ToUInt32(hashBuffer[0..4]);
 ```csharp
 byte[] targetData = ArrayPool<byte>.Shared.Rent((int)targetSize);
 try {
-    // Process data
+	// Process data
 } finally {
-    ArrayPool<byte>.Shared.Return(targetData);
+	ArrayPool<byte>.Shared.Return(targetData);
 }
 ```
 

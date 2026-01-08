@@ -29,10 +29,10 @@ Creates BPS patch files by analyzing differences between source and target files
 
 ```csharp
 public static void CreatePatch(
-    FileInfo sourceFile,
-    FileInfo patchFile,
-    FileInfo targetFile,
-    string manifest)
+	FileInfo sourceFile,
+	FileInfo patchFile,
+	FileInfo targetFile,
+	string manifest)
 ```
 
 Creates a BPS patch file by comparing source and target files.
@@ -51,10 +51,10 @@ Creates a BPS patch file by comparing source and target files.
 **Example**:
 ```csharp
 Encoder.CreatePatch(
-    new FileInfo("original.bin"),
-    new FileInfo("patch.bps"),
-    new FileInfo("modified.bin"),
-    "My Patch v1.0");
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("modified.bin"),
+	"My Patch v1.0");
 ```
 
 ---
@@ -86,9 +86,9 @@ byte[] encoded = Encoder.EncodeNumber(300);
 
 ```csharp
 public static (PatchAction Mode, int Length, int Start) FindNextRun(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target,
-    int targetPosition)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target,
+	int targetPosition)
 ```
 
 Finds the optimal patch action for the current target position.
@@ -114,10 +114,10 @@ var (mode, length, start) = Encoder.FindNextRun(sourceData, targetData, 0);
 
 ```csharp
 public static (int Length, int Start, bool ReachedEnd) FindBestRun(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target,
-    int minimumLongestRun = 4,
-    int checkUntilMax = -1)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target,
+	int minimumLongestRun = 4,
+	int checkUntilMax = -1)
 ```
 
 Finds the best matching run using the default algorithm (linear search).
@@ -158,14 +158,14 @@ Rabin-Karp rolling hash implementation. O(n) average case.
 
 ```csharp
 public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target,
-    int minimumLongestRun = 4)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target,
+	int minimumLongestRun = 4)
 
 public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(
-    SuffixArray suffixArray,
-    ReadOnlySpan<byte> target,
-    int minimumLongestRun = 4)
+	SuffixArray suffixArray,
+	ReadOnlySpan<byte> target,
+	int minimumLongestRun = 4)
 ```
 
 Suffix array implementation. O(log n) query time. Second overload reuses pre-built suffix array.
@@ -176,8 +176,8 @@ Suffix array implementation. O(log n) query time. Second overload reuses pre-bui
 
 ```csharp
 public static (int Length, bool ReachedEnd) CheckRun(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target)
 ```
 
 Counts consecutive matching bytes using SIMD optimization.
@@ -190,8 +190,8 @@ Counts consecutive matching bytes using SIMD optimization.
 
 ```csharp
 public static (int Length, bool ReachedEnd) CheckRunScalar(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target)
 ```
 
 Non-SIMD version for benchmarking comparison.
@@ -217,9 +217,9 @@ Applies BPS patches to reconstruct target files from source files.
 
 ```csharp
 public static List<string> ApplyPatch(
-    FileInfo sourceFile,
-    FileInfo patchFile,
-    FileInfo targetFile)
+	FileInfo sourceFile,
+	FileInfo patchFile,
+	FileInfo targetFile)
 ```
 
 Applies a BPS patch to a source file to create the target file.
@@ -240,14 +240,14 @@ Applies a BPS patch to a source file to create the target file.
 **Example**:
 ```csharp
 var warnings = Decoder.ApplyPatch(
-    new FileInfo("original.bin"),
-    new FileInfo("patch.bps"),
-    new FileInfo("patched.bin"));
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("patched.bin"));
 
 if (warnings.Count > 0) {
-    Console.WriteLine("Warnings:");
-    foreach (var w in warnings)
-        Console.WriteLine($"  - {w}");
+	Console.WriteLine("Warnings:");
+	foreach (var w in warnings)
+		Console.WriteLine($"  - {w}");
 }
 ```
 
@@ -266,10 +266,10 @@ Rabin-Karp rolling hash implementation for fast substring matching.
 
 ```csharp
 public static (int Length, int Start, bool ReachedEnd) FindBestRun(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target,
-    int minimumLongestRun = 4,
-    int checkUntilMax = -1)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target,
+	int minimumLongestRun = 4,
+	int checkUntilMax = -1)
 ```
 
 Finds the best matching substring using rolling hash.
@@ -279,9 +279,9 @@ Finds the best matching substring using rolling hash.
 **Example**:
 ```csharp
 var (length, start, reachedEnd) = RabinKarp.FindBestRun(
-    sourceData, 
-    targetPattern,
-    minimumLongestRun: 4);
+	sourceData, 
+	targetPattern,
+	minimumLongestRun: 4);
 ```
 
 ---
@@ -319,8 +319,8 @@ Creates a suffix array from the given data.
 
 ```csharp
 public (int Length, int Start, bool ReachedEnd) FindLongestMatch(
-    ReadOnlySpan<byte> pattern,
-    int minimumLength = 4)
+	ReadOnlySpan<byte> pattern,
+	int minimumLength = 4)
 ```
 
 Finds the longest matching substring in the suffix array.
@@ -447,11 +447,11 @@ var output = new FileInfo("patched.rom");
 var warnings = Decoder.ApplyPatch(source, patch, output);
 
 if (warnings.Count == 0) {
-    Console.WriteLine("Patch applied successfully!");
+	Console.WriteLine("Patch applied successfully!");
 } else {
-    Console.WriteLine("Patch applied with warnings:");
-    foreach (var warning in warnings)
-        Console.WriteLine($"  ⚠️ {warning}");
+	Console.WriteLine("Patch applied with warnings:");
+	foreach (var warning in warnings)
+		Console.WriteLine($"  ⚠️ {warning}");
 }
 ```
 
@@ -465,10 +465,10 @@ var suffixArray = new SuffixArray(sourceData);
 
 // Multiple queries reuse the same suffix array
 foreach (var pattern in patterns) {
-    var (length, start, _) = suffixArray.FindLongestMatch(pattern);
-    if (length >= 4) {
-        Console.WriteLine($"Found {length}-byte match at position {start}");
-    }
+	var (length, start, _) = suffixArray.FindLongestMatch(pattern);
+	if (length >= 4) {
+		Console.WriteLine($"Found {length}-byte match at position {start}");
+	}
 }
 ```
 

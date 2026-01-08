@@ -40,9 +40,9 @@ global using System.Threading.Tasks;
 **Before**:
 ```csharp
 namespace bps_patch {
-    class Utilities {
-        // ...
-    }
+	class Utilities {
+		// ...
+	}
 }
 ```
 
@@ -52,7 +52,7 @@ namespace bps_patch;
 
 static class Utilities
 {
-    // ...
+	// ...
 }
 ```
 
@@ -62,11 +62,11 @@ Applied to: `Utilities.cs`, `PatchAction.cs`, `PatchFormatException.cs`, `Encode
 **Before**:
 ```csharp
 namespace bps_patch {
-    class Program {
-        static void Main(string[] args) {
-            TestDecoder();
-        }
-    }
+	class Program {
+		static void Main(string[] args) {
+			TestDecoder();
+		}
+	}
 }
 ```
 
@@ -77,8 +77,8 @@ using bps_patch;
 
 // Command-line argument parsing
 if (args.Length == 0) {
-    Console.WriteLine("BPS Patch Tool - .NET 10");
-    // ...
+	Console.WriteLine("BPS Patch Tool - .NET 10");
+	// ...
 }
 ```
 
@@ -94,9 +94,9 @@ var sourceData = new byte[sourceFile.Length];
 // NEW: ArrayPool (reduces GC pressure)
 byte[] sourceData = ArrayPool<byte>.Shared.Rent((int)sourceFile.Length);
 try {
-    // ... use data
+	// ... use data
 } finally {
-    ArrayPool<byte>.Shared.Return(sourceData);
+	ArrayPool<byte>.Shared.Return(sourceData);
 }
 ```
 
@@ -114,8 +114,8 @@ using var patch = new BufferedStream(patchFile.OpenWrite(), 81920);
 // OLD: List allocation
 var output = new List<byte>();
 while (true) {
-    output.Add(x);
-    // ...
+	output.Add(x);
+	// ...
 }
 return output.ToArray();
 
@@ -123,8 +123,8 @@ return output.ToArray();
 Span<byte> buffer = stackalloc byte[10];
 int index = 0;
 while (true) {
-    buffer[index++] = x;
-    // ...
+	buffer[index++] = x;
+	// ...
 }
 return buffer[..index].ToArray();
 ```
@@ -144,15 +144,15 @@ sourceStream.ReadExactly(sourceData.AsSpan(0, (int)sourceFile.Length));
 ```csharp
 // OLD: Multiple ReadByte() calls
 if ((patch.ReadByte() != 'B') || (patch.ReadByte() != 'P') || 
-    (patch.ReadByte() != 'S') || (patch.ReadByte() != '1')) {
-    throw new PatchFormatException("Invalid header");
+	(patch.ReadByte() != 'S') || (patch.ReadByte() != '1')) {
+	throw new PatchFormatException("Invalid header");
 }
 
 // NEW: Stackalloc + single read
 Span<byte> header = stackalloc byte[4];
 if (patch.Read(header) != 4 || header[0] != 'B' || 
-    header[1] != 'P' || header[2] != 'S' || header[3] != '1') {
-    throw new PatchFormatException("Invalid BPS header");
+	header[1] != 'P' || header[2] != 'S' || header[3] != '1') {
+	throw new PatchFormatException("Invalid BPS header");
 }
 ```
 
@@ -160,7 +160,7 @@ if (patch.Read(header) != 4 || header[0] != 'B' ||
 ```csharp
 // OLD: Manual bit shifting
 uint sourceHash = readPatch() + ((uint)readPatch() << 8) + 
-                  ((uint)readPatch() << 16) + ((uint)readPatch() << 24);
+				  ((uint)readPatch() << 16) + ((uint)readPatch() << 24);
 
 // NEW: BitConverter (optimized)
 Span<byte> hashBuffer = stackalloc byte[12];
@@ -174,19 +174,19 @@ uint patchHash = BitConverter.ToUInt32(hashBuffer[8..12]);
 ```csharp
 // OLD: Always byte-by-byte copy
 for (int i = 0; i < length; i++) {
-    target.WriteByte(targetReader[i]);
+	target.WriteByte(targetReader[i]);
 }
 
 // NEW: Detect overlap, use bulk copy when safe
 if (targetRelativeOffset < target.Position && 
-    targetRelativeOffset + length > target.Position) {
-    // Overlapping - byte by byte
-    for (int i = 0; i < length; i++) {
-        dstSpan[i] = srcSpan[i];
-    }
+	targetRelativeOffset + length > target.Position) {
+	// Overlapping - byte by byte
+	for (int i = 0; i < length; i++) {
+		dstSpan[i] = srcSpan[i];
+	}
 } else {
-    // Non-overlapping - bulk copy
-    srcSpan.CopyTo(dstSpan);
+	// Non-overlapping - bulk copy
+	srcSpan.CopyTo(dstSpan);
 }
 ```
 
@@ -206,7 +206,7 @@ using Force.Crc32;
 var crc32 = new Crc32Algorithm();
 var hashBytes = crc32.ComputeHash(source);
 uint hash = hashBytes[0] + ((uint)hashBytes[1] << 8) + 
-            ((uint)hashBytes[2] << 16) + ((uint)hashBytes[3] << 24);
+			((uint)hashBytes[2] << 16) + ((uint)hashBytes[3] << 24);
 ```
 
 **After (built-in)**:
@@ -223,16 +223,16 @@ return BitConverter.ToUInt32(hashBytes);
 ```csharp
 switch (mode)
 {
-    case PatchAction.SourceRead:
-        // ...
-        break;
-    case PatchAction.TargetRead:
-        // ...
-        break;
-    case PatchAction.SourceCopy:
-    case PatchAction.TargetCopy:
-        // ...
-        break;
+	case PatchAction.SourceRead:
+		// ...
+		break;
+	case PatchAction.TargetRead:
+		// ...
+		break;
+	case PatchAction.SourceCopy:
+	case PatchAction.TargetCopy:
+		// ...
+		break;
 }
 ```
 
@@ -250,12 +250,12 @@ target[targetPosition..]
 #### When Guards
 ```csharp
 case "decode" when args.Length >= 4:
-    // Handle decode
-    break;
+	// Handle decode
+	break;
 
 case "encode" when args.Length >= 4:
-    // Handle encode
-    break;
+	// Handle encode
+	break;
 ```
 
 ### 5. ✅ Enhanced Program.cs CLI

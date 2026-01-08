@@ -235,9 +235,9 @@ byte[] buffer = new byte[size];
 // After
 byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
 try {
-    // Use buffer
+	// Use buffer
 } finally {
-    ArrayPool<byte>.Shared.Return(buffer);
+	ArrayPool<byte>.Shared.Return(buffer);
 }
 ```
 

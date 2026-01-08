@@ -94,22 +94,22 @@ This document describes the implementation details, algorithms, and optimization
 ```csharp
 // Encoding (least significant 7 bits first)
 while (true) {
-    byte x = (byte)(number & 0x7f);
-    number >>= 7;
-    if (number == 0) return (byte)(0x80 | x); // MSB set = final byte
-    output(x);  // MSB clear = continuation
-    number--;
+	byte x = (byte)(number & 0x7f);
+	number >>= 7;
+	if (number == 0) return (byte)(0x80 | x); // MSB set = final byte
+	output(x);  // MSB clear = continuation
+	number--;
 }
 
 // Decoding
 ulong result = 0;
 int shift = 0;
 while (true) {
-    byte x = input();
-    result += (ulong)(x & 0x7f) << shift;
-    if ((x & 0x80) != 0) break; // MSB set = done
-    shift += 7;
-    result += 1UL << shift;
+	byte x = input();
+	result += (ulong)(x & 0x7f) << shift;
+	if ((x & 0x80) != 0) break; // MSB set = done
+	shift += 7;
+	result += 1UL << shift;
 }
 ```
 
@@ -133,13 +133,13 @@ Uses zigzag encoding for signed offsets:
 ```csharp
 // Encode
 ulong encoded = (offset >= 0) 
-    ? (ulong)(offset * 2) 
-    : (ulong)((-offset - 1) * 2 + 1);
+	? (ulong)(offset * 2) 
+	: (ulong)((-offset - 1) * 2 + 1);
 
 // Decode  
 long offset = ((encoded & 1) != 0) 
-    ? -((long)(encoded >> 1) + 1) 
-    : (long)(encoded >> 1);
+	? -((long)(encoded >> 1) + 1) 
+	: (long)(encoded >> 1);
 ```
 
 ---
@@ -153,9 +153,9 @@ long offset = ((encoded & 1) != 0)
 ```csharp
 byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
 try {
-    // Use buffer
+	// Use buffer
 } finally {
-    ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
+	ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
 }
 ```
 
@@ -167,12 +167,12 @@ try {
 
 ```csharp
 if (Vector.IsHardwareAccelerated && maxLength >= Vector<byte>.Count) {
-    while (length <= maxVectorIndex) {
-        var vec1 = new Vector<byte>(source.Slice(length, vectorLength));
-        var vec2 = new Vector<byte>(target.Slice(length, vectorLength));
-        if (!Vector.EqualsAll(vec1, vec2)) break;
-        length += vectorLength;
-    }
+	while (length <= maxVectorIndex) {
+		var vec1 = new Vector<byte>(source.Slice(length, vectorLength));
+		var vec2 = new Vector<byte>(target.Slice(length, vectorLength));
+		if (!Vector.EqualsAll(vec1, vec2)) break;
+		length += vectorLength;
+	}
 }
 ```
 
@@ -191,12 +191,12 @@ const ulong BASE = 257;
 // Initial hash
 ulong hash = 0;
 for (int i = 0; i < patternLength; i++) {
-    hash = (hash * BASE + pattern[i]) % PRIME;
+	hash = (hash * BASE + pattern[i]) % PRIME;
 }
 
 // Slide window
 for (int i = patternLength; i < sourceLength; i++) {
-    hash = (hash * BASE + source[i] - source[i - patternLength] * pow) % PRIME;
+	hash = (hash * BASE + source[i] - source[i - patternLength] * pow) % PRIME;
 }
 ```
 
@@ -216,8 +216,8 @@ Array.Sort(suffixes, (a, b) => CompareSuffixes(data, a, b));
 ```csharp
 int startIdx = BinarySearchFirstByteRange(pattern[0], out int endIdx);
 for (int i = startIdx; i <= endIdx; i++) {
-    int matchLen = CountMatchingBytes(data[suffixes[i]..], pattern);
-    if (matchLen > bestLength) bestLength = matchLen;
+	int matchLen = CountMatchingBytes(data[suffixes[i]..], pattern);
+	if (matchLen > bestLength) bestLength = matchLen;
 }
 ```
 
@@ -239,9 +239,9 @@ using var stream = new BufferedStream(file.OpenRead(), 81920); // 80KB buffer
 
 ```csharp
 if (fileSize > 256 * 1024 * 1024) { // > 256MB
-    using var mmf = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
-    using var accessor = mmf.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
-    // Process in chunks
+	using var mmf = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
+	using var accessor = mmf.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
+	// Process in chunks
 }
 ```
 

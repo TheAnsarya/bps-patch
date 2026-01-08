@@ -64,21 +64,21 @@ BPS uses a custom variable-length encoding for integers, similar to LEB128 but w
 ```csharp
 public static int Encode(ulong number, Span<byte> buffer)
 {
-    int index = 0;
-    while (true)
-    {
-        byte x = (byte)(number & 0x7f);
-        number >>= 7;
-        
-        if (number == 0)
-        {
-            buffer[index++] = (byte)(0x80 | x);  // Final byte
-            return index;
-        }
-        
-        buffer[index++] = x;  // Continuation byte
-        number--;
-    }
+	int index = 0;
+	while (true)
+	{
+		byte x = (byte)(number & 0x7f);
+		number >>= 7;
+		
+		if (number == 0)
+		{
+			buffer[index++] = (byte)(0x80 | x);  // Final byte
+			return index;
+		}
+		
+		buffer[index++] = x;  // Continuation byte
+		number--;
+	}
 }
 ```
 
@@ -87,21 +87,21 @@ public static int Encode(ulong number, Span<byte> buffer)
 ```csharp
 public static ulong Decode(ReadOnlySpan<byte> data, out int bytesRead)
 {
-    ulong result = 0;
-    int shift = 0;
-    bytesRead = 0;
-    
-    while (true)
-    {
-        byte x = data[bytesRead++];
-        result += (ulong)(x & 0x7f) << shift;
-        
-        if ((x & 0x80) != 0)  // Final byte
-            return result;
-            
-        result += 1UL << shift;
-        shift += 7;
-    }
+	ulong result = 0;
+	int shift = 0;
+	bytesRead = 0;
+	
+	while (true)
+	{
+		byte x = data[bytesRead++];
+		result += (ulong)(x & 0x7f) << shift;
+		
+		if ((x & 0x80) != 0)  // Final byte
+			return result;
+			
+		result += 1UL << shift;
+		shift += 7;
+	}
 }
 ```
 
@@ -208,16 +208,16 @@ Offsets use signed zigzag encoding to efficiently represent positive and negativ
 
 ```csharp
 long encoded = offset < 0 
-    ? ((-offset - 1) << 1) | 1   // Negative
-    : (offset << 1);              // Positive
+	? ((-offset - 1) << 1) | 1   // Negative
+	: (offset << 1);              // Positive
 ```
 
 ### Decoding
 
 ```csharp
 long offset = ((encoded & 1) != 0)
-    ? -((encoded >> 1) + 1)   // Negative (odd)
-    : (encoded >> 1);          // Positive (even)
+	? -((encoded >> 1) + 1)   // Negative (odd)
+	: (encoded >> 1);          // Positive (even)
 ```
 
 ### Examples
@@ -284,7 +284,7 @@ Offset  Bytes           Description
 0x06    80              Metadata size VLI: 0
 
 0x07    14              Command: ((5-1)<<2)|0 = SourceRead 5 bytes
-                        (Copy "Hello" from source)
+						(Copy "Hello" from source)
 
 0x08    19              Command: ((6-1)<<2)|1 = TargetRead 6 bytes
 0x09    20 57 6F 72 6C 64  Literal: " World"

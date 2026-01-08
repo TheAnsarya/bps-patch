@@ -128,21 +128,21 @@ BPS uses a compact variable-length encoding to minimize patch size. Integers are
 
 ```csharp
 public static byte[] EncodeNumber(ulong value) {
-    var result = new List<byte>();
-    
-    while (true) {
-        byte current = (byte)(value & 0x7F);  // Get lower 7 bits
-        value >>= 7;                           // Shift right 7 bits
-        
-        if (value == 0) {
-            result.Add((byte)(current | 0x80)); // Set continuation bit on last byte
-            break;
-        }
-        
-        result.Add(current);                   // No continuation bit on intermediate bytes
-    }
-    
-    return result.ToArray();
+	var result = new List<byte>();
+	
+	while (true) {
+		byte current = (byte)(value & 0x7F);  // Get lower 7 bits
+		value >>= 7;                           // Shift right 7 bits
+		
+		if (value == 0) {
+			result.Add((byte)(current | 0x80)); // Set continuation bit on last byte
+			break;
+		}
+		
+		result.Add(current);                   // No continuation bit on intermediate bytes
+	}
+	
+	return result.ToArray();
 }
 ```
 
@@ -150,23 +150,23 @@ public static byte[] EncodeNumber(ulong value) {
 
 ```csharp
 public static ulong DecodeNumber(Stream stream) {
-    ulong result = 0;
-    int shift = 0;
-    
-    while (true) {
-        int current = stream.ReadByte();
-        if (current == -1) throw new EndOfStreamException();
-        
-        result |= (ulong)(current & 0x7F) << shift;  // Add 7 bits to result
-        
-        if ((current & 0x80) != 0) {                 // Check continuation bit
-            break;                                    // Last byte reached
-        }
-        
-        shift += 7;                                   // Advance to next 7-bit chunk
-    }
-    
-    return result;
+	ulong result = 0;
+	int shift = 0;
+	
+	while (true) {
+		int current = stream.ReadByte();
+		if (current == -1) throw new EndOfStreamException();
+		
+		result |= (ulong)(current & 0x7F) << shift;  // Add 7 bits to result
+		
+		if ((current & 0x80) != 0) {                 // Check continuation bit
+			break;                                    // Last byte reached
+		}
+		
+		shift += 7;                                   // Advance to next 7-bit chunk
+	}
+	
+	return result;
 }
 ```
 
@@ -219,7 +219,7 @@ Command = ((length - 1) << 2) | action
 **Operation**:
 ```csharp
 for (int i = 0; i < length; i++) {
-    target[targetPos++] = source[sourcePos++];
+	target[targetPos++] = source[sourcePos++];
 }
 ```
 
@@ -234,7 +234,7 @@ for (int i = 0; i < length; i++) {
 **Operation**:
 ```csharp
 for (int i = 0; i < length; i++) {
-    target[targetPos++] = patch.ReadByte();
+	target[targetPos++] = patch.ReadByte();
 }
 ```
 
@@ -250,7 +250,7 @@ for (int i = 0; i < length; i++) {
 ```csharp
 long sourceOffset = sourcePos + DecodeSignedNumber(patch);
 for (int i = 0; i < length; i++) {
-    target[targetPos++] = source[sourceOffset++];
+	target[targetPos++] = source[sourceOffset++];
 }
 ```
 
@@ -262,7 +262,7 @@ for (int i = 0; i < length; i++) {
 ```csharp
 // Decode signed offset
 long DecodeSignedNumber(ulong encoded) {
-    return ((encoded & 1) != 0) ? -(long)(encoded >> 1) : (long)(encoded >> 1);
+	return ((encoded & 1) != 0) ? -(long)(encoded >> 1) : (long)(encoded >> 1);
 }
 ```
 
@@ -274,7 +274,7 @@ long DecodeSignedNumber(ulong encoded) {
 ```csharp
 long targetOffset = targetPos + DecodeSignedNumber(patch);
 for (int i = 0; i < length; i++) {
-    target[targetPos++] = target[targetOffset++];
+	target[targetPos++] = target[targetOffset++];
 }
 ```
 
@@ -306,7 +306,7 @@ The decoder validates three checksums:
 ```csharp
 uint sourceCrc = ComputeCRC32(sourceFile);
 if (sourceCrc != expectedSourceCrc) {
-    warnings.Add("Source file hash mismatch");
+	warnings.Add("Source file hash mismatch");
 }
 ```
 
@@ -314,7 +314,7 @@ if (sourceCrc != expectedSourceCrc) {
 ```csharp
 uint targetCrc = ComputeCRC32(targetFile);
 if (targetCrc != expectedTargetCrc) {
-    warnings.Add("Target file hash mismatch");
+	warnings.Add("Target file hash mismatch");
 }
 ```
 
@@ -328,7 +328,7 @@ const uint CRC32_RESULT_CONSTANT = 0x2144df1c;
 
 uint patchValidation = ComputeCRC32(patchFile);
 if (patchValidation != CRC32_RESULT_CONSTANT) {
-    warnings.Add("Patch file hash mismatch");
+	warnings.Add("Patch file hash mismatch");
 }
 ```
 
@@ -366,29 +366,29 @@ The encoder analyzes differences between source and target files to generate opt
 
 ```csharp
 while (targetPos < targetSize) {
-    // Try to find a match in source file
-    (int matchLength, int matchOffset) = FindBestMatch(
-        source, target, sourcePos, targetPos, targetSize
-    );
-    
-    if (matchLength >= MINIMUM_MATCH_LENGTH) {
-        // Long enough match found in source
-        if (matchOffset == sourcePos) {
-            // Sequential match - use SourceRead
-            WriteSourceReadCommand(matchLength);
-        } else {
-            // Non-sequential match - use SourceCopy
-            WriteSourceCopyCommand(matchLength, matchOffset - sourcePos);
-        }
-        targetPos += matchLength;
-        sourcePos += matchLength;
-    } else {
-        // No good match - use TargetRead for new/changed data
-        int runLength = FindTargetReadRun(target, targetPos, targetSize);
-        WriteTargetReadCommand(target, targetPos, runLength);
-        targetPos += runLength;
-        sourcePos += runLength;
-    }
+	// Try to find a match in source file
+	(int matchLength, int matchOffset) = FindBestMatch(
+		source, target, sourcePos, targetPos, targetSize
+	);
+	
+	if (matchLength >= MINIMUM_MATCH_LENGTH) {
+		// Long enough match found in source
+		if (matchOffset == sourcePos) {
+			// Sequential match - use SourceRead
+			WriteSourceReadCommand(matchLength);
+		} else {
+			// Non-sequential match - use SourceCopy
+			WriteSourceCopyCommand(matchLength, matchOffset - sourcePos);
+		}
+		targetPos += matchLength;
+		sourcePos += matchLength;
+	} else {
+		// No good match - use TargetRead for new/changed data
+		int runLength = FindTargetReadRun(target, targetPos, targetSize);
+		WriteTargetReadCommand(target, targetPos, runLength);
+		targetPos += runLength;
+		sourcePos += runLength;
+	}
 }
 ```
 
@@ -398,27 +398,27 @@ The current implementation uses **linear search** with early termination:
 
 ```csharp
 int FindBestMatch(byte[] source, byte[] target, int targetPos, int maxLength) {
-    int bestLength = 0;
-    int bestOffset = 0;
-    
-    // Search entire source file for best match
-    for (int sourceOffset = 0; sourceOffset < sourceSize; sourceOffset++) {
-        int matchLength = CountMatchingBytes(
-            source, sourceOffset,
-            target, targetPos,
-            Math.Min(maxLength, sourceSize - sourceOffset)
-        );
-        
-        if (matchLength > bestLength) {
-            bestLength = matchLength;
-            bestOffset = sourceOffset;
-        }
-        
-        // Early termination if perfect match found
-        if (matchLength == maxLength) break;
-    }
-    
-    return (bestLength, bestOffset);
+	int bestLength = 0;
+	int bestOffset = 0;
+	
+	// Search entire source file for best match
+	for (int sourceOffset = 0; sourceOffset < sourceSize; sourceOffset++) {
+		int matchLength = CountMatchingBytes(
+			source, sourceOffset,
+			target, targetPos,
+			Math.Min(maxLength, sourceSize - sourceOffset)
+		);
+		
+		if (matchLength > bestLength) {
+			bestLength = matchLength;
+			bestOffset = sourceOffset;
+		}
+		
+		// Early termination if perfect match found
+		if (matchLength == maxLength) break;
+	}
+	
+	return (bestLength, bestOffset);
 }
 ```
 
@@ -463,47 +463,47 @@ long sourcePos = 0;
 long targetPos = 0;
 
 while (targetPos < targetSize) {
-    // Read command (variable-length integer)
-    ulong command = DecodeNumber(patch);
-    
-    // Extract action and length from command
-    long length = (long)(command >> 2) + 1;
-    PatchAction action = (PatchAction)(command & 3);
-    
-    // Execute action
-    switch (action) {
-        case PatchAction.SourceRead:
-            // Copy from source at current position
-            source.ReadExactly(target.AsSpan((int)targetPos, (int)length));
-            sourcePos += length;
-            targetPos += length;
-            break;
-            
-        case PatchAction.TargetRead:
-            // Read new bytes from patch
-            patch.ReadExactly(target.AsSpan((int)targetPos, (int)length));
-            targetPos += length;
-            break;
-            
-        case PatchAction.SourceCopy:
-            // Copy from source at specified offset
-            long offset = DecodeSignedNumber(DecodeNumber(patch));
-            long sourceOffset = sourcePos + offset;
-            Array.Copy(source, sourceOffset, target, targetPos, length);
-            sourcePos += length;
-            targetPos += length;
-            break;
-            
-        case PatchAction.TargetCopy:
-            // Copy from earlier in target
-            long targetOffset = targetPos + DecodeSignedNumber(DecodeNumber(patch));
-            // Handle overlapping copies correctly
-            for (int i = 0; i < length; i++) {
-                target[targetPos++] = target[targetOffset++];
-            }
-            sourcePos += length;
-            break;
-    }
+	// Read command (variable-length integer)
+	ulong command = DecodeNumber(patch);
+	
+	// Extract action and length from command
+	long length = (long)(command >> 2) + 1;
+	PatchAction action = (PatchAction)(command & 3);
+	
+	// Execute action
+	switch (action) {
+		case PatchAction.SourceRead:
+			// Copy from source at current position
+			source.ReadExactly(target.AsSpan((int)targetPos, (int)length));
+			sourcePos += length;
+			targetPos += length;
+			break;
+			
+		case PatchAction.TargetRead:
+			// Read new bytes from patch
+			patch.ReadExactly(target.AsSpan((int)targetPos, (int)length));
+			targetPos += length;
+			break;
+			
+		case PatchAction.SourceCopy:
+			// Copy from source at specified offset
+			long offset = DecodeSignedNumber(DecodeNumber(patch));
+			long sourceOffset = sourcePos + offset;
+			Array.Copy(source, sourceOffset, target, targetPos, length);
+			sourcePos += length;
+			targetPos += length;
+			break;
+			
+		case PatchAction.TargetCopy:
+			// Copy from earlier in target
+			long targetOffset = targetPos + DecodeSignedNumber(DecodeNumber(patch));
+			// Handle overlapping copies correctly
+			for (int i = 0; i < length; i++) {
+				target[targetPos++] = target[targetOffset++];
+			}
+			sourcePos += length;
+			break;
+	}
 }
 ```
 
@@ -516,7 +516,7 @@ TargetCopy can have overlapping source and destination ranges (e.g., copying fro
 // offset = -1, length = 10
 // target[99] = 'A'
 for (int i = 0; i < 10; i++) {
-    target[100 + i] = target[99 + i];  // Copies 'A' repeatedly
+	target[100 + i] = target[99 + i];  // Copies 'A' repeatedly
 }
 // Result: target[100..109] all contain 'A'
 ```
@@ -534,10 +534,10 @@ for (int i = 0; i < 10; i++) {
 **Validation**:
 ```csharp
 if (sourceFile.Length > int.MaxValue) {
-    throw new ArgumentException("Source file exceeds maximum size");
+	throw new ArgumentException("Source file exceeds maximum size");
 }
 if (targetFile.Length > int.MaxValue) {
-    throw new ArgumentException("Target file exceeds maximum size");
+	throw new ArgumentException("Target file exceeds maximum size");
 }
 ```
 
@@ -573,9 +573,9 @@ if (targetFile.Length > int.MaxValue) {
 ```csharp
 byte[] sourceData = ArrayPool<byte>.Shared.Rent((int)sourceFile.Length);
 try {
-    // Use buffer
+	// Use buffer
 } finally {
-    ArrayPool<byte>.Shared.Return(sourceData);
+	ArrayPool<byte>.Shared.Return(sourceData);
 }
 ```
 
@@ -603,10 +603,10 @@ using var patch = new BufferedStream(patchFile.OpenWrite(), BUFFER_SIZE);
 **Windows Compatibility**:
 ```csharp
 using var stream = new FileStream(
-    path, 
-    FileMode.Open, 
-    FileAccess.Read, 
-    FileShare.ReadWrite  // Allow concurrent access
+	path, 
+	FileMode.Open, 
+	FileAccess.Read, 
+	FileShare.ReadWrite  // Allow concurrent access
 );
 ```
 

@@ -89,7 +89,7 @@ src/
 │   └── Exceptions/
 │       └── BpsFormatException.cs
 └── BpsPatch.Cli/            # Console application
-    └── Program.cs
+	└── Program.cs
 ```
 
 ---
@@ -103,21 +103,21 @@ The encoder is responsible for creating BPS patches by analyzing differences bet
 ```csharp
 public static class Encoder
 {
-    // Main entry point
-    public static void CreatePatch(FileInfo source, FileInfo patch, FileInfo target, string manifest);
-    
-    // Pattern matching
-    public static (PatchAction Mode, int Length, int Start) FindNextRun(...);
-    
-    // Algorithm selection
-    public static (int Length, int Start, bool ReachedEnd) FindBestRun(...);
-    public static (int Length, int Start, bool ReachedEnd) FindBestRunLinear(...);
-    public static (int Length, int Start, bool ReachedEnd) FindBestRunRabinKarp(...);
-    public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(...);
-    
-    // Utility
-    public static byte[] EncodeNumber(ulong number);
-    public static (int Length, bool ReachedEnd) CheckRun(...);
+	// Main entry point
+	public static void CreatePatch(FileInfo source, FileInfo patch, FileInfo target, string manifest);
+	
+	// Pattern matching
+	public static (PatchAction Mode, int Length, int Start) FindNextRun(...);
+	
+	// Algorithm selection
+	public static (int Length, int Start, bool ReachedEnd) FindBestRun(...);
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunLinear(...);
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunRabinKarp(...);
+	public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(...);
+	
+	// Utility
+	public static byte[] EncodeNumber(ulong number);
+	public static (int Length, bool ReachedEnd) CheckRun(...);
 }
 ```
 
@@ -135,11 +135,11 @@ The decoder applies BPS patches to reconstruct target files from source files.
 ```csharp
 public static class Decoder
 {
-    // Main entry point - returns warnings for non-fatal issues
-    public static List<string> ApplyPatch(FileInfo source, FileInfo patch, FileInfo target);
-    
-    // Variable-length integer decoding
-    private static ulong DecodeNumber(Stream stream);
+	// Main entry point - returns warnings for non-fatal issues
+	public static List<string> ApplyPatch(FileInfo source, FileInfo patch, FileInfo target);
+	
+	// Variable-length integer decoding
+	private static ulong DecodeNumber(Stream stream);
 }
 ```
 
@@ -180,14 +180,14 @@ Value: 128-16511  → 2 bytes
 **Encoding Algorithm:**
 ```csharp
 while (true) {
-    byte x = (byte)(number & 0x7f);
-    number >>= 7;
-    if (number == 0) {
-        buffer[index++] = (byte)(0x80 | x);  // MSB set = final byte
-        break;
-    }
-    buffer[index++] = x;  // MSB clear = continuation
-    number--;
+	byte x = (byte)(number & 0x7f);
+	number >>= 7;
+	if (number == 0) {
+		buffer[index++] = (byte)(0x80 | x);  // MSB set = final byte
+		break;
+	}
+	buffer[index++] = x;  // MSB clear = continuation
+	number--;
 }
 ```
 
@@ -212,9 +212,9 @@ public const uint CRC32_RESULT_CONSTANT = 0x2144df1c;
 
 ```
 Source File ──┐
-              ├──► FindNextRun() ──► Patch Commands ──► Patch File
+			  ├──► FindNextRun() ──► Patch Commands ──► Patch File
 Target File ──┘
-              
+			  
 1. Read source and target into memory (ArrayPool)
 2. For each position in target:
    a. Check SourceRead (same position in source)
@@ -230,7 +230,7 @@ Target File ──┘
 
 ```
 Source File ──┐
-              ├──► Decode Commands ──► Target File
+			  ├──► Decode Commands ──► Target File
 Patch File  ──┘
 
 1. Validate patch header ("BPS1")
@@ -251,9 +251,9 @@ Patch File  ──┘
 ```csharp
 byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
 try {
-    // Use buffer
+	// Use buffer
 } finally {
-    ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
+	ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
 }
 ```
 
@@ -295,10 +295,10 @@ Implement `IMatchingStrategy` (proposed interface):
 ```csharp
 public interface IMatchingStrategy
 {
-    (int Length, int Start, bool ReachedEnd) FindBestMatch(
-        ReadOnlySpan<byte> source,
-        ReadOnlySpan<byte> pattern,
-        int minimumLength);
+	(int Length, int Start, bool ReachedEnd) FindBestMatch(
+		ReadOnlySpan<byte> source,
+		ReadOnlySpan<byte> pattern,
+		int minimumLength);
 }
 ```
 
@@ -307,8 +307,8 @@ public interface IMatchingStrategy
 ```csharp
 public interface IProgressReporter
 {
-    void ReportProgress(long bytesProcessed, long totalBytes);
-    void ReportPhase(string phase);
+	void ReportProgress(long bytesProcessed, long totalBytes);
+	void ReportPhase(string phase);
 }
 ```
 
@@ -317,8 +317,8 @@ public interface IProgressReporter
 ```csharp
 public interface IPatchValidator
 {
-    void ValidateHeader(BpsHeader header);
-    void ValidateChecksum(uint expected, uint actual);
+	void ValidateHeader(BpsHeader header);
+	void ValidateChecksum(uint expected, uint actual);
 }
 ```
 
@@ -332,12 +332,12 @@ Different algorithms for different scenarios:
 
 ```csharp
 public static (int, int, bool) FindBestRun(...) {
-    if (source.Length < 65536)
-        return FindBestRunLinear(...);
-    else if (source.Length < 1048576)
-        return FindBestRunRabinKarp(...);
-    else
-        return FindBestRunSuffixArray(...);
+	if (source.Length < 65536)
+		return FindBestRunLinear(...);
+	else if (source.Length < 1048576)
+		return FindBestRunRabinKarp(...);
+	else
+		return FindBestRunSuffixArray(...);
 }
 ```
 
@@ -345,12 +345,12 @@ public static (int, int, bool) FindBestRun(...) {
 
 ```csharp
 public static BpsEncoder CreateEncoder(EncoderOptions options) {
-    return options.Algorithm switch {
-        Algorithm.Linear => new LinearEncoder(),
-        Algorithm.RabinKarp => new RabinKarpEncoder(),
-        Algorithm.SuffixArray => new SuffixArrayEncoder(),
-        _ => new AutoEncoder()  // Auto-select based on file size
-    };
+	return options.Algorithm switch {
+		Algorithm.Linear => new LinearEncoder(),
+		Algorithm.RabinKarp => new RabinKarpEncoder(),
+		Algorithm.SuffixArray => new SuffixArrayEncoder(),
+		_ => new AutoEncoder()  // Auto-select based on file size
+	};
 }
 ```
 
@@ -358,12 +358,12 @@ public static BpsEncoder CreateEncoder(EncoderOptions options) {
 
 ```csharp
 var patch = new BpsPatchBuilder()
-    .WithSource(sourceFile)
-    .WithTarget(targetFile)
-    .WithMetadata("My Patch v1.0")
-    .WithAlgorithm(Algorithm.Auto)
-    .WithProgressReporter(console)
-    .Build();
+	.WithSource(sourceFile)
+	.WithTarget(targetFile)
+	.WithMetadata("My Patch v1.0")
+	.WithAlgorithm(Algorithm.Auto)
+	.WithProgressReporter(console)
+	.Build();
 ```
 
 ---

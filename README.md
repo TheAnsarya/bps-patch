@@ -270,8 +270,8 @@ bps-patch/
 │   Source     │     │    Target    │     │    Patch     │
 │    File      │     │     File     │     │    File      │
 └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
-       │                    │                    │
-       ▼                    ▼                    │
+	   │                    │                    │
+	   ▼                    ▼                    │
 ┌──────────────────────────────────────┐         │
 │           BpsEncoder                 │         │
 │  ┌────────────────────────────────┐  │         │
@@ -287,28 +287,28 @@ bps-patch/
 │  │ 4. Write CRC32 Footer          │  │         │
 │  └────────────────────────────────┘  │         │
 └──────────────────┬───────────────────┘         │
-                   │                             │
-                   ▼                             ▼
-            ┌──────────────┐              ┌──────────────┐
-            │    Patch     │              │   Source     │
-            │    File      │──────────────│    File      │
-            └──────────────┘              └──────┬───────┘
-                                                 │
-                                                 ▼
-                                    ┌──────────────────────┐
-                                    │     BpsDecoder       │
-                                    │  ┌────────────────┐  │
-                                    │  │ 1. Verify CRC32│  │
-                                    │  │ 2. Read Header │  │
-                                    │  │ 3. Apply Cmds  │  │
-                                    │  │ 4. Write Target│  │
-                                    │  └────────────────┘  │
-                                    └──────────┬───────────┘
-                                               │
-                                               ▼
-                                    ┌──────────────────────┐
-                                    │      Output File     │
-                                    └──────────────────────┘
+				   │                             │
+				   ▼                             ▼
+			┌──────────────┐              ┌──────────────┐
+			│    Patch     │              │   Source     │
+			│    File      │──────────────│    File      │
+			└──────────────┘              └──────┬───────┘
+												 │
+												 ▼
+									┌──────────────────────┐
+									│     BpsDecoder       │
+									│  ┌────────────────┐  │
+									│  │ 1. Verify CRC32│  │
+									│  │ 2. Read Header │  │
+									│  │ 3. Apply Cmds  │  │
+									│  │ 4. Write Target│  │
+									│  └────────────────┘  │
+									└──────────┬───────────┘
+											   │
+											   ▼
+									┌──────────────────────┐
+									│      Output File     │
+									└──────────────────────┘
 ```
 
 📐 See [**ARCHITECTURE.md**](docs/ARCHITECTURE.md) for detailed design documentation.
@@ -403,7 +403,7 @@ bps-patch encode <source> <target> <patch> [options]
 Options:
   -m, --metadata <text>     Patch metadata string
   -a, --algorithm <name>    Matching algorithm:
-                            Auto (default), Linear, RabinKarp, SuffixArray
+							Auto (default), Linear, RabinKarp, SuffixArray
   -l, --lazy-matching       Enable lazy matching for better compression
   -c, --cost-based          Enable cost-based match selection
   --no-rle                  Disable RLE optimization

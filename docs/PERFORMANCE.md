@@ -105,24 +105,24 @@ dotnet run -c Release -- --job short
 [MarkdownExporter]
 public class MyBenchmarks
 {
-    private byte[] _source = null!;
-    private byte[] _target = null!;
-    
-    [GlobalSetup]
-    public void Setup()
-    {
-        _source = new byte[1024 * 1024];
-        _target = new byte[1024 * 1024];
-        // Initialize with test data
-    }
-    
-    [Benchmark(Baseline = true)]
-    public (int, bool) CheckRun_SIMD() 
-        => Encoder.CheckRun(_source, _target);
-    
-    [Benchmark]
-    public (int, bool) CheckRun_Scalar() 
-        => Encoder.CheckRunScalar(_source, _target);
+	private byte[] _source = null!;
+	private byte[] _target = null!;
+	
+	[GlobalSetup]
+	public void Setup()
+	{
+		_source = new byte[1024 * 1024];
+		_target = new byte[1024 * 1024];
+		// Initialize with test data
+	}
+	
+	[Benchmark(Baseline = true)]
+	public (int, bool) CheckRun_SIMD() 
+		=> Encoder.CheckRun(_source, _target);
+	
+	[Benchmark]
+	public (int, bool) CheckRun_Scalar() 
+		=> Encoder.CheckRunScalar(_source, _target);
 }
 ```
 
@@ -137,9 +137,9 @@ The library uses `ArrayPool<byte>.Shared` to reduce GC pressure:
 ```csharp
 byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
 try {
-    // Use buffer (may be larger than requested)
+	// Use buffer (may be larger than requested)
 } finally {
-    ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
+	ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
 }
 ```
 
@@ -209,12 +209,12 @@ using var stream = new BufferedStream(file.OpenRead(), BUFFER_SIZE);
 
 ```csharp
 using var fs = new FileStream(
-    path,
-    FileMode.Open,
-    FileAccess.Read,
-    FileShare.ReadWrite,    // Allow concurrent access
-    bufferSize: 81920,
-    FileOptions.SequentialScan  // Hint for read-ahead
+	path,
+	FileMode.Open,
+	FileAccess.Read,
+	FileShare.ReadWrite,    // Allow concurrent access
+	bufferSize: 81920,
+	FileOptions.SequentialScan  // Hint for read-ahead
 );
 ```
 
@@ -233,7 +233,7 @@ stream.ReadExactly(buffer.AsSpan(0, length));
 ```csharp
 // FileShare.ReadWrite allows other processes to access
 using var fs = new FileStream(path, FileMode.Open, 
-    FileAccess.Read, FileShare.ReadWrite);
+	FileAccess.Read, FileShare.ReadWrite);
 ```
 
 ---
@@ -360,8 +360,8 @@ var suffixArray = new SuffixArray(sourceData);
 
 // Reuse for each position in target
 for (int pos = 0; pos < target.Length; pos++) {
-    var result = suffixArray.FindLongestMatch(target[pos..], minLength);
-    // ...
+	var result = suffixArray.FindLongestMatch(target[pos..], minLength);
+	// ...
 }
 ```
 
@@ -385,7 +385,7 @@ private const int BUFFER_SIZE = 16384;  // 16 KB instead of 80 KB
 ```csharp
 // Parallel chunk processing
 Parallel.For(0, chunks, chunk => {
-    ProcessChunk(chunk, sourceSlice, targetSlice);
+	ProcessChunk(chunk, sourceSlice, targetSlice);
 });
 ```
 

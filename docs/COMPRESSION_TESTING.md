@@ -85,9 +85,9 @@ strategy.Prepare(sourceData);
 int collisions = 0;
 for (int i = 0; i < targetData.Length - 4; i++)
 {
-    var (length, start, _) = strategy.FindBestMatch(sourceData, targetData.AsSpan(i), 4);
-    if (start >= 0 && !sourceData.AsSpan(start, length).SequenceEqual(targetData.AsSpan(i, length)))
-        collisions++;
+	var (length, start, _) = strategy.FindBestMatch(sourceData, targetData.AsSpan(i), 4);
+	if (start >= 0 && !sourceData.AsSpan(start, length).SequenceEqual(targetData.AsSpan(i, length)))
+		collisions++;
 }
 Console.WriteLine($"Hash collisions: {collisions}");
 ```
@@ -113,14 +113,14 @@ strategy.Prepare(sourceData);  // Build suffix array
 // Verify all matches are valid
 for (int i = 0; i < 1000; i++)
 {
-    int start = Random.Shared.Next(targetData.Length - 10);
-    var pattern = targetData.AsSpan(start, 10);
-    var (length, matchStart, _) = strategy.FindBestMatch(sourceData, pattern, 4);
-    
-    if (length > 0)
-    {
-        Assert.True(sourceData.AsSpan(matchStart, length).SequenceEqual(pattern[..length]));
-    }
+	int start = Random.Shared.Next(targetData.Length - 10);
+	var pattern = targetData.AsSpan(start, 10);
+	var (length, matchStart, _) = strategy.FindBestMatch(sourceData, pattern, 4);
+	
+	if (length > 0)
+	{
+		Assert.True(sourceData.AsSpan(matchStart, length).SequenceEqual(pattern[..length]));
+	}
 }
 ```
 
@@ -177,40 +177,40 @@ for (int i = 0; i < 1000; i++)
 [MemoryDiagnoser]
 public class CompressionStrategyBenchmarks
 {
-    private byte[] _source = null!;
-    private byte[] _target = null!;
+	private byte[] _source = null!;
+	private byte[] _target = null!;
 
-    [Params(1024, 32768, 1048576, 10485760)]
-    public int FileSize { get; set; }
+	[Params(1024, 32768, 1048576, 10485760)]
+	public int FileSize { get; set; }
 
-    [Params(0.01, 0.05, 0.10, 0.25)]
-    public double ChangeRatio { get; set; }
+	[Params(0.01, 0.05, 0.10, 0.25)]
+	public double ChangeRatio { get; set; }
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _source = new byte[FileSize];
-        Random.Shared.NextBytes(_source);
-        
-        _target = (byte[])_source.Clone();
-        int changes = (int)(FileSize * ChangeRatio);
-        for (int i = 0; i < changes; i++)
-        {
-            _target[Random.Shared.Next(FileSize)] = (byte)Random.Shared.Next(256);
-        }
-    }
+	[GlobalSetup]
+	public void Setup()
+	{
+		_source = new byte[FileSize];
+		Random.Shared.NextBytes(_source);
+		
+		_target = (byte[])_source.Clone();
+		int changes = (int)(FileSize * ChangeRatio);
+		for (int i = 0; i < changes; i++)
+		{
+			_target[Random.Shared.Next(FileSize)] = (byte)Random.Shared.Next(256);
+		}
+	}
 
-    [Benchmark(Baseline = true)]
-    public byte[] Linear() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.Linear);
+	[Benchmark(Baseline = true)]
+	public byte[] Linear() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.Linear);
 
-    [Benchmark]
-    public byte[] RabinKarp() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.RabinKarp);
+	[Benchmark]
+	public byte[] RabinKarp() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.RabinKarp);
 
-    [Benchmark]
-    public byte[] SuffixArray() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.SuffixArray);
+	[Benchmark]
+	public byte[] SuffixArray() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.SuffixArray);
 
-    [Benchmark]
-    public byte[] Auto() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.Auto);
+	[Benchmark]
+	public byte[] Auto() => BpsEncoder.Encode(_source, _target, MatchingAlgorithm.Auto);
 }
 ```
 
@@ -244,17 +244,17 @@ if (match.Length >= 4) CommitMatch(match);
 var match = FindMatch(position);
 if (match.Length >= 4)
 {
-    var nextMatch = FindMatch(position + 1);
-    if (nextMatch.Length > match.Length + 1)
-    {
-        // Emit one literal, use better match
-        EmitLiteral(data[position]);
-        CommitMatch(nextMatch);
-    }
-    else
-    {
-        CommitMatch(match);
-    }
+	var nextMatch = FindMatch(position + 1);
+	if (nextMatch.Length > match.Length + 1)
+	{
+		// Emit one literal, use better match
+		EmitLiteral(data[position]);
+		CommitMatch(nextMatch);
+	}
+	else
+	{
+		CommitMatch(match);
+	}
 }
 ```
 
@@ -272,7 +272,7 @@ ulong hash = ComputeHash(data, start, length);
 (ulong h1, ulong h2) = ComputeDualHash(data, start, length);
 if (hashTable.TryGet((h1, h2), out var positions))
 {
-    // Much fewer false positives
+	// Much fewer false positives
 }
 ```
 
@@ -288,7 +288,7 @@ Vector256<byte> pattern = Vector256.Create(target[0]);
 var matches = Avx2.CompareEqual(source.AsVector256(), pattern);
 if (!Avx2.TestZ(matches, matches))
 {
-    // Process potential matches
+	// Process potential matches
 }
 ```
 
@@ -300,9 +300,9 @@ Divide source into chunks, process in parallel:
 
 ```csharp
 var chunks = Enumerable.Range(0, source.Length / ChunkSize)
-    .AsParallel()
-    .Select(i => BuildChunkIndex(source, i * ChunkSize, ChunkSize))
-    .ToArray();
+	.AsParallel()
+	.Select(i => BuildChunkIndex(source, i * ChunkSize, ChunkSize))
+	.ToArray();
 ```
 
 **Expected improvement:** Linear with CPU cores
@@ -320,8 +320,8 @@ dotnet run --project src/BpsPatch.Cli/ -- encode source.bin target.bin patch.bps
 
 # Compare patch sizes
 foreach ($algo in "Linear", "RabinKarp", "SuffixArray") {
-    dotnet run --project src/BpsPatch.Cli/ -- encode source.bin target.bin "patch-$algo.bps" --algorithm $algo
-    (Get-Item "patch-$algo.bps").Length
+	dotnet run --project src/BpsPatch.Cli/ -- encode source.bin target.bin "patch-$algo.bps" --algorithm $algo
+	(Get-Item "patch-$algo.bps").Length
 }
 
 # Verify round-trip

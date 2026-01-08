@@ -155,10 +155,10 @@ var targetFile = new FileInfo("modified.bin");
 var patchFile = new FileInfo("patch.bps");
 
 Encoder.CreatePatch(
-    sourceFile,
-    patchFile,
-    targetFile,
-    metadata: "Version 1.0 - Bug fixes"
+	sourceFile,
+	patchFile,
+	targetFile,
+	metadata: "Version 1.0 - Bug fixes"
 );
 
 Console.WriteLine($"Patch created: {patchFile.Length} bytes");
@@ -175,17 +175,17 @@ var patchFile = new FileInfo("patch.bps");
 var outputFile = new FileInfo("patched.bin");
 
 List<string> warnings = Decoder.ApplyPatch(
-    sourceFile,
-    patchFile,
-    outputFile
+	sourceFile,
+	patchFile,
+	outputFile
 );
 
 // Check for warnings
 if (warnings.Count > 0) {
-    Console.WriteLine("Warnings:");
-    foreach (var warning in warnings) {
-        Console.WriteLine($"  - {warning}");
-    }
+	Console.WriteLine("Warnings:");
+	foreach (var warning in warnings) {
+		Console.WriteLine($"  - {warning}");
+	}
 }
 ```
 
@@ -195,15 +195,15 @@ if (warnings.Count > 0) {
 
 ```csharp
 try {
-    var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
-    
-    if (warnings.Any(w => w.Contains("CRC32"))) {
-        Console.WriteLine("Warning: File hash mismatch - file may be corrupted");
-    }
+	var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
+	
+	if (warnings.Any(w => w.Contains("CRC32"))) {
+		Console.WriteLine("Warning: File hash mismatch - file may be corrupted");
+	}
 } catch (PatchFormatException ex) {
-    Console.WriteLine($"Invalid patch file: {ex.Message}");
+	Console.WriteLine($"Invalid patch file: {ex.Message}");
 } catch (IOException ex) {
-    Console.WriteLine($"File error: {ex.Message}");
+	Console.WriteLine($"File error: {ex.Message}");
 }
 ```
 
@@ -214,17 +214,17 @@ var patchDirectory = new DirectoryInfo("patches");
 var sourceFile = new FileInfo("base.bin");
 
 foreach (var patchFile in patchDirectory.GetFiles("*.bps")) {
-    var outputFile = new FileInfo($"output/{patchFile.Name}.bin");
-    
-    Console.WriteLine($"Applying {patchFile.Name}...");
-    
-    var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
-    
-    if (warnings.Count == 0) {
-        Console.WriteLine($"  ✓ Success");
-    } else {
-        Console.WriteLine($"  ⚠ Completed with {warnings.Count} warning(s)");
-    }
+	var outputFile = new FileInfo($"output/{patchFile.Name}.bin");
+	
+	Console.WriteLine($"Applying {patchFile.Name}...");
+	
+	var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
+	
+	if (warnings.Count == 0) {
+		Console.WriteLine($"  ✓ Success");
+	} else {
+		Console.WriteLine($"  ⚠ Completed with {warnings.Count} warning(s)");
+	}
 }
 ```
 
@@ -237,7 +237,7 @@ byte[] header = new byte[4];
 patchStream.Read(header, 0, 4);
 
 if (Encoding.UTF8.GetString(header) != "BPS1") {
-    throw new PatchFormatException("Not a valid BPS patch file");
+	throw new PatchFormatException("Not a valid BPS patch file");
 }
 
 // Decode sizes
@@ -248,7 +248,7 @@ Console.WriteLine($"Patch expects source size: {sourceSize} bytes");
 Console.WriteLine($"Your file size: {sourceFile.Length} bytes");
 
 if ((ulong)sourceFile.Length != sourceSize) {
-    Console.WriteLine("Warning: Source file size mismatch!");
+	Console.WriteLine("Warning: Source file size mismatch!");
 }
 ```
 
@@ -263,9 +263,9 @@ var target = File.ReadAllBytes("large_target.bin");
 
 // Use Rabin-Karp algorithm (O(n) average case)
 var (length, start, reachedEnd) = Encoder.FindBestRunRabinKarp(
-    source,
-    target.AsSpan(position, remainingLength),
-    minimumLongestRun: 4
+	source,
+	target.AsSpan(position, remainingLength),
+	minimumLongestRun: 4
 );
 
 Console.WriteLine($"Found {length} byte match at position {start}");
@@ -280,17 +280,17 @@ var suffixArray = new SuffixArray(source);
 
 // Create multiple patches efficiently
 foreach (var targetFile in targetFiles) {
-    var target = File.ReadAllBytes(targetFile);
-    
-    for (int pos = 0; pos < target.Length; pos++) {
-        var (length, start, reachedEnd) = Encoder.FindBestRunSuffixArray(
-            suffixArray,
-            target.AsSpan(pos),
-            minimumLongestRun: 4
-        );
-        
-        // Use match result...
-    }
+	var target = File.ReadAllBytes(targetFile);
+	
+	for (int pos = 0; pos < target.Length; pos++) {
+		var (length, start, reachedEnd) = Encoder.FindBestRunSuffixArray(
+			suffixArray,
+			target.AsSpan(pos),
+			minimumLongestRun: 4
+		);
+		
+		// Use match result...
+	}
 }
 ```
 
@@ -301,16 +301,16 @@ using System.IO.MemoryMappedFiles;
 
 // For files > 256MB
 if (MemoryMappedFileHelper.ShouldUseMemoryMapped(fileInfo.Length)) {
-    var (mmf, accessor) = MemoryMappedFileHelper.CreateReadAccessor(fileInfo);
-    
-    using (mmf)
-    using (accessor) {
-        // Read chunks without loading entire file
-        byte[] chunk = MemoryMappedFileHelper.ReadBytes(accessor, offset: 1000000, length: 4096);
-        
-        // Compute CRC32 in chunks
-        byte[] crc = MemoryMappedFileHelper.ComputeCRC32Chunked(accessor, fileInfo.Length);
-    }
+	var (mmf, accessor) = MemoryMappedFileHelper.CreateReadAccessor(fileInfo);
+	
+	using (mmf)
+	using (accessor) {
+		// Read chunks without loading entire file
+		byte[] chunk = MemoryMappedFileHelper.ReadBytes(accessor, offset: 1000000, length: 4096);
+		
+		// Compute CRC32 in chunks
+		byte[] crc = MemoryMappedFileHelper.ComputeCRC32Chunked(accessor, fileInfo.Length);
+	}
 }
 ```
 
@@ -383,18 +383,18 @@ Typical compression ratios by change type:
 ```csharp
 // Small files: Linear search
 if (sourceSize < 1024 * 1024) { // < 1MB
-    Encoder.FindBestRunLinear(source, target);
+	Encoder.FindBestRunLinear(source, target);
 }
 
 // Large files: Rabin-Karp
 else if (sourceSize < 100 * 1024 * 1024) { // < 100MB
-    Encoder.FindBestRunRabinKarp(source, target);
+	Encoder.FindBestRunRabinKarp(source, target);
 }
 
 // Huge files or multiple patches: Suffix array
 else {
-    var sa = new SuffixArray(source);
-    Encoder.FindBestRunSuffixArray(sa, target);
+	var sa = new SuffixArray(source);
+	Encoder.FindBestRunSuffixArray(sa, target);
 }
 ```
 
@@ -420,7 +420,7 @@ For creating multiple patches in parallel:
 using System.Threading.Tasks;
 
 var patchTasks = targetFiles.Select(targetFile => Task.Run(() => {
-    Encoder.CreatePatch(sourceFile, targetFile, patchFile, metadata);
+	Encoder.CreatePatch(sourceFile, targetFile, patchFile, metadata);
 })).ToArray();
 
 Task.WaitAll(patchTasks);
@@ -489,7 +489,7 @@ Console.WriteLine($"Processing position {currentPos}/{totalLength}");
 ```csharp
 // Check patch size is reasonable
 if (patchFile.Length > sourceFile.Length * 1.1) {
-    Console.WriteLine("Warning: Patch is unusually large - may indicate an issue");
+	Console.WriteLine("Warning: Patch is unusually large - may indicate an issue");
 }
 ```
 

@@ -127,21 +127,21 @@ dotnet run -c Release --filter "*CreatePatch_IdenticalFiles*"
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>bps_patch.Benchmarks</RootNamespace>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<OutputType>Exe</OutputType>
+	<TargetFramework>net10.0</TargetFramework>
+	<RootNamespace>bps_patch.Benchmarks</RootNamespace>
+	<Nullable>enable</Nullable>
+	<LangVersion>latest</LangVersion>
+	<ImplicitUsings>disable</ImplicitUsings>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
+	<PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\bps-patch.csproj" />
+	<ProjectReference Include="..\bps-patch.csproj" />
   </ItemGroup>
 </Project>
 ```
@@ -163,9 +163,9 @@ using BenchmarkDotNet.Running;
 namespace bps_patch.Benchmarks;
 
 class Program {
-    static void Main(string[] args) {
-        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
-    }
+	static void Main(string[] args) {
+		BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+	}
 }
 ```
 

@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enabled via `BpsEncoderOptions.UseLazyMatching = true`
   - Checks if next position has better match before committing
   - Trade-off: slower encoding for potentially smaller patches
+- **Documentation improvements**
+  - Converted all code blocks in markdown files to use tabs
+  - Added PowerShell script: `scripts/Convert-MarkdownCodeBlocksToTabs.ps1`
+  - Comprehensive HOW_TO_FINISH guide with visual checklists
+  - Emoji-enhanced progress tracking
 
 ### Fixed
 - **Critical encoder bug**: TargetRead command was double-counting targetPosition

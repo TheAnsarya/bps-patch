@@ -56,15 +56,15 @@ on:
   
   # UNCOMMENT THESE LINES:
   push:
-    branches: [ master, main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+	branches: [ master, main, develop ]
+	paths-ignore:
+	  - '**.md'
+	  - 'docs/**'
   pull_request:
-    branches: [ master, main ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+	branches: [ master, main ]
+	paths-ignore:
+	  - '**.md'
+	  - 'docs/**'
 ```
 
 **Cost estimate**: ~5-10 minutes per push × 3 platforms = 15-30 minutes per commit
@@ -77,7 +77,7 @@ Only run CI when pull requests are created:
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ master, main ]
+	branches: [ master, main ]
 ```
 
 **Cost estimate**: ~15-30 minutes per PR (not every commit)
@@ -89,7 +89,7 @@ Modify the matrix to test on one platform only:
 ```yaml
 strategy:
   matrix:
-    os: [ubuntu-latest]  # Remove windows-latest, macos-latest
+	os: [ubuntu-latest]  # Remove windows-latest, macos-latest
 ```
 
 **Cost estimate**: ~5-10 minutes per run (Linux only)
@@ -106,9 +106,9 @@ on:
   
   # UNCOMMENT:
   push:
-    branches: [ master, main ]
+	branches: [ master, main ]
   pull_request:
-    branches: [ master, main ]
+	branches: [ master, main ]
 ```
 
 ### Setting Up Codecov (Optional)
@@ -131,8 +131,8 @@ on:
   
   # UNCOMMENT for tag-based releases:
   push:
-    tags:
-      - 'v*'
+	tags:
+	  - 'v*'
 ```
 
 Then create releases by pushing tags:

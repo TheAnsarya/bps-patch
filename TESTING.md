@@ -89,8 +89,8 @@ dotnet test --filter "FullyQualifiedName~SimdTests"
 echo "Running fast tests..."
 dotnet test --filter "Category!=Performance&Category!=LongRunning"
 if [ $? -ne 0 ]; then
-    echo "Tests failed. Commit aborted."
-    exit 1
+	echo "Tests failed. Commit aborted."
+	exit 1
 fi
 ```
 

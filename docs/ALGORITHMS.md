@@ -50,15 +50,15 @@ The simplest approach: scan all positions in source to find the best match.
 
 ```csharp
 for (int start = 0; start <= checkUntil; start++) {
-    (int length, bool reachedEnd) = CheckRun(source[start..], target);
-    
-    if (length > longestRun) {
-        longestRun = length;
-        longestStart = start;
-        
-        // Prune: can't find longer match beyond this point
-        checkUntil = Math.Min(checkUntil, source.Length - longestRun);
-    }
+	(int length, bool reachedEnd) = CheckRun(source[start..], target);
+	
+	if (length > longestRun) {
+		longestRun = length;
+		longestStart = start;
+		
+		// Prune: can't find longer match beyond this point
+		checkUntil = Math.Min(checkUntil, source.Length - longestRun);
+	}
 }
 ```
 
@@ -109,9 +109,9 @@ sourceHash = (sourceHash + PRIME - (source[i-1] * basePower) % PRIME) % PRIME;
 sourceHash = (sourceHash * BASE + source[i + patternLength - 1]) % PRIME;
 
 if (sourceHash == patternHash) {
-    // Verify match
-    if (source.Slice(i, patternLength).SequenceEqual(pattern))
-        return (true, i);
+	// Verify match
+	if (source.Slice(i, patternLength).SequenceEqual(pattern))
+		return (true, i);
 }
 ```
 
@@ -178,13 +178,13 @@ int startIdx = BinarySearchFirstByteRange(pattern[0], out int endIdx);
 
 // Scan range for longest match
 for (int i = startIdx; i <= endIdx; i++) {
-    int suffixPos = _suffixArray[i];
-    int matchLen = CountMatchingBytes(_data.AsSpan(suffixPos), pattern);
-    
-    if (matchLen > bestLength) {
-        bestLength = matchLen;
-        bestStart = suffixPos;
-    }
+	int suffixPos = _suffixArray[i];
+	int matchLen = CountMatchingBytes(_data.AsSpan(suffixPos), pattern);
+	
+	if (matchLen > bestLength) {
+		bestLength = matchLen;
+		bestStart = suffixPos;
+	}
 }
 ```
 
@@ -240,12 +240,12 @@ var match1 = FindBestRun(target[pos..]);
 var match2 = FindBestRun(target[pos+1..]);
 
 if (match2.Length > match1.Length + 1) {
-    // Skip current position, take better match
-    EmitTargetRead(target[pos]);
-    pos++;
+	// Skip current position, take better match
+	EmitTargetRead(target[pos]);
+	pos++;
 } else {
-    EmitMatch(match1);
-    pos += match1.Length;
+	EmitMatch(match1);
+	pos += match1.Length;
 }
 ```
 
@@ -260,13 +260,13 @@ Use dynamic programming to find globally optimal sequence of actions.
 // dp[i] = minimum cost to encode target[0..i]
 dp[0] = 0;
 for (int i = 1; i <= target.Length; i++) {
-    // Try all possible actions ending at position i
-    dp[i] = min(
-        dp[i-1] + TargetReadCost(1),           // Single new byte
-        dp[i-len] + SourceReadCost(len),       // SourceRead of len bytes
-        dp[i-len] + SourceCopyCost(len, off),  // SourceCopy
-        dp[i-len] + TargetCopyCost(len, off)   // TargetCopy
-    );
+	// Try all possible actions ending at position i
+	dp[i] = min(
+		dp[i-1] + TargetReadCost(1),           // Single new byte
+		dp[i-len] + SourceReadCost(len),       // SourceRead of len bytes
+		dp[i-len] + SourceCopyCost(len, off),  // SourceCopy
+		dp[i-len] + TargetCopyCost(len, off)   // TargetCopy
+	);
 }
 ```
 
@@ -286,7 +286,7 @@ Input: 300 (binary: 100101100)
 
 Step 1: Extract 7 bits → 0101100 (44), remaining: 10 (2)
 Step 2: remaining > 0, decrement and continue
-        remaining - 1 = 1, extract 7 bits → 0000001 (1)
+		remaining - 1 = 1, extract 7 bits → 0000001 (1)
 Step 3: remaining = 0, set MSB for termination
 
 Output: [44, 129] = [0x2C, 0x81]
@@ -320,17 +320,17 @@ The `CheckRun` function uses SIMD for bulk byte comparison:
 
 ```csharp
 if (Vector.IsHardwareAccelerated && maxLength >= Vector<byte>.Count) {
-    int vectorLength = Vector<byte>.Count;  // 16 (SSE) or 32 (AVX)
-    
-    while (length <= maxVectorIndex) {
-        var sourceVec = new Vector<byte>(source.Slice(length, vectorLength));
-        var targetVec = new Vector<byte>(target.Slice(length, vectorLength));
-        
-        if (!Vector.EqualsAll(sourceVec, targetVec))
-            break;  // Mismatch in this chunk
-        
-        length += vectorLength;
-    }
+	int vectorLength = Vector<byte>.Count;  // 16 (SSE) or 32 (AVX)
+	
+	while (length <= maxVectorIndex) {
+		var sourceVec = new Vector<byte>(source.Slice(length, vectorLength));
+		var targetVec = new Vector<byte>(target.Slice(length, vectorLength));
+		
+		if (!Vector.EqualsAll(sourceVec, targetVec))
+			break;  // Mismatch in this chunk
+		
+		length += vectorLength;
+	}
 }
 ```
 
@@ -363,29 +363,29 @@ Auto-select based on file characteristics:
 
 ```csharp
 public static (int, int, bool) FindBestRunAuto(
-    ReadOnlySpan<byte> source,
-    ReadOnlySpan<byte> target,
-    int minLen,
-    SuffixArray? cachedSuffixArray = null)
+	ReadOnlySpan<byte> source,
+	ReadOnlySpan<byte> target,
+	int minLen,
+	SuffixArray? cachedSuffixArray = null)
 {
-    // Heuristics based on benchmarking
-    if (source.Length < 65_536) {
-        // Small files: linear search is fastest
-        return FindBestRunLinear(source, target, minLen);
-    }
-    else if (source.Length < 1_048_576) {
-        // Medium files: Rabin-Karp good balance
-        return FindBestRunRabinKarp(source, target, minLen);
-    }
-    else {
-        // Large files: Suffix array (reuse if cached)
-        if (cachedSuffixArray != null)
-            return cachedSuffixArray.FindLongestMatch(target, minLen);
-        
-        // One-time construction cost acceptable for large files
-        var sa = new SuffixArray(source);
-        return sa.FindLongestMatch(target, minLen);
-    }
+	// Heuristics based on benchmarking
+	if (source.Length < 65_536) {
+		// Small files: linear search is fastest
+		return FindBestRunLinear(source, target, minLen);
+	}
+	else if (source.Length < 1_048_576) {
+		// Medium files: Rabin-Karp good balance
+		return FindBestRunRabinKarp(source, target, minLen);
+	}
+	else {
+		// Large files: Suffix array (reuse if cached)
+		if (cachedSuffixArray != null)
+			return cachedSuffixArray.FindLongestMatch(target, minLen);
+		
+		// One-time construction cost acceptable for large files
+		var sa = new SuffixArray(source);
+		return sa.FindLongestMatch(target, minLen);
+	}
 }
 ```
 
@@ -413,9 +413,9 @@ Use PLINQ for independent chunk searches:
 
 ```csharp
 var results = Enumerable.Range(0, chunks)
-    .AsParallel()
-    .Select(chunk => FindMatchInChunk(chunk))
-    .ToList();
+	.AsParallel()
+	.Select(chunk => FindMatchInChunk(chunk))
+	.ToList();
 ```
 
 ### 3. Memory-Mapped Files

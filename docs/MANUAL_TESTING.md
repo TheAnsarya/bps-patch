@@ -62,9 +62,9 @@ $target[100] = 0xFF  # Modify one byte
 
 # Verify
 if ((Get-FileHash target.bin).Hash -eq (Get-FileHash output.bin).Hash) {
-    Write-Host "SUCCESS: Output matches target" -ForegroundColor Green
+	Write-Host "SUCCESS: Output matches target" -ForegroundColor Green
 } else {
-    Write-Host "FAILURE: Output does not match target" -ForegroundColor Red
+	Write-Host "FAILURE: Output does not match target" -ForegroundColor Red
 }
 
 # Cleanup
@@ -132,15 +132,15 @@ Import-Csv ".\test-results\large-file-results-*.csv" | Format-Table
 
 # Analyze compression ratios by algorithm
 Import-Csv ".\test-results\large-file-results-*.csv" | 
-    Where-Object { $_.Success -eq 'True' } |
-    Group-Object Algorithm | 
-    ForEach-Object {
-        [PSCustomObject]@{
-            Algorithm = $_.Name
-            AvgRatio = ($_.Group | Measure-Object -Property CompressionRatio -Average).Average
-            AvgEncodeMs = ($_.Group | Measure-Object -Property EncodeTimeMs -Average).Average
-        }
-    }
+	Where-Object { $_.Success -eq 'True' } |
+	Group-Object Algorithm | 
+	ForEach-Object {
+		[PSCustomObject]@{
+			Algorithm = $_.Name
+			AvgRatio = ($_.Group | Measure-Object -Property CompressionRatio -Average).Average
+			AvgEncodeMs = ($_.Group | Measure-Object -Property EncodeTimeMs -Average).Average
+		}
+	}
 ```
 
 ---
@@ -233,7 +233,7 @@ Write-Host "Patch size for completely different files: $patchSize bytes"
 
 # Verify
 if ((Get-FileHash target.bin).Hash -eq (Get-FileHash output.bin).Hash) {
-    Write-Host "SUCCESS" -ForegroundColor Green
+	Write-Host "SUCCESS" -ForegroundColor Green
 }
 
 Remove-Item source.bin, target.bin, patch.bps, output.bin
@@ -249,14 +249,14 @@ $target = [byte[]]::new($size)
 
 # Fill with zeros
 for ($i = 0; $i -lt $size; $i++) {
-    $source[$i] = 0
-    $target[$i] = 0
+	$source[$i] = 0
+	$target[$i] = 0
 }
 
 # Put some data at the end
 for ($i = $size - 1000; $i -lt $size; $i++) {
-    $source[$i] = [byte]($i % 256)
-    $target[$i] = [byte](($i + 1) % 256)
+	$source[$i] = [byte]($i % 256)
+	$target[$i] = [byte](($i + 1) % 256)
 }
 
 [System.IO.File]::WriteAllBytes("source.bin", $source)
@@ -281,8 +281,8 @@ $target = [byte[]]::new(10000)
 $pattern = [byte[]](0xAB, 0xCD, 0xEF, 0x12)
 
 for ($i = 0; $i -lt 10000; $i++) {
-    $source[$i] = $pattern[$i % 4]
-    $target[$i] = $pattern[($i + 1) % 4]  # Shifted pattern
+	$source[$i] = $pattern[$i % 4]
+	$target[$i] = $pattern[($i + 1) % 4]  # Shifted pattern
 }
 
 [System.IO.File]::WriteAllBytes("source.bin", $source)
@@ -308,8 +308,8 @@ $source = [byte[]]::new(5000)
 $target = [byte[]]::new(5000)
 
 for ($i = 0; $i -lt 5000; $i++) {
-    $source[$i] = [byte]($i % 256)
-    $target[$i] = [byte](($i + 50) % 256)  # Offset copy opportunity
+	$source[$i] = [byte]($i % 256)
+	$target[$i] = [byte](($i + 50) % 256)  # Offset copy opportunity
 }
 
 [System.IO.File]::WriteAllBytes("source.bin", $source)
@@ -333,12 +333,12 @@ Remove-Item source.bin, target.bin, patch-no-cost.bps, patch-cost.bps
 # Create data with RLE patterns
 $target = [byte[]]::new(1000)
 for ($i = 0; $i -lt 1000; $i++) {
-    $target[$i] = [byte]($i / 100)  # Runs of 100 same bytes
+	$target[$i] = [byte]($i / 100)  # Runs of 100 same bytes
 }
 
 $source = [byte[]]::new(1000)
 for ($i = 0; $i -lt 1000; $i++) {
-    $source[$i] = [byte]($i % 256)
+	$source[$i] = [byte]($i % 256)
 }
 
 [System.IO.File]::WriteAllBytes("source.bin", $source)

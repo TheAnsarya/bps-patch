@@ -51,11 +51,11 @@ Update test paths in `Program.cs`:
 ```csharp
 static void TestDecoder()
 {
-    var source = new FileInfo(@"C:\roms\source.smc");
-    var patch = new FileInfo(@"C:\patches\mypatch.bps");
-    var target = new FileInfo(@"C:\output\patched.smc");
-    
-    // ... rest of code
+	var source = new FileInfo(@"C:\roms\source.smc");
+	var patch = new FileInfo(@"C:\patches\mypatch.bps");
+	var target = new FileInfo(@"C:\output\patched.smc");
+	
+	// ... rest of code
 }
 ```
 
@@ -84,11 +84,11 @@ var warnings = bps_patch.Decoder.ApplyPatch(source, patch, target);
 
 if (warnings.Count > 0)
 {
-    Console.WriteLine("Warnings:");
-    foreach (var warning in warnings)
-    {
-        Console.WriteLine($"  - {warning}");
-    }
+	Console.WriteLine("Warnings:");
+	foreach (var warning in warnings)
+	{
+		Console.WriteLine($"  - {warning}");
+	}
 }
 ```
 
