@@ -7,6 +7,7 @@
 // References:
 // - Suffix Array: https://en.wikipedia.org/wiki/Suffix_array
 // - LCP Array: https://en.wikipedia.org/wiki/LCP_array
+// - SA-IS Algorithm: Nong, Zhang, Chan (2009) - Linear Suffix Array Construction
 // ========================================================================================================
 
 namespace BpsPatch.Core;
@@ -20,7 +21,7 @@ namespace BpsPatch.Core;
 /// The LCP (Longest Common Prefix) array accelerates finding the longest match.
 /// </para>
 /// <para>
-/// Construction: O(n² log n) naive, O(n) with SA-IS (future optimization)
+/// Construction: O(n) using SA-IS (Suffix Array - Induced Sorting) algorithm
 /// Query: O(log n) binary search + O(m) match extension
 /// Space: O(n) for suffix array + O(n) for LCP array
 /// </para>
@@ -210,39 +211,288 @@ public sealed class SuffixArrayMatchingStrategy : IMatchingStrategy
     }
 
     /// <summary>
-    /// Builds suffix array using naive O(n² log n) sorting.
+    /// Builds suffix array using SA-IS (Suffix Array - Induced Sorting) algorithm.
     /// </summary>
     /// <remarks>
-    /// TODO: Implement SA-IS algorithm for O(n) construction.
+    /// SA-IS achieves O(n) time complexity through induced sorting of LMS suffixes.
+    /// Reference: Nong, Zhang, Chan (2009) "Two Efficient Algorithms for Linear Time Suffix Array Construction"
     /// </remarks>
     private static int[] BuildSuffixArray(byte[] data)
     {
         int n = data.Length;
-        int[] suffixes = new int[n];
+        if (n == 0) return [];
+        if (n == 1) return [0];
 
-        // Initialize with indices
+        // Convert byte array to int array for SA-IS (handles alphabet naturally)
+        int[] s = new int[n + 1];
         for (int i = 0; i < n; i++)
         {
-            suffixes[i] = i;
+            s[i] = data[i] + 1; // Shift by 1 so sentinel (0) is smallest
+        }
+        s[n] = 0; // Sentinel
+
+        int[] sa = new int[n + 1];
+        SaisInternal(s, sa, n + 1, 257); // 256 byte values + 1 sentinel
+
+        // Remove sentinel position and adjust
+        int[] result = new int[n];
+        int idx = 0;
+        for (int i = 0; i < sa.Length; i++)
+        {
+            if (sa[i] < n)
+            {
+                result[idx++] = sa[i];
+            }
         }
 
-        // Sort suffixes lexicographically
-        Array.Sort(suffixes, (a, b) =>
-        {
-            int len = Math.Min(data.Length - a, data.Length - b);
+        return result;
+    }
 
-            for (int i = 0; i < len; i++)
+    /// <summary>
+    /// Core SA-IS implementation for integer alphabets.
+    /// </summary>
+    /// <param name="s">Input string as integer array (must end with sentinel = 0)</param>
+    /// <param name="sa">Output suffix array</param>
+    /// <param name="n">Length of input including sentinel</param>
+    /// <param name="alphabetSize">Size of alphabet (max value + 1)</param>
+    private static void SaisInternal(int[] s, int[] sa, int n, int alphabetSize)
+    {
+        // Step 1: Classify each suffix as S-type or L-type
+        // S-type: s[i] < s[i+1] or (s[i] == s[i+1] and s[i+1] is S-type)
+        // L-type: s[i] > s[i+1] or (s[i] == s[i+1] and s[i+1] is L-type)
+        bool[] isS = new bool[n];
+        isS[n - 1] = true; // Sentinel is always S-type
+
+        for (int i = n - 2; i >= 0; i--)
+        {
+            isS[i] = s[i] < s[i + 1] || (s[i] == s[i + 1] && isS[i + 1]);
+        }
+
+        // Step 2: Find LMS (Leftmost S-type) positions
+        // LMS suffix: S-type suffix where s[i-1] is L-type
+        int[] bucketStarts = new int[alphabetSize];
+        int[] bucketEnds = new int[alphabetSize];
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+
+        // Initialize SA with -1
+        Array.Fill(sa, -1);
+
+        // Place LMS suffixes at end of their buckets
+        for (int i = 1; i < n; i++)
+        {
+            if (IsLms(isS, i))
             {
-                if (data[a + i] != data[b + i])
+                sa[--bucketEnds[s[i]]] = i;
+            }
+        }
+
+        // Reset bucket ends
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+
+        // Step 3: Induced sort L-type suffixes
+        InduceSortL(s, sa, n, isS, bucketStarts);
+
+        // Reset bucket ends
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+
+        // Step 4: Induced sort S-type suffixes
+        InduceSortS(s, sa, n, isS, bucketEnds);
+
+        // Step 5: Compact LMS substrings and recursively sort if needed
+        int lmsCount = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (IsLms(isS, sa[i]))
+            {
+                sa[lmsCount++] = sa[i];
+            }
+        }
+
+        // Clear working area
+        Array.Fill(sa, -1, lmsCount, n - lmsCount);
+
+        // Name each LMS substring
+        int name = 0;
+        int prevLms = -1;
+        for (int i = 0; i < lmsCount; i++)
+        {
+            int pos = sa[i];
+            bool diff = false;
+
+            if (prevLms == -1)
+            {
+                diff = true;
+            }
+            else
+            {
+                // Compare LMS substrings
+                int len = GetLmsSubstringLength(isS, pos, n);
+                int prevLen = GetLmsSubstringLength(isS, prevLms, n);
+
+                if (len != prevLen)
                 {
-                    return data[a + i].CompareTo(data[b + i]);
+                    diff = true;
+                }
+                else
+                {
+                    for (int j = 0; j < len; j++)
+                    {
+                        if (s[pos + j] != s[prevLms + j])
+                        {
+                            diff = true;
+                            break;
+                        }
+                    }
                 }
             }
 
-            return (data.Length - a).CompareTo(data.Length - b);
-        });
+            if (diff)
+            {
+                name++;
+                prevLms = pos;
+            }
 
-        return suffixes;
+            // Store name at position (using second half of SA as temp)
+            sa[lmsCount + (pos >> 1)] = name - 1;
+        }
+
+        // Compact names
+        int[] s1 = new int[lmsCount];
+        int j2 = 0;
+        for (int i = lmsCount; i < n; i++)
+        {
+            if (sa[i] >= 0)
+            {
+                s1[j2++] = sa[i];
+            }
+        }
+
+        // If all names are unique, directly compute SA1
+        // Otherwise recursively sort
+        int[] sa1 = new int[lmsCount];
+        if (name < lmsCount)
+        {
+            // Recursively sort the reduced string
+            SaisInternal(s1, sa1, lmsCount, name);
+        }
+        else
+        {
+            // All unique - place directly
+            for (int i = 0; i < lmsCount; i++)
+            {
+                sa1[s1[i]] = i;
+            }
+        }
+
+        // Step 6: Induce final suffix array from sorted LMS suffixes
+        // Get LMS positions in original order
+        int[] lmsPositions = new int[lmsCount];
+        int lmsIdx = 0;
+        for (int i = 1; i < n; i++)
+        {
+            if (IsLms(isS, i))
+            {
+                lmsPositions[lmsIdx++] = i;
+            }
+        }
+
+        // Place sorted LMS suffixes
+        Array.Fill(sa, -1);
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+
+        for (int i = lmsCount - 1; i >= 0; i--)
+        {
+            int idx = lmsPositions[sa1[i]];
+            sa[--bucketEnds[s[idx]]] = idx;
+        }
+
+        // Final induced sort
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+        InduceSortL(s, sa, n, isS, bucketStarts);
+
+        GetBuckets(s, n, alphabetSize, bucketStarts, bucketEnds);
+        InduceSortS(s, sa, n, isS, bucketEnds);
+    }
+
+    /// <summary>
+    /// Checks if position i is an LMS (Leftmost S-type) position.
+    /// </summary>
+    private static bool IsLms(bool[] isS, int i)
+    {
+        return i > 0 && isS[i] && !isS[i - 1];
+    }
+
+    /// <summary>
+    /// Gets the length of the LMS substring starting at position i.
+    /// </summary>
+    private static int GetLmsSubstringLength(bool[] isS, int i, int n)
+    {
+        if (i == n - 1) return 1;
+
+        int len = 1;
+        while (i + len < n && !IsLms(isS, i + len))
+        {
+            len++;
+        }
+        return len + 1; // Include next LMS position
+    }
+
+    /// <summary>
+    /// Computes bucket boundaries from input string.
+    /// </summary>
+    private static void GetBuckets(int[] s, int n, int alphabetSize, int[] bucketStarts, int[] bucketEnds)
+    {
+        Array.Clear(bucketStarts);
+        Array.Clear(bucketEnds);
+
+        // Count occurrences
+        for (int i = 0; i < n; i++)
+        {
+            bucketEnds[s[i]]++;
+        }
+
+        // Compute bucket boundaries
+        int sum = 0;
+        for (int i = 0; i < alphabetSize; i++)
+        {
+            bucketStarts[i] = sum;
+            sum += bucketEnds[i];
+            bucketEnds[i] = sum;
+        }
+    }
+
+    /// <summary>
+    /// Induced sort L-type suffixes from left to right.
+    /// </summary>
+    private static void InduceSortL(int[] s, int[] sa, int n, bool[] isS, int[] bucketStarts)
+    {
+        int[] bucketHeads = (int[])bucketStarts.Clone();
+
+        for (int i = 0; i < n; i++)
+        {
+            int j = sa[i] - 1;
+            if (sa[i] > 0 && !isS[j])
+            {
+                sa[bucketHeads[s[j]]++] = j;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Induced sort S-type suffixes from right to left.
+    /// </summary>
+    private static void InduceSortS(int[] s, int[] sa, int n, bool[] isS, int[] bucketEnds)
+    {
+        int[] bucketTails = (int[])bucketEnds.Clone();
+
+        for (int i = n - 1; i >= 0; i--)
+        {
+            int j = sa[i] - 1;
+            if (sa[i] > 0 && isS[j])
+            {
+                sa[--bucketTails[s[j]]] = j;
+            }
+        }
     }
 
     /// <summary>

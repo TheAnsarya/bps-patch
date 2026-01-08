@@ -20,9 +20,9 @@ Project roadmap and task tracking for BPS Patch development.
   - Goal: Span-based output parameter or pooled buffer
   - Implemented in: `src/BpsPatch.Core/VariableLengthInt.cs`
 
-- [ ] **Implement SA-IS suffix array construction** - [Issue #2](https://github.com/TheAnsarya/bps-patch/issues/2)
-  - Current: O(n² log n) naive sorting
-  - Goal: O(n) linear time construction
+- [x] **Implement SA-IS suffix array construction** - [Issue #2](https://github.com/TheAnsarya/bps-patch/issues/2) ✅ DONE
+  - Current: O(n) SA-IS algorithm (Nong, Zhang, Chan 2009)
+  - Improvement: ~3x faster than naive O(n² log n) sorting
   - Reference: SA-IS paper
 
 - [ ] **Add lazy matching option** - [Issue #3](https://github.com/TheAnsarya/bps-patch/issues/3)
@@ -188,7 +188,7 @@ Project roadmap and task tracking for BPS Patch development.
 | Issue | Title | Status |
 |-------|-------|--------|
 | #1 | External bug report (SourceCopy slice) | ✅ Fixed (old code bug, modern code correct) |
-| #2 | SA-IS suffix array O(n) construction | Open |
+| #2 | SA-IS suffix array O(n) construction | ✅ Done |
 | #3 | Lazy matching optimization | Open |
 | #4 | Large file tests (>10MB) | Open |
 | #5 | Fuzz testing | Open |

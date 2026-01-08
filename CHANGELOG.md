@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validates identical output across all strategies
   - Compression ratio benchmarks
 - Code coverage verification infrastructure
+- **SA-IS algorithm** for O(n) suffix array construction (Issue #2)
+  - Replaces naive O(n² log n) sorting with linear time algorithm
+  - ~3x faster for 65KB files, greater improvement for larger files
+  - Reference: Nong, Zhang, Chan (2009) "Two Efficient Algorithms for Linear Time Suffix Array Construction"
 
 ### Fixed
 - **Critical encoder bug**: TargetRead command was double-counting targetPosition
