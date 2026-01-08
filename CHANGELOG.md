@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaces naive O(n² log n) sorting with linear time algorithm
   - ~3x faster for 65KB files, greater improvement for larger files
   - Reference: Nong, Zhang, Chan (2009) "Two Efficient Algorithms for Linear Time Suffix Array Construction"
+- **Lazy matching option** for potentially smaller patches (Issue #3)
+  - Enabled via `BpsEncoderOptions.UseLazyMatching = true`
+  - Checks if next position has better match before committing
+  - Trade-off: slower encoding for potentially smaller patches
 
 ### Fixed
 - **Critical encoder bug**: TargetRead command was double-counting targetPosition

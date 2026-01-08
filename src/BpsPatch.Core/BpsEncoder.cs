@@ -279,6 +279,26 @@ public static class BpsEncoder
                     strategy,
                     options.MinimumMatchLength);
 
+                // Lazy matching: check if next position has a better match
+                // If so, emit one literal byte now and use the better match next iteration
+                if (options.UseLazyMatching && mode != BpsAction.TargetRead && targetPosition + 1 < target.Length)
+                {
+                    var (nextMode, nextLength, _) = FindNextRun(
+                        source,
+                        target,
+                        targetPosition + 1,
+                        strategy,
+                        options.MinimumMatchLength);
+
+                    // If next position has a significantly better match, emit literal and defer
+                    // Use threshold of length + 2 to account for the extra literal byte cost
+                    if (nextMode != BpsAction.TargetRead && nextLength > length + 2)
+                    {
+                        // Emit this byte as TargetRead, let next iteration pick up the better match
+                        mode = BpsAction.TargetRead;
+                    }
+                }
+
                 if (mode == BpsAction.TargetRead)
                 {
                     // Accumulate TargetRead bytes

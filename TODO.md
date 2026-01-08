@@ -25,9 +25,10 @@ Project roadmap and task tracking for BPS Patch development.
   - Improvement: ~3x faster than naive O(n² log n) sorting
   - Reference: SA-IS paper
 
-- [ ] **Add lazy matching option** - [Issue #3](https://github.com/TheAnsarya/bps-patch/issues/3)
+- [x] **Add lazy matching option** - [Issue #3](https://github.com/TheAnsarya/bps-patch/issues/3) ✅ DONE
   - Check next position before committing to match
-  - Expected: 5-15% smaller patches
+  - Configurable via `BpsEncoderOptions.UseLazyMatching`
+  - May produce smaller patches at cost of encoding time
 
 - [ ] **Best-in-class compression optimization** - [Issue #13](https://github.com/TheAnsarya/bps-patch/issues/13)
   - Multi-hash Rabin-Karp, SIMD pattern matching
@@ -189,7 +190,7 @@ Project roadmap and task tracking for BPS Patch development.
 |-------|-------|--------|
 | #1 | External bug report (SourceCopy slice) | ✅ Fixed (old code bug, modern code correct) |
 | #2 | SA-IS suffix array O(n) construction | ✅ Done |
-| #3 | Lazy matching optimization | Open |
+| #3 | Lazy matching optimization | ✅ Done |
 | #4 | Large file tests (>10MB) | Open |
 | #5 | Fuzz testing | Open |
 | #6 | GitHub Actions CI | ✅ Closed |

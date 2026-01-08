@@ -19,7 +19,7 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 |-------|-------|--------|
 | [#1](https://github.com/TheAnsarya/bps-patch/issues/1) | External bug report | ✅ Fixed (modern code correct) |
 | [#2](https://github.com/TheAnsarya/bps-patch/issues/2) | Implement SA-IS suffix array | ✅ Done |
-| [#3](https://github.com/TheAnsarya/bps-patch/issues/3) | Add lazy matching optimization | Open |
+| [#3](https://github.com/TheAnsarya/bps-patch/issues/3) | Add lazy matching optimization | ✅ Done |
 | [#4](https://github.com/TheAnsarya/bps-patch/issues/4) | Large file integration tests | Open |
 | [#5](https://github.com/TheAnsarya/bps-patch/issues/5) | Fuzz testing infrastructure | Open |
 | [#6](https://github.com/TheAnsarya/bps-patch/issues/6) | GitHub Actions CI/CD | ✅ Closed |

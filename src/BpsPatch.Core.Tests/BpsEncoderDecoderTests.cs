@@ -228,4 +228,78 @@ public class BpsEncoderDecoderTests : IDisposable
 
         Assert.True(Crc32Calculator.ValidatePatch(patch));
     }
+
+    [Fact]
+    public void EncodeDecode_WithLazyMatching_ProducesValidPatch()
+    {
+        // Create data with a pattern where lazy matching could help
+        // A small match followed by a larger match at the next position
+        byte[] sourceData = new byte[500];
+        byte[] targetData = new byte[500];
+
+        // Fill with pattern
+        for (int i = 0; i < sourceData.Length; i++)
+        {
+            sourceData[i] = (byte)(i % 256);
+        }
+
+        // Copy source to target with modifications
+        Array.Copy(sourceData, targetData, sourceData.Length);
+
+        // Make some changes that could benefit from lazy matching
+        targetData[100] = 0xFF; // Single change before a longer match
+        targetData[200] = 0xFF;
+        targetData[300] = 0xFF;
+
+        var source = CreateTempFile(sourceData);
+        var target = CreateTempFile(targetData);
+        var patchNormal = GetTempPath();
+        var patchLazy = GetTempPath();
+        var output = GetTempPath();
+
+        // Create patch without lazy matching
+        BpsEncoder.CreatePatch(source, patchNormal, target, "", new BpsEncoderOptions { UseLazyMatching = false });
+
+        // Create patch with lazy matching
+        BpsEncoder.CreatePatch(source, patchLazy, target, "", new BpsEncoderOptions { UseLazyMatching = true });
+
+        // Both should produce valid patches
+        var result = BpsDecoder.ApplyPatch(source, patchLazy, output);
+        Assert.True(result.Success);
+        Assert.Equal(targetData, File.ReadAllBytes(output.FullName));
+    }
+
+    [Fact]
+    public void EncodeDecode_LazyMatching_AllAlgorithms_ProducesValidPatch()
+    {
+        byte[] sourceData = new byte[256];
+        byte[] targetData = new byte[256];
+        new Random(42).NextBytes(sourceData);
+        Array.Copy(sourceData, targetData, sourceData.Length);
+
+        // Make scattered changes
+        targetData[50] = 0xFF;
+        targetData[100] = 0xFF;
+        targetData[150] = 0xFF;
+        targetData[200] = 0xFF;
+
+        var source = CreateTempFile(sourceData);
+        var target = CreateTempFile(targetData);
+
+        foreach (var algorithm in new[] { MatchingAlgorithm.Linear, MatchingAlgorithm.RabinKarp, MatchingAlgorithm.SuffixArray })
+        {
+            var patch = GetTempPath();
+            var output = GetTempPath();
+
+            BpsEncoder.CreatePatch(source, patch, target, "", new BpsEncoderOptions
+            {
+                Algorithm = algorithm,
+                UseLazyMatching = true
+            });
+
+            var result = BpsDecoder.ApplyPatch(source, patch, output);
+            Assert.True(result.Success, $"Failed for algorithm {algorithm}");
+            Assert.Equal(targetData, File.ReadAllBytes(output.FullName));
+        }
+    }
 }
