@@ -644,6 +644,16 @@ uint value = BitConverter.ToUInt32(bytes);  // Little-endian on all platforms
 
 1. **BPS Format Documentation**: https://github.com/blakesmith/beat/blob/master/doc/bps.txt
 2. **beat Patcher (Reference Implementation)**: https://github.com/blakesmith/beat
+3. **byuu/Near's Original beat**: https://byuu.org/tool/beat/ (historical)
+
+### Related Patch Formats
+
+| Format | Author | Year | Key Features |
+|--------|--------|------|--------------|
+| **IPS** | Various | 1993 | Simple, 16MB limit, no checksums |
+| **UPS** | byuu | 2007 | XOR-based, bidirectional patches |
+| **BPS** | byuu | 2012 | Dictionary compression, CRC32 validation |
+| **xdelta** | Josh MacDonald | 1997 | VCDIFF-based, streaming support |
 
 ### .NET Documentation
 
@@ -653,16 +663,50 @@ uint value = BitConverter.ToUInt32(bytes);  // Little-endian on all platforms
 4. **BufferedStream**: https://learn.microsoft.com/en-us/dotnet/api/system.io.bufferedstream
 5. **File Sharing**: https://learn.microsoft.com/en-us/dotnet/api/system.io.fileshare
 
-### Algorithms
+### Algorithm References
 
-1. **CRC-32**: https://en.wikipedia.org/wiki/Cyclic_redundancy_check
-2. **Variable-length Quantity**: https://en.wikipedia.org/wiki/Variable-length_quantity
+1. **CRC-32 IEEE 802.3**: https://en.wikipedia.org/wiki/Cyclic_redundancy_check
+   - Polynomial: 0xEDB88320 (reversed)
+   - Used for integrity verification in many formats
+2. **Variable-length Quantity (VLQ)**: https://en.wikipedia.org/wiki/Variable-length_quantity
+   - Similar to UTF-8 continuation encoding
+   - BPS uses little-endian byte order variant
 3. **Zigzag Encoding**: https://developers.google.com/protocol-buffers/docs/encoding#signed-ints
+   - Used for signed offset encoding in SourceCopy/TargetCopy
+
+### Academic Papers
+
+1. **Delta Compression**:
+   - Hunt, J. J., & McIlroy, M. D. (1976). *An Algorithm for Differential File Comparison*. Bell Labs Computing Science Technical Report.
+   - Foundation for all diff/patch algorithms
+
+2. **LZ77 Dictionary Compression**:
+   - Ziv, J., & Lempel, A. (1977). *A Universal Algorithm for Sequential Data Compression*. IEEE Transactions on Information Theory.
+   - Theoretical basis for SourceCopy/TargetCopy operations
+
+3. **Error Detection**:
+   - Peterson, W. W., & Brown, D. T. (1961). *Cyclic Codes for Error Detection*. Proceedings of the IRE.
+   - Mathematical foundation for CRC checksums
 
 ### ROM Hacking Community
 
 1. **RomHacking.net**: https://www.romhacking.net/
-2. **BPS Patch Format Discussion**: https://www.romhacking.net/forum/
+2. **BPS Format Discussion**: https://www.romhacking.net/forum/
+3. **Patcher Utilities**: https://www.romhacking.net/utilities/
+
+### Historical Context
+
+The BPS format was created by **byuu** (also known as **Near**) around 2012 as part of the **beat** patcher tool. It was designed to address limitations of the older IPS and UPS formats:
+
+- **IPS (1993)**: Limited to 16MB files, no integrity checking
+- **UPS (2007)**: Used XOR encoding, making patches reversible but less efficient
+- **BPS (2012)**: Introduced dictionary-based compression with four action types
+
+The format quickly became popular in the ROM hacking community due to:
+- Better compression ratios than IPS
+- CRC32 validation preventing patching wrong files
+- Support for arbitrary file sizes
+- Metadata embedding for documentation
 
 ---
 
@@ -671,12 +715,13 @@ uint value = BitConverter.ToUInt32(bytes);  // Little-endian on all platforms
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-10-29 | Initial specification based on .NET 10 implementation |
+| 1.0.1 | 2026-01-08 | Added academic references, historical context |
 
 ---
 
 ## License
 
-This specification document is provided for reference and educational purposes. The BPS format is an open standard. Implementations should credit the original beat patcher by byuu (Near).
+This specification document is provided for reference and educational purposes. The BPS format is an open standard created by byuu/Near. Implementations should credit the original beat patcher.
 
 ---
 

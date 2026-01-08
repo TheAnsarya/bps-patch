@@ -139,6 +139,7 @@ All documentation is organized and accessible from this README. Click any link t
 | 🧮 [**ALGORITHMS**](docs/ALGORITHMS.md) | Pattern matching algorithms (Linear, Rabin-Karp, SA-IS) | ✅ Complete |
 | 📊 [**PERFORMANCE**](docs/PERFORMANCE.md) | Performance tuning, benchmarks, optimization guide | ✅ Complete |
 | 🔌 [**API_REFERENCE**](docs/API_REFERENCE.md) | Complete API documentation with examples | ✅ Complete |
+| 📖 [**REFERENCES**](docs/REFERENCES.md) | Academic papers, research, and resources | ✅ Complete |
 
 #### 📋 Format & Specification
 

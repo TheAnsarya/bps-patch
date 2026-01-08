@@ -23,6 +23,7 @@ update the `.editorconfig` to use TABS NOT SPACES for everything, including `*.p
 
 all of the code blocks in the `*.md` files should use TABS for indentation NOT SPACES, update the `.editorconfig` and fix all the files; continue improving the utility/project/process; focus on the roadmap, and make documentation for "how to finish this project" with todolists of what is needed for this goal and links to manual steps; start working on this and try to finish up anything that is close to done; continue;
 
+No, I do want the session logs tracked in git; flush out more documentation and make sure the research and references are all documented; work towards making this project complete; continue;
 
 
 

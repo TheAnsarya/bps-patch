@@ -6,7 +6,7 @@
 .DESCRIPTION
 	This script processes all Markdown files and converts 4-space indentation
 	to tab characters inside code blocks (``` and ~~~~).
-	
+
 .PARAMETER Path
 	The root path to search for Markdown files. Defaults to current directory.
 
@@ -37,14 +37,14 @@ foreach ($file in $mdFiles) {
 	$totalFiles++
 	$content = Get-Content -Path $file.FullName -Raw
 	$originalContent = $content
-	
+
 	# Track if we're inside a code block
 	$lines = $content -split "`r?`n"
 	$newLines = @()
 	$inCodeBlock = $false
 	$codeBlockMarker = ""
 	$fileConversions = 0
-	
+
 	foreach ($line in $lines) {
 		# Check for code block start/end
 		if ($line -match '^(`{3,}|~{3,})') {
@@ -59,11 +59,11 @@ foreach ($file in $mdFiles) {
 			$newLines += $line
 			continue
 		}
-		
+
 		# Inside code block - convert leading spaces to tabs
 		if ($inCodeBlock) {
 			$originalLine = $line
-			
+
 			# Match leading spaces in groups of 4 and convert to tabs
 			$leadingSpaces = ""
 			if ($line -match '^( +)') {
@@ -71,30 +71,30 @@ foreach ($file in $mdFiles) {
 				$spaceCount = $leadingSpaces.Length
 				$tabCount = [math]::Floor($spaceCount / 4)
 				$remainingSpaces = $spaceCount % 4
-				
+
 				if ($tabCount -gt 0) {
 					$tabs = "`t" * $tabCount
 					$remaining = " " * $remainingSpaces
 					$restOfLine = $line.Substring($spaceCount)
 					$line = $tabs + $remaining + $restOfLine
-					
+
 					if ($line -ne $originalLine) {
 						$fileConversions++
 					}
 				}
 			}
 		}
-		
+
 		$newLines += $line
 	}
-	
+
 	$newContent = $newLines -join "`r`n"
-	
+
 	# Check if content changed
 	if ($newContent -ne $originalContent) {
 		$modifiedFiles++
 		$totalConversions += $fileConversions
-		
+
 		if ($WhatIf -or $PSCmdlet.ShouldProcess($file.FullName, "Convert spaces to tabs")) {
 			if (-not $WhatIf) {
 				Set-Content -Path $file.FullName -Value $newContent -NoNewline
