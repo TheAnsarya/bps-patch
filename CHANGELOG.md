@@ -30,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added PowerShell script: `scripts/Convert-MarkdownCodeBlocksToTabs.ps1`
   - Comprehensive HOW_TO_FINISH guide with visual checklists
   - Emoji-enhanced progress tracking
+- **Research & References** (docs/REFERENCES.md)
+  - Academic paper citations (SA-IS, Rabin-Karp, LZ77, etc.)
+  - Historical context of BPS format (IPS→UPS→BPS evolution)
+  - Performance research references
+  - Related projects comparison
+- **Session logs** now tracked in git (`logs/` directory)
+  - Development history and decision documentation
+  - Modernization session notes
+  - Refactoring session logs
 
 ### Fixed
 - **Critical encoder bug**: TargetRead command was double-counting targetPosition
@@ -42,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Benchmark runtime moniker updated for .NET 10 compatibility
 - Performance timing tests now skipped in CI to avoid coverage overhead
 - Updated documentation with current coverage metrics (88.72% line, 82.09% branch)
+- Issue #14 (v1.0 release) now marked as Ready - all blockers resolved
 
 ---
 

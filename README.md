@@ -185,6 +185,7 @@ All documentation is organized and accessible from this README. Click any link t
 | Script | Description | Usage |
 |--------|-------------|-------|
 | 🧪 [**Run-LargeFileTests.ps1**](scripts/Run-LargeFileTests.ps1) | Large file testing automation | `.\scripts\Run-LargeFileTests.ps1` |
+| 🔄 [**Convert-MarkdownCodeBlocksToTabs.ps1**](scripts/Convert-MarkdownCodeBlocksToTabs.ps1) | Convert MD code blocks to tabs | `.\scripts\Convert-MarkdownCodeBlocksToTabs.ps1` |
 
 #### 📂 Additional Resources
 
@@ -192,7 +193,7 @@ All documentation is organized and accessible from this README. Click any link t
 |----------|-------------|
 | 🤖 [**.github/copilot-instructions.md**](.github/copilot-instructions.md) | AI assistant instructions |
 | 📁 [**legacy/**](legacy/) | Original implementation reference |
-| 📁 [**logs/**](logs/) | Development session logs |
+| 📁 [**logs/**](logs/) | Development session logs (tracked in git) |
 
 ---
 
