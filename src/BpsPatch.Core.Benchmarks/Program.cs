@@ -176,33 +176,33 @@ public class AlgorithmBenchmarks
     [Benchmark(Baseline = true)]
     public void LinearSearch()
     {
-        _linear.Initialize(_data);
+        _linear.Prepare(_data);
         for (int i = 0; i < 100; i++)
         {
             int pos = i * (DataSize / 100);
-            _linear.FindMatch(_data.AsSpan(pos), _data, pos);
+            _linear.FindBestMatch(_data, _data.AsSpan(pos, Math.Min(100, _data.Length - pos)), 4);
         }
     }
 
     [Benchmark]
     public void RabinKarpSearch()
     {
-        _rabinKarp.Initialize(_data);
+        _rabinKarp.Prepare(_data);
         for (int i = 0; i < 100; i++)
         {
             int pos = i * (DataSize / 100);
-            _rabinKarp.FindMatch(_data.AsSpan(pos), _data, pos);
+            _rabinKarp.FindBestMatch(_data, _data.AsSpan(pos, Math.Min(100, _data.Length - pos)), 4);
         }
     }
 
     [Benchmark]
     public void SuffixArraySearch()
     {
-        _suffixArray.Initialize(_data);
+        _suffixArray.Prepare(_data);
         for (int i = 0; i < 100; i++)
         {
             int pos = i * (DataSize / 100);
-            _suffixArray.FindMatch(_data.AsSpan(pos), _data, pos);
+            _suffixArray.FindBestMatch(_data, _data.AsSpan(pos, Math.Min(100, _data.Length - pos)), 4);
         }
     }
 }
@@ -213,8 +213,8 @@ public class VariableLengthIntBenchmarks
 {
     private byte[] _buffer = new byte[10];
 
-    [Params(0, 127, 16383, int.MaxValue)]
-    public long Value { get; set; }
+    [Params(0UL, 127UL, 16383UL, (ulong)int.MaxValue)]
+    public ulong Value { get; set; }
 
     [Benchmark]
     public int Encode()
@@ -223,7 +223,7 @@ public class VariableLengthIntBenchmarks
     }
 
     [Benchmark]
-    public long Decode()
+    public ulong Decode()
     {
         int written = VariableLengthInt.Encode(Value, _buffer);
         return VariableLengthInt.Decode(_buffer.AsSpan(0, written), out _);

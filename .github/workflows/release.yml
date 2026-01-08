@@ -96,12 +96,12 @@ jobs:
         files: ./artifacts/*.nupkg
         body: |
           ## BpsPatch v${{ github.event.inputs.version }}
-          
+
           ### Installation
           ```bash
           dotnet add package BpsPatch --version ${{ github.event.inputs.version }}
           ```
-          
+
           ### Changes
           See [CHANGELOG.md](CHANGELOG.md) for details.
       env:
