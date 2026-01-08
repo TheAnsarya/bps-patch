@@ -166,7 +166,9 @@ static class RabinKarp {
 	/// <param name="modulus">Modulus.</param>
 	/// <returns>(base^exponent) mod modulus.</returns>
 	private static ulong ModPow(ulong baseValue, ulong exponent, ulong modulus) {
-		if (modulus == 1) return 0;
+		if (modulus == 1) {
+			return 0;
+		}
 
 		ulong result = 1;
 		baseValue %= modulus;

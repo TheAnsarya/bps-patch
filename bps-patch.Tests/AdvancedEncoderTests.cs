@@ -361,8 +361,13 @@ public class AdvancedEncoderTests : TestBase {
 			});
 		} finally {
 			File.Delete(source);
-			if (File.Exists(target)) File.Delete(target);
-			if (File.Exists(patch)) File.Delete(patch);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
+
+			if (File.Exists(patch)) {
+				File.Delete(patch);
+			}
 		}
 	}
 
@@ -383,8 +388,13 @@ public class AdvancedEncoderTests : TestBase {
 				Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "");
 			});
 		} finally {
-			if (File.Exists(target)) File.Delete(target);
-			if (File.Exists(patch)) File.Delete(patch);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
+
+			if (File.Exists(patch)) {
+				File.Delete(patch);
+			}
 		}
 	}
 
@@ -405,8 +415,13 @@ public class AdvancedEncoderTests : TestBase {
 				Encoder.CreatePatch(new FileInfo(source), new FileInfo(patch), new FileInfo(target), "");
 			});
 		} finally {
-			if (File.Exists(source)) File.Delete(source);
-			if (File.Exists(patch)) File.Delete(patch);
+			if (File.Exists(source)) {
+				File.Delete(source);
+			}
+
+			if (File.Exists(patch)) {
+				File.Delete(patch);
+			}
 		}
 	}
 

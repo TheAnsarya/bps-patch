@@ -68,121 +68,121 @@ static class Encoder {
 			byte[] targetCopy = targetData;
 			int targetFileLength = (int)targetFile.Length;
 
-		// Local function to write accumulated TargetRead command
-		// Defined before patch stream creation so it can be used in both scopes
-		// Note: targetPos is NOT modified here - the main loop handles position tracking
-		void WriteTargetReadCommand(Stream patchStream, ref int readLength, ref int readStart) {
-			if (readLength > 0) {
-				// Encode TargetRead command
-				var command = EncodeNumber((ulong)(((readLength - 1) << 2) + (byte)PatchAction.TargetRead));
-				patchStream.Write(command);
+			// Local function to write accumulated TargetRead command
+			// Defined before patch stream creation so it can be used in both scopes
+			// Note: targetPos is NOT modified here - the main loop handles position tracking
+			void WriteTargetReadCommand(Stream patchStream, ref int readLength, ref int readStart) {
+				if (readLength > 0) {
+					// Encode TargetRead command
+					var command = EncodeNumber((ulong)(((readLength - 1) << 2) + (byte)PatchAction.TargetRead));
+					patchStream.Write(command);
 
-				// Write raw bytes from target file
-				patchStream.Write(targetCopy.AsSpan(readStart, readLength));
+					// Write raw bytes from target file
+					patchStream.Write(targetCopy.AsSpan(readStart, readLength));
 
-				readLength = 0;
-				readStart = -1;
-			}
-		}
-
-		// Create patch file with buffered output for performance
-		// Close stream before computing CRC32 to avoid file locking issues
-		using (var patch = new BufferedStream(patchFile.OpenWrite(), BUFFER_SIZE)) {			// Write BPS header: "BPS1"
-			// Using stackalloc for small temporary buffer (no heap allocation)
-			Span<byte> header = stackalloc byte[4];
-			Encoding.UTF8.GetBytes("BPS1", header);
-			patch.Write(header);
-
-			// Write file sizes using variable-length encoding
-			// See: https://en.wikipedia.org/wiki/Variable-length_quantity
-			patch.Write(EncodeNumber((ulong)sourceFile.Length));
-			patch.Write(EncodeNumber((ulong)targetFile.Length));
-			patch.Write(EncodeNumber((ulong)manifest.Length));
-
-			// Write manifest/metadata (typically XML v1.0, UTF-8)
-			if (manifest.Length > 0) {
-				byte[] manifestBytes = Encoding.UTF8.GetBytes(manifest);
-				patch.Write(manifestBytes);
-			}
-
-			// Process target file to find optimal patch commands
-			int targetReadLength = 0;  // Accumulator for TargetRead bytes
-			int targetReadStart = -1;   // Start position of current TargetRead run
-			int targetPosition = 0;     // Current position in target file
-
-			// Iterate through target file, finding best match for each position
-			while (targetPosition < target.Length) {
-				// Find next optimal patch action (SourceRead, SourceCopy, TargetCopy, or TargetRead)
-				(PatchAction mode, int length, int start) = FindNextRun(source, target, targetPosition);
-
-				if (mode == PatchAction.TargetRead) {
-					// Accumulate consecutive TargetRead bytes (new data)
-					targetReadLength++;
-					if (targetReadStart == -1) {
-						targetReadStart = targetPosition;
-					}
-					// Advance position for this TargetRead byte
-					targetPosition++;
-			} else {
-				// Write accumulated TargetRead command first (if any)
-				WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);					// Encode command: (length - 1) << 2 | action_type
-					// See: https://github.com/blakesmith/beat/blob/master/doc/bps.txt
-					var command = EncodeNumber((ulong)(((length - 1) << 2) + (byte)mode));
-					patch.Write(command);
-
-					// SourceCopy and TargetCopy include offset (signed zigzag encoding)
-					if (mode != PatchAction.SourceRead) {
-						var offset = start - targetPosition;
-						var isNegative = offset < 0;
-
-						// Zigzag encoding: (abs(n) << 1) | sign_bit
-						// See: https://developers.google.com/protocol-buffers/docs/encoding#signed-ints
-						var offsetValue = ((ulong)Math.Abs(offset) << 1) + (isNegative ? 1UL : 0);
-						var offsetBytes = EncodeNumber(offsetValue);
-						patch.Write(offsetBytes);
-					}
-
-					targetPosition += length;
+					readLength = 0;
+					readStart = -1;
 				}
+			}
+
+			// Create patch file with buffered output for performance
+			// Close stream before computing CRC32 to avoid file locking issues
+			using (var patch = new BufferedStream(patchFile.OpenWrite(), BUFFER_SIZE)) {            // Write BPS header: "BPS1"
+																									// Using stackalloc for small temporary buffer (no heap allocation)
+				Span<byte> header = stackalloc byte[4];
+				Encoding.UTF8.GetBytes("BPS1", header);
+				patch.Write(header);
+
+				// Write file sizes using variable-length encoding
+				// See: https://en.wikipedia.org/wiki/Variable-length_quantity
+				patch.Write(EncodeNumber((ulong)sourceFile.Length));
+				patch.Write(EncodeNumber((ulong)targetFile.Length));
+				patch.Write(EncodeNumber((ulong)manifest.Length));
+
+				// Write manifest/metadata (typically XML v1.0, UTF-8)
+				if (manifest.Length > 0) {
+					byte[] manifestBytes = Encoding.UTF8.GetBytes(manifest);
+					patch.Write(manifestBytes);
+				}
+
+				// Process target file to find optimal patch commands
+				int targetReadLength = 0;  // Accumulator for TargetRead bytes
+				int targetReadStart = -1;   // Start position of current TargetRead run
+				int targetPosition = 0;     // Current position in target file
+
+				// Iterate through target file, finding best match for each position
+				while (targetPosition < target.Length) {
+					// Find next optimal patch action (SourceRead, SourceCopy, TargetCopy, or TargetRead)
+					(PatchAction mode, int length, int start) = FindNextRun(source, target, targetPosition);
+
+					if (mode == PatchAction.TargetRead) {
+						// Accumulate consecutive TargetRead bytes (new data)
+						targetReadLength++;
+						if (targetReadStart == -1) {
+							targetReadStart = targetPosition;
+						}
+						// Advance position for this TargetRead byte
+						targetPosition++;
+					} else {
+						// Write accumulated TargetRead command first (if any)
+						WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);                   // Encode command: (length - 1) << 2 | action_type
+																													// See: https://github.com/blakesmith/beat/blob/master/doc/bps.txt
+						var command = EncodeNumber((ulong)(((length - 1) << 2) + (byte)mode));
+						patch.Write(command);
+
+						// SourceCopy and TargetCopy include offset (signed zigzag encoding)
+						if (mode != PatchAction.SourceRead) {
+							var offset = start - targetPosition;
+							var isNegative = offset < 0;
+
+							// Zigzag encoding: (abs(n) << 1) | sign_bit
+							// See: https://developers.google.com/protocol-buffers/docs/encoding#signed-ints
+							var offsetValue = ((ulong)Math.Abs(offset) << 1) + (isNegative ? 1UL : 0);
+							var offsetBytes = EncodeNumber(offsetValue);
+							patch.Write(offsetBytes);
+						}
+
+						targetPosition += length;
+					}
+				}
+
+				// Write any remaining TargetRead data
+				WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);
+				patch.Flush();
+
+				// Write source and target CRC32s (but NOT patch CRC32 yet)
+				// Use span-based CRC32 for source/target since data is already in memory
+				byte[] sourceCrc = Utilities.ComputeCRC32Bytes(source);
+				byte[] targetCrc = Utilities.ComputeCRC32Bytes(target);
+				patch.Write(sourceCrc);
+				patch.Write(targetCrc);
+				patch.Flush();
+			} // Close patch file
+
+			// Refresh FileInfo and compute CRC32 of patch file (header + commands + source_crc + target_crc)
+			// See: https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.refresh
+			patchFile.Refresh();
+			byte[] patchCrc = Utilities.ComputeCRC32Bytes(patchFile);
+
+			// Reopen patch file in append mode to write final patch CRC32
+			// When decoder computes CRC32(entire_patch_including_patch_crc), result will be 0x2144df1c
+			// This is the CRC32 "residue" property - see BPS specification
+			using (var patchAppend = new FileStream(patchFile.FullName, FileMode.Append, FileAccess.Write, FileShare.Read)) {
+				patchAppend.Write(patchCrc);
+				patchAppend.Flush();
+			}
+		} finally {
+			// Always return rented arrays to pool (even on exception)
+			// NOTE: Not clearing arrays for performance (ArrayPool will handle it)
+			// The arrays are only used within this scope, so data leaks are not a concern
+			// See: https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return
+			ArrayPool<byte>.Shared.Return(sourceData, clearArray: false);
+			ArrayPool<byte>.Shared.Return(targetData, clearArray: false);
 		}
-
-		// Write any remaining TargetRead data
-		WriteTargetReadCommand(patch, ref targetReadLength, ref targetReadStart);
-		patch.Flush();
-
-		// Write source and target CRC32s (but NOT patch CRC32 yet)
-		// Use span-based CRC32 for source/target since data is already in memory
-		byte[] sourceCrc = Utilities.ComputeCRC32Bytes(source);
-		byte[] targetCrc = Utilities.ComputeCRC32Bytes(target);
-		patch.Write(sourceCrc);
-		patch.Write(targetCrc);
-		patch.Flush();
-	} // Close patch file
-
-	// Refresh FileInfo and compute CRC32 of patch file (header + commands + source_crc + target_crc)
-	// See: https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.refresh
-	patchFile.Refresh();
-	byte[] patchCrc = Utilities.ComputeCRC32Bytes(patchFile);
-
-	// Reopen patch file in append mode to write final patch CRC32
-	// When decoder computes CRC32(entire_patch_including_patch_crc), result will be 0x2144df1c
-	// This is the CRC32 "residue" property - see BPS specification
-	using (var patchAppend = new FileStream(patchFile.FullName, FileMode.Append, FileAccess.Write, FileShare.Read)) {
-		patchAppend.Write(patchCrc);
-		patchAppend.Flush();
 	}
-} finally {
-	// Always return rented arrays to pool (even on exception)
-	// NOTE: Not clearing arrays for performance (ArrayPool will handle it)
-	// The arrays are only used within this scope, so data leaks are not a concern
-	// See: https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return
-	ArrayPool<byte>.Shared.Return(sourceData, clearArray: false);
-	ArrayPool<byte>.Shared.Return(targetData, clearArray: false);
-}
-}
 
-/// <summary>
-/// Encodes a number using variable-length encoding (7 bits per byte).
+	/// <summary>
+	/// Encodes a number using variable-length encoding (7 bits per byte).
 	/// Uses stackalloc for zero heap allocation.
 	/// See: https://en.wikipedia.org/wiki/Variable-length_quantity
 	/// </summary>

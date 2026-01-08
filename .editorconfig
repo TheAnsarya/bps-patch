@@ -1,22 +1,33 @@
+# ============================================================================
+# BPS Patch - Editor Configuration
+# ============================================================================
+# This file defines consistent coding styles across all editors and IDEs.
+# See: https://editorconfig.org
+# ============================================================================
+
 root = true
 
-# All files
+# ============================================================================
+# Default Settings - ALL FILES USE TABS
+# ============================================================================
 [*]
 charset = utf-8
 end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = tab
-indent_size = 4
+tab_width = 4
 
-# C# files
+# ============================================================================
+# C# Source Files
+# ============================================================================
 [*.cs]
 indent_style = tab
-indent_size = 4
+tab_width = 4
 charset = utf-8
 end_of_line = crlf
 
-# Code style rules
+# Brace placement - K&R style (same line)
 csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
@@ -42,23 +53,119 @@ csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:warning
 csharp_style_var_elsewhere = true:suggestion
 
-# XML documentation
+# XML documentation - suppress missing doc warnings
 dotnet_diagnostic.CS1591.severity = none
 
-# Code analysis
+# Code analysis suppressions
 dotnet_diagnostic.CA1303.severity = none
 dotnet_diagnostic.CA2022.severity = none
 
-# Project files
+# ============================================================================
+# PowerShell Scripts
+# ============================================================================
+[*.ps1]
+indent_style = tab
+tab_width = 4
+charset = utf-8
+end_of_line = crlf
+
+[*.psm1]
+indent_style = tab
+tab_width = 4
+
+[*.psd1]
+indent_style = tab
+tab_width = 4
+
+# ============================================================================
+# Shell Scripts
+# ============================================================================
+[*.sh]
+indent_style = tab
+tab_width = 4
+end_of_line = lf
+
+[*.bash]
+indent_style = tab
+tab_width = 4
+end_of_line = lf
+
+# ============================================================================
+# Project & Build Files
+# ============================================================================
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
-indent_size = 2
-indent_style = space
+indent_style = tab
+tab_width = 2
 
-# JSON files
+[*.props]
+indent_style = tab
+tab_width = 2
+
+[*.targets]
+indent_style = tab
+tab_width = 2
+
+[*.sln]
+indent_style = tab
+tab_width = 4
+
+# ============================================================================
+# Configuration Files
+# ============================================================================
 [*.json]
-indent_size = 2
-indent_style = space
+indent_style = tab
+tab_width = 2
 
-# Markdown
+[*.xml]
+indent_style = tab
+tab_width = 2
+
+[*.yml]
+indent_style = tab
+tab_width = 2
+
+[*.yaml]
+indent_style = tab
+tab_width = 2
+
+# ============================================================================
+# Markdown Documentation
+# ============================================================================
 [*.md]
+indent_style = tab
+tab_width = 4
 trim_trailing_whitespace = false
+
+# ============================================================================
+# Web Files
+# ============================================================================
+[*.{html,htm}]
+indent_style = tab
+tab_width = 4
+
+[*.css]
+indent_style = tab
+tab_width = 4
+
+[*.{js,jsx,ts,tsx}]
+indent_style = tab
+tab_width = 4
+
+# ============================================================================
+# Config Files (specific)
+# ============================================================================
+[.gitignore]
+indent_style = tab
+tab_width = 4
+
+[.gitattributes]
+indent_style = tab
+tab_width = 4
+
+[Makefile]
+indent_style = tab
+tab_width = 4
+
+[*.{bat,cmd}]
+indent_style = tab
+tab_width = 4

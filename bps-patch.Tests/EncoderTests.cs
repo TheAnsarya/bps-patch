@@ -43,7 +43,7 @@ public class EncoderTests : TestBase {
 		Assert.True(patchInfo.Exists);
 		Assert.True(patchInfo.Length > 0);
 		Assert.True(patchInfo.Length < 200); // Should be small for identical files
-		// Note: Cleanup handled automatically by TestBase.Dispose()
+											 // Note: Cleanup handled automatically by TestBase.Dispose()
 	}
 
 	/// <summary>

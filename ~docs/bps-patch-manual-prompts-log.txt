@@ -1,0 +1,51 @@
+
+//** This is a manually user edited file, never alter it from AI **//
+
+git commit all files in logical groups and update git issues (or make git issues and then update them)
+
+analyze several different ways to analyze the data to be compressed and find the correct ways to smoosh this data together, small as possible; find and fix all ineffciencies in the compress/analyze/decompress processes; make sure there's a class library with all of the file format classes and code and then create a CLI version and make the base code as efficient as possible and document everything in detail in linked-from-`readme.md` - `*.md` files; make this work the best it can, also add tests, both correctness tests and performance tests (benchmark?) and usability tests; update and create github issues and todo-lists and chat logs and session logs and documentation and code and tests; continue;
+
+put time limits on the tests so we don't get stuck in hours of computation; use the most modern practices and standards and versions of everything and code language features; there is already an Issue #1, submitted by someone else; but yes, add all of those issues to github and continue work for a long time, update the issue numbers in the docs, updating documentation the whole time; create a plan/roadmap for testing compression and decompression and making the whole utility super efficient and the best BPS compression project, document everything, file format, compression strategies, etc, and make a "how to finish" document/plan for this project so we have a comprehensive todo-list and issues and path/plan to finish off the project; git commit everything in logical batches, update github issues, update todo-lists, all work should have an issue, tie them to those issues; make the `bps-patch` project exist in a sub-folder, so we can create surrounding support folders, so like move the code into sub folders inside a csproject folder, and move the csproject into the folder and fix sln references and clean up the move into a proper project folder; and then after fixing structure, work on bringing this project to a stable version with awesome testing and documentation and simple usability;
+
+I don't want any github actions running, so do issue #6, create those CI actions, but do not turn them on, I don't want things running, spending my money, make documentation for activating these GH actions and describe why you should amid the instructions, but keep them off by default;
+
+put time limits on the tests so we don't get stuck in hours of computation; use the most modern practices and standards and versions of everything and code language features; there is already an Issue #1, submitted by someone else; but yes, add all of those issues to github and continue work for a long time, update the issue numbers in the docs, updating documentation the whole time; create a plan/roadmap for testing compression and decompression and making the whole utility super efficient and the best BPS compression project, document everything, file format, compression strategies, etc, and make a "how to finish" document/plan for this project so we have a comprehensive todo-list and issues and path/plan to finish off the project; git commit everything in logical batches, update github issues, update todo-lists, all work should have an issue, tie them to those issues; make the `bps-patch` project exist in a sub-folder, so we can create surrounding support folders, so like move the code into sub folders inside a csproject folder, and move the csproject into the folder and fix sln references and clean up the move into a proper project folder; and then after fixing structure, work on bringing this project to a stable version with awesome testing and documentation and simple usability;
+
+go through all of the "what's next" tasks and go through all of the gihub issues and fix all the code and documentation and supporting files and follow the roadmap and "how to finish" docs and try to finish docs and tests and performance for the strategies of compression; continue;
+
+--- try again
+
+Do the next tasks and continue; make sure chat/session logs and github issues and todolists are all updated; start with the `SA-IS` issue;
+
+Don't do large file testing yet as my computer is slow, so create a script for it and then make manual testing tasks for that so I can run it before bed, make manual testing documentation so I know what to do, link that manual documentation to the main readme.md and link all the other documentation and make sure documentation is comprehensive; do the rest of the work for this project; update and create github issues for all work; ***start by researching and implementing further compression-optimization strategies***;
+
+update the `.editorconfig` to use TABS NOT SPACES for everything, including `*.ps1` files and format all the files; make sure analysis research build usage and general documentation are totally comprehensive and graphic (emojis!) and understandable and properly organized; make sure all documentation files (mostly `*.md` but other files as well) are able to be reached in the link-web which starts with the main `readme.md` file for the project, all documentation and reference files and scripts should be reachable from there; continue improving the utility/project/process;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+git commit everything in logical batches, update github issues, update todo-lists, all work should have an issue, tie them to those issues; continue, and **go as long as you can**, really complete as many tasks as you can; make sure to update all the supporting files, logs, docs, issues, etc. and git commit as you go;
+
+continue, and **go as long as you can**, really complete as many tasks as you can; make sure to update all the supporting files, logs, docs, issues, etc. and git commit as you go;
+
+git commit everything in logical batches, update github issues, update todo-lists, all work should have an issue, tie them to those issues;
+
+
+
+

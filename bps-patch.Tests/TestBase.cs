@@ -56,7 +56,9 @@ public abstract class TestBase : IDisposable {
 					success = true;
 				} // Dispose immediately
 
-				if (success) break; // Exit retry loop
+				if (success) {
+					break; // Exit retry loop
+				}
 			} catch (IOException) when (attempt < 4) {
 				// File still locked, wait and retry
 				Thread.Sleep(10);

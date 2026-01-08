@@ -266,7 +266,7 @@ public class SuffixArrayTests {
 	public void Performance_LargeData_CompletesInReasonableTime() {
 		// Arrange - 1MB of data with patterns
 		byte[] data = new byte[1024 * 1024];
-		Random rng = new Random(42);
+		var rng = new Random(42);
 		rng.NextBytes(data);
 
 		// Embed known patterns

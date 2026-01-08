@@ -50,7 +50,7 @@ public class TwoPatchTest : TestBase {
 				"v11->v12");
 
 			byte[] patch2Bytes = ReadAllBytesWithSharing(patch2File);
-			Console.WriteLine($"patch2: {patch2Bytes.Length} bytes, first 20: {BitConverter.ToString(patch2Bytes.Take(20).ToArray())}");			// Apply patch1
+			Console.WriteLine($"patch2: {patch2Bytes.Length} bytes, first 20: {BitConverter.ToString(patch2Bytes.Take(20).ToArray())}");            // Apply patch1
 			Console.WriteLine($"Applying patch1: {patch1File}");
 			Console.WriteLine($"  Source: {v10File}");
 			Console.WriteLine($"  Output: {temp1File}");

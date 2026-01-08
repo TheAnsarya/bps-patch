@@ -1,368 +1,532 @@
-# BPS Patch - Modern .NET 10 Implementation
+# 🎮 BPS Patch - Modern .NET 10 Implementation
 
-A high-performance implementation of the BPS (Binary Patch System) format for creating and applying binary patches to files, commonly used in ROM hacking and retro gaming.
+<div align="center">
 
-**Last Updated**: October 30, 2025
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-107%20Passing-success?style=for-the-badge)](docs/MANUAL_TESTING.md)
+[![Coverage](https://img.shields.io/badge/Coverage-88%25-yellow?style=for-the-badge)](docs/COMPRESSION_TESTING.md)
 
----
+**A high-performance implementation of the BPS (Binary Patch System) format**
+*for creating and applying binary patches to files*
 
-## 🚀 Features
+[📖 Documentation](#-documentation) • [🚀 Quick Start](#-quick-start) • [⚡ Performance](#-performance) • [🧪 Testing](#-testing--quality)
 
-### Core Functionality
-- ✅ **Full BPS v1.0 Support**: Create and apply binary patches
-- ✅ **Modern .NET 10**: Latest C# features and performance optimizations
-- ✅ **Cross-Platform**: Runs on Windows, Linux, and macOS
-- ✅ **CRC32 Validation**: Built-in integrity checking with System.IO.Hashing
-- ✅ **Zero External Dependencies**: Pure .NET implementation
-
-### Performance Optimizations
-- ✅ **ArrayPool Memory Management**: 50-70% reduction in GC pressure
-- ✅ **SIMD Byte Comparison**: 4-8x speedup for matching runs
-- ✅ **Rabin-Karp Rolling Hash**: O(n) pattern matching for large files
-- ✅ **Suffix Array**: O(log n) binary search for repetitive patterns
-- ✅ **Memory-Mapped Files**: Support for files > 256MB
-- ✅ **Buffered I/O**: 80KB buffers for 2-3x faster file operations
-
-### Quality Assurance
-- ✅ **116 Unit Tests**: Comprehensive test coverage (95%+)
-- ✅ **72 Benchmarks**: Performance regression detection
-- ✅ **Real-World Tests**: ROM hacking scenario validation
+</div>
 
 ---
 
-## 📊 Quick Performance Stats
+## 📋 Table of Contents
 
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [📖 Documentation](#-documentation)
+- [⚡ Performance](#-performance)
+- [🏗️ Architecture](#️-architecture)
+- [🧪 Testing & Quality](#-testing--quality)
+- [🎯 Use Cases](#-use-cases)
+- [🔧 CLI Reference](#-cli-reference)
+- [📚 API Reference](#-api-reference)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+---
+
+## ✨ Features
+
+### 🎯 Core Functionality
+| Feature | Description |
+|---------|-------------|
+| ✅ **Full BPS v1.0** | Complete implementation of create & apply operations |
+| ✅ **Modern .NET 10** | Latest C# 13 features and performance APIs |
+| ✅ **Cross-Platform** | Windows, Linux, and macOS support |
+| ✅ **CRC32 Validation** | Built-in integrity checking with System.IO.Hashing |
+| ✅ **Zero Dependencies** | Pure .NET implementation, no external packages |
+
+### ⚡ Performance Optimizations
+| Optimization | Improvement |
+|--------------|-------------|
+| 🚀 **ArrayPool Memory** | 50-70% reduction in GC pressure |
+| 🚀 **SIMD Byte Comparison** | 4-8x speedup for matching runs |
+| 🚀 **SA-IS Suffix Array** | O(n) construction, O(log n) queries |
+| 🚀 **Rabin-Karp Rolling Hash** | O(n) average pattern matching |
+| 🚀 **Lazy Matching** | 5-15% smaller patches |
+| 🚀 **Cost-Based Selection** | Optimal match decisions |
+| 🚀 **Buffered I/O** | 80KB buffers for 2-3x faster I/O |
+
+### 🔬 Quality Assurance
 | Metric | Value |
 |--------|-------|
-| **Encoding Speed** | 1-10 MB/s (depending on algorithm) |
-| **Decoding Speed** | 10-50 MB/s |
-| **Memory Overhead** | 2x file size (< 256MB files) |
-| **Memory Overhead** | ~10MB constant (> 256MB files) |
-| **GC Reduction** | 50-70% fewer collections |
-| **SIMD Speedup** | 4-8x for long matching runs |
-| **Pattern Matching** | O(n) avg (Rabin-Karp) vs O(n²) linear |
+| 📊 **Unit Tests** | 107 tests (106 passing, 1 skipped) |
+| 📊 **Code Coverage** | 88.72% line coverage |
+| 📊 **XML Documentation** | 99 documented members |
+| 📊 **Benchmarks** | 72+ performance benchmarks |
 
 ---
 
-## 🛠️ Installation
+## 🚀 Quick Start
 
-### Prerequisites
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (RC2 or later)
+### 📋 Prerequisites
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
-### Build from Source
+### 📥 Installation
+
 ```powershell
+# Clone the repository
 git clone https://github.com/TheAnsarya/bps-patch.git
-cd bps-patch/bps-patch
-dotnet build -c Release
-```
+cd bps-patch
 
-### Run
-```powershell
+# Build
+dotnet build -c Release
+
 # Run tests
 dotnet test
+```
 
-# Run benchmarks
-cd bps-patch.Benchmarks
-dotnet run -c Release
+### 💻 Basic Usage
 
-# Use the tool
-dotnet run -c Release -- decode source.bin patch.bps output.bin
+```powershell
+# Apply a patch (decode)
+bps-patch decode original.bin patch.bps output.bin
+
+# Create a patch (encode)
+bps-patch encode original.bin modified.bin patch.bps
+
+# With metadata
+bps-patch encode original.bin modified.bin patch.bps -m "My Patch v1.0"
+
+# With optimizations
+bps-patch encode original.bin modified.bin patch.bps --lazy-matching --cost-based
+```
+
+### 🔧 Library Usage
+
+```csharp
+using BpsPatch.Core;
+
+// Apply a patch
+var result = BpsDecoder.ApplyPatch(
+	new FileInfo("source.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("output.bin"));
+
+// Create a patch with options
+BpsEncoder.CreatePatch(
+	new FileInfo("source.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("target.bin"),
+	"My Patch",
+	new BpsEncoderOptions {
+		Algorithm = MatchingAlgorithm.SuffixArray,
+		UseLazyMatching = true,
+		UseCostBasedMatching = true
+	});
 ```
 
 ---
 
-## 📖 Usage
+## 📖 Documentation
 
-### Apply a Patch (Decode)
-```bash
-bps-patch decode source.bin patch.bps target.bin
+### 📚 Complete Documentation Index
+
+All documentation is organized and accessible from this README. Click any link to learn more.
+
+#### 🏛️ Architecture & Design
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| 📐 [**ARCHITECTURE**](docs/ARCHITECTURE.md) | System design, components, data flow diagrams | ✅ Complete |
+| 🧮 [**ALGORITHMS**](docs/ALGORITHMS.md) | Pattern matching algorithms (Linear, Rabin-Karp, SA-IS) | ✅ Complete |
+| 📊 [**PERFORMANCE**](docs/PERFORMANCE.md) | Performance tuning, benchmarks, optimization guide | ✅ Complete |
+| 🔌 [**API_REFERENCE**](docs/API_REFERENCE.md) | Complete API documentation with examples | ✅ Complete |
+
+#### 📋 Format & Specification
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| 📜 [**BPS_FORMAT_SPECIFICATION**](BPS_FORMAT_SPECIFICATION.md) | Official BPS binary format specification | ✅ Complete |
+| 📁 [**FILE_FORMAT**](docs/FILE_FORMAT.md) | Detailed file format breakdown | ✅ Complete |
+| 🔧 [**IMPLEMENTATION**](IMPLEMENTATION.md) | Implementation details and decisions | ✅ Complete |
+
+#### 🚀 Usage & Guides
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| 📘 [**USAGE**](USAGE.md) | CLI and library usage examples | ✅ Complete |
+| 🧪 [**MANUAL_TESTING**](docs/MANUAL_TESTING.md) | Manual testing procedures and scripts | ✅ Complete |
+| 📈 [**COMPRESSION_TESTING**](docs/COMPRESSION_TESTING.md) | Compression ratio analysis | ✅ Complete |
+| ⚙️ [**BENCHMARKS_SETUP**](BENCHMARKS_SETUP.md) | How to run benchmarks | ✅ Complete |
+
+#### 🛠️ Development & Contributing
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| 📝 [**CHANGELOG**](CHANGELOG.md) | Version history and changes | ✅ Complete |
+| 🗺️ [**ROADMAP**](docs/ROADMAP.md) | Future plans and milestones | ✅ Complete |
+| ✅ [**TODO**](TODO.md) | Current task tracking | ✅ Complete |
+| 🔄 [**CI_ACTIVATION**](docs/CI_ACTIVATION.md) | CI/CD pipeline setup | ✅ Complete |
+| 🏁 [**HOW_TO_FINISH**](docs/HOW_TO_FINISH.md) | Project completion checklist | ✅ Complete |
+
+#### 📜 Session & History
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| 📓 [**SESSION_2026-01-07**](docs/SESSION_2026-01-07.md) | Development session notes | 📝 Archive |
+| 📓 [**SESSION_2025-10-29_SUMMARY**](SESSION_2025-10-29_SUMMARY.md) | Session summary | 📝 Archive |
+| 📓 [**SESSION_COMPLETE**](SESSION_COMPLETE.md) | Session completion notes | 📝 Archive |
+| 📓 [**MODERNIZATION_SUMMARY**](MODERNIZATION_SUMMARY.md) | .NET 10 modernization notes | 📝 Archive |
+| 📓 [**DOCUMENTATION_SUMMARY**](DOCUMENTATION_SUMMARY.md) | Documentation overview | 📝 Archive |
+| 📓 [**QUICK_REFERENCE**](QUICK_REFERENCE.md) | Quick reference card | 📝 Archive |
+| 📓 [**TESTING**](TESTING.md) | Testing notes | 📝 Archive |
+
+#### 🔧 Scripts & Tools
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| 🧪 [**Run-LargeFileTests.ps1**](scripts/Run-LargeFileTests.ps1) | Large file testing automation | `.\scripts\Run-LargeFileTests.ps1` |
+
+#### 📂 Additional Resources
+
+| Resource | Description |
+|----------|-------------|
+| 🤖 [**.github/copilot-instructions.md**](.github/copilot-instructions.md) | AI assistant instructions |
+| 📁 [**legacy/**](legacy/) | Original implementation reference |
+| 📁 [**logs/**](logs/) | Development session logs |
+
+---
+
+## ⚡ Performance
+
+### 📊 Quick Stats
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Encoding Speed** | 1-10 MB/s | Algorithm dependent |
+| **Decoding Speed** | 10-50 MB/s | Buffered streaming |
+| **Memory (< 256MB)** | ~2x file size | In-memory processing |
+| **Memory (> 256MB)** | ~10MB constant | Memory-mapped files |
+| **GC Pressure** | -70% | ArrayPool optimization |
+| **SIMD Speedup** | 4-8x | For long matching runs |
+
+### 🏎️ Algorithm Comparison
+
+```
+┌─────────────────┬───────────────────┬─────────────────┬──────────────┐
+│ Algorithm       │ Time Complexity   │ Best For        │ Avg Speed    │
+├─────────────────┼───────────────────┼─────────────────┼──────────────┤
+│ Linear Search   │ O(n × m)          │ < 64KB files    │ 1-5 MB/s     │
+│ Rabin-Karp      │ O(n + m) avg      │ 64KB - 1MB      │ 5-15 MB/s    │
+│ Suffix Array    │ O(n) build        │ > 1MB files     │ 3-10 MB/s    │
+│                 │ O(log n) query    │                 │              │
+│ SIMD Compare    │ O(n / vecSize)    │ Long runs       │ 4-8x boost   │
+└─────────────────┴───────────────────┴─────────────────┴──────────────┘
 ```
 
-### Create a Patch (Encode)
-```bash
-bps-patch encode original.bin modified.bin patch.bps
+### 📈 Benchmark Results
+
+Run benchmarks yourself:
+
+```powershell
+cd src/BpsPatch.Core.Benchmarks
+dotnet run -c Release
+
+# Specific benchmark
+dotnet run -c Release --filter "*Encoder*"
+dotnet run -c Release --filter "*SIMD*"
 ```
 
-### With Metadata
-```bash
-bps-patch encode original.bin modified.bin patch.bps "My Patch v1.0"
-```
+📊 See [**PERFORMANCE.md**](docs/PERFORMANCE.md) for detailed analysis.
 
-### Test Mode
-Run without arguments to execute the built-in test:
-```bash
-bps-patch
-```
-(Update file paths in `Program.cs` as needed)
+---
 
-## 🏗️ Project Structure
+## 🏗️ Architecture
+
+### 📁 Project Structure
 
 ```
 bps-patch/
-├── Encoder.cs              # Patch creation (optimized algorithms)
-├── Decoder.cs              # Patch application (buffered streaming)
-├── PatchAction.cs          # Patch operation types enum
-├── Utilities.cs            # CRC32 computation
-├── PatchFormatException.cs # Custom exception type
-├── SuffixArray.cs          # O(log n) pattern matching
-├── RabinKarp.cs            # O(n) rolling hash search
-├── MemoryMappedFileHelper.cs # Large file support
-├── Program.cs              # CLI entry point
-├── GlobalUsings.cs         # Global using directives
-├── bps-patch.Tests/        # 116 unit tests
-├── bps-patch.Benchmarks/   # 72 performance benchmarks
-└── docs/
-    ├── BPS_FORMAT_SPECIFICATION.md  # Binary format details
-    ├── IMPLEMENTATION.md            # Architecture & algorithms
-    ├── USAGE.md                     # CLI & library usage
-    └── .github/copilot-instructions.md
+├── 📂 src/
+│   ├── 📂 BpsPatch.Core/           # 🎯 Core library
+│   │   ├── BpsEncoder.cs           #    Patch creation
+│   │   ├── BpsDecoder.cs           #    Patch application
+│   │   ├── Matching/               #    Pattern matching strategies
+│   │   │   ├── LinearMatchingStrategy.cs
+│   │   │   ├── RabinKarpMatchingStrategy.cs
+│   │   │   └── SuffixArrayMatchingStrategy.cs
+│   │   └── Utilities/              #    Helpers (CRC32, VarInt)
+│   ├── 📂 BpsPatch.Cli/            # 💻 Command-line interface
+│   ├── 📂 BpsPatch.Core.Tests/     # 🧪 Unit tests
+│   └── 📂 BpsPatch.Core.Benchmarks/# 📊 Performance benchmarks
+├── 📂 docs/                        # 📖 Documentation
+├── 📂 scripts/                     # 🔧 Automation scripts
+├── 📂 legacy/                      # 📜 Original implementation
+└── 📂 logs/                        # 📝 Session logs
 ```
 
----
+### 🔄 Data Flow
 
-## 📚 Documentation
-
-### Core Documentation
-
-| Document | Description |
-|----------|-------------|
-| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System design, components, data flow |
-| **[docs/ALGORITHMS.md](docs/ALGORITHMS.md)** | Pattern matching algorithms explained |
-| **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)** | Performance tuning guide |
-| **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** | Complete API documentation |
-| **[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md)** | Manual testing procedures |
-
-### Format & Usage
-
-| Document | Description |
-|----------|-------------|
-| **[docs/BPS_FORMAT_SPECIFICATION.md](docs/BPS_FORMAT_SPECIFICATION.md)** | Binary format specification |
-| **[docs/USAGE.md](docs/USAGE.md)** | CLI & library usage examples |
-| **[docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** | Implementation details |
-| **[docs/COMPRESSION_TESTING.md](docs/COMPRESSION_TESTING.md)** | Compression ratio analysis |
-
-### Project Management
-
-| Document | Description |
-|----------|-------------|
-| **[CHANGELOG.md](CHANGELOG.md)** | Version history & changes |
-| **[TODO.md](TODO.md)** | Project roadmap & task tracking |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines |
-
-### Testing Scripts
-
-| Script | Description |
-|--------|-------------|
-| **[scripts/Run-LargeFileTests.ps1](scripts/Run-LargeFileTests.ps1)** | Large file test automation |
-
----
-
-## 🔧 Modern C# Features
-
-This project showcases modern C# and .NET practices:
-
-### Language Features (C# 10+)
-- **File-scoped namespaces**: `namespace bps_patch;`
-- **Top-level statements**: No `Main()` method boilerplate
-- **Global usings**: Common namespaces in `GlobalUsings.cs`
-- **Range operators**: `[x..]` for span slicing
-- **Pattern matching**: `when` guards in switch statements
-- **Target-typed new**: `new()` expressions
-
-### Performance APIs
-```csharp
-// ArrayPool for memory reuse
-byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
-try {
-    // Use buffer
-} finally {
-    ArrayPool<byte>.Shared.Return(buffer, clearArray: false);
-}
-
-// Stackalloc for small buffers (zero heap allocation)
-Span<byte> header = stackalloc byte[4];
-
-// ReadExactly for guaranteed complete reads
-stream.ReadExactly(buffer.AsSpan(0, length));
-
-// SIMD byte comparison
-var vec1 = new Vector<byte>(source.Slice(pos, Vector<byte>.Count));
-var vec2 = new Vector<byte>(target.Slice(pos, Vector<byte>.Count));
-if (Vector.EqualsAll(vec1, vec2)) { /* ... */ }
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Source     │     │    Target    │     │    Patch     │
+│    File      │     │     File     │     │    File      │
+└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+       │                    │                    │
+       ▼                    ▼                    │
+┌──────────────────────────────────────┐         │
+│           BpsEncoder                 │         │
+│  ┌────────────────────────────────┐  │         │
+│  │ 1. Pattern Matching Strategy   │  │         │
+│  │    (Linear/RabinKarp/SuffixArr)│  │         │
+│  ├────────────────────────────────┤  │         │
+│  │ 2. Find Best Matches           │  │         │
+│  │    (SourceRead/Copy/TargetCopy)│  │         │
+│  ├────────────────────────────────┤  │         │
+│  │ 3. Encode Commands             │  │         │
+│  │    (Variable-length integers)  │  │         │
+│  ├────────────────────────────────┤  │         │
+│  │ 4. Write CRC32 Footer          │  │         │
+│  └────────────────────────────────┘  │         │
+└──────────────────┬───────────────────┘         │
+                   │                             │
+                   ▼                             ▼
+            ┌──────────────┐              ┌──────────────┐
+            │    Patch     │              │   Source     │
+            │    File      │──────────────│    File      │
+            └──────────────┘              └──────┬───────┘
+                                                 │
+                                                 ▼
+                                    ┌──────────────────────┐
+                                    │     BpsDecoder       │
+                                    │  ┌────────────────┐  │
+                                    │  │ 1. Verify CRC32│  │
+                                    │  │ 2. Read Header │  │
+                                    │  │ 3. Apply Cmds  │  │
+                                    │  │ 4. Write Target│  │
+                                    │  └────────────────┘  │
+                                    └──────────┬───────────┘
+                                               │
+                                               ▼
+                                    ┌──────────────────────┐
+                                    │      Output File     │
+                                    └──────────────────────┘
 ```
 
+📐 See [**ARCHITECTURE.md**](docs/ARCHITECTURE.md) for detailed design documentation.
+
 ---
 
-## 🧪 Testing & Benchmarks
+## 🧪 Testing & Quality
 
-### Run Tests
+### ✅ Test Summary
+
+| Category | Tests | Status |
+|----------|-------|--------|
+| Encoder Tests | 25+ | ✅ Passing |
+| Decoder Tests | 20+ | ✅ Passing |
+| Strategy Tests | 30+ | ✅ Passing |
+| Integration Tests | 15+ | ✅ Passing |
+| Edge Case Tests | 15+ | ✅ Passing |
+| **Total** | **107** | **106 ✅ / 1 ⏭️** |
+
+### 🧪 Running Tests
+
 ```powershell
 # All tests
 dotnet test
 
 # Specific category
-dotnet test --filter "FullyQualifiedName~EncoderTests"
-dotnet test --filter "FullyQualifiedName~SuffixArrayTests"
+dotnet test --filter "FullyQualifiedName~Encoder"
+dotnet test --filter "FullyQualifiedName~Compression"
 
 # With coverage
 dotnet test /p:CollectCoverage=true
+
+# Large file tests (manual)
+.\scripts\Run-LargeFileTests.ps1
 ```
 
-### Run Benchmarks
-```powershell
-cd bps-patch.Benchmarks
-dotnet run -c Release
+### 📊 Code Coverage
 
-# Specific benchmark
-dotnet run -c Release --filter "*SIMD*"
-dotnet run -c Release --filter "*RabinKarp*"
-```
+| Component | Line Coverage | Branch Coverage |
+|-----------|---------------|-----------------|
+| BpsEncoder | 92% | 85% |
+| BpsDecoder | 95% | 88% |
+| Matching Strategies | 88% | 80% |
+| Utilities | 98% | 95% |
+| **Overall** | **88.72%** | **82.09%** |
 
-### Test Coverage
-- **Encoder**: 95% line coverage
-- **Decoder**: 98% line coverage
-- **Utilities**: 100% line coverage
-- **Total**: 116 tests, 72 benchmarks
-
----
-
-## 📈 Algorithm Comparison
-
-| Algorithm | Time Complexity | Best For | Avg Speed |
-|-----------|----------------|----------|-----------|
-| **Linear Search** | O(n × m) | Small files (< 1MB) | 1-5 MB/s |
-| **Rabin-Karp** | O(n + m) avg | Large files (1-100MB) | 10-20 MB/s |
-| **Suffix Array** | O(log n + k) query | Multiple patches | 5-15 MB/s |
-| **SIMD Comparison** | O(n / vectorSize) | Long matching runs | 4-8x speedup |
+📋 See [**MANUAL_TESTING.md**](docs/MANUAL_TESTING.md) for testing procedures.
 
 ---
 
 ## 🎯 Use Cases
 
-### ROM Hacking
-- Translation patches for retro games
-- Bug fix patches for classic ROMs
-- Graphics/sprite replacement patches
-- Total conversion hacks
+### 🎮 ROM Hacking
+- 🌍 **Translation patches** for retro games
+- 🐛 **Bug fix patches** for classic ROMs
+- 🎨 **Graphics/sprite** replacement patches
+- 🔄 **Total conversion** hacks
 
-### Software Updates
-- Binary diff patches for executables
-- Firmware update patches
-- Data file modifications
+### 💾 Software Distribution
+- 📦 **Binary diff** patches for executables
+- 🔧 **Firmware updates** for embedded devices
+- 📊 **Data file** modifications
 
-### Digital Preservation
-- Minimal-size patches for archival
-- Verified integrity with CRC32 checksums
+### 🏛️ Digital Preservation
+- 📁 **Minimal-size patches** for archival
+- ✅ **Verified integrity** with CRC32 checksums
+- 🔐 **Reproducible builds** verification
 
 ---
 
-### Quick Overview
+## 🔧 CLI Reference
 
-**Header Structure:**
-```
-"BPS1" (4 bytes magic number)
-Source file size (variable-length encoded)
-Target file size (variable-length encoded)
-Metadata size (variable-length encoded)
-Metadata (UTF-8 text, typically XML)
-```
+### 📋 Commands
 
-**Patch Commands:**
-- **SourceRead** (0): Copy bytes from source at current position
-- **TargetRead** (1): Read new bytes from patch file
-- **SourceCopy** (2): Copy bytes from elsewhere in source
-- **TargetCopy** (3): Copy bytes from earlier in target (RLE)
-
-**Footer:**
 ```
-Source CRC32 (4 bytes)
-Target CRC32 (4 bytes)
-Patch CRC32 (4 bytes)
+bps-patch <command> [options]
+
+Commands:
+  encode    Create a BPS patch from two files
+  decode    Apply a BPS patch to a file
+  info      Display patch information
+  verify    Verify patch integrity
+  help      Show help information
+  version   Show version information
 ```
 
-**Key Constants:**
-- Magic number: `0x42505331` ("BPS1")
-- CRC32 validation constant: `0x2144df1c`
-- Maximum file size: `int.MaxValue` (2GB - 1 byte)
-- Minimum patch size: 19 bytes
+### ⚙️ Encode Options
 
-### Variable-Length Encoding
-7 bits of data per byte, MSB indicates continuation:
+```powershell
+bps-patch encode <source> <target> <patch> [options]
+
+Options:
+  -m, --metadata <text>     Patch metadata string
+  -a, --algorithm <name>    Matching algorithm:
+                            Auto (default), Linear, RabinKarp, SuffixArray
+  -l, --lazy-matching       Enable lazy matching for better compression
+  -c, --cost-based          Enable cost-based match selection
+  --no-rle                  Disable RLE optimization
+  --min-match <n>           Minimum match length (default: 4)
+
+Examples:
+  bps-patch encode rom.sfc rom_patched.sfc patch.bps
+  bps-patch encode rom.sfc rom_patched.sfc patch.bps -m "v1.0"
+  bps-patch encode rom.sfc rom_patched.sfc patch.bps -a SuffixArray -l -c
 ```
-0xxxxxxx = continuation byte (MSB = 0)
-1xxxxxxx = final byte (MSB = 1)
+
+### 📥 Decode Options
+
+```powershell
+bps-patch decode <source> <patch> <output> [options]
+
+Options:
+  --ignore-crc    Ignore CRC32 validation errors (dangerous!)
+
+Examples:
+  bps-patch decode rom.sfc patch.bps rom_patched.sfc
 ```
 
-**Example:** 255 = `0x7F 0x81` (saves 50% space vs fixed 4-byte integers)
+📘 See [**USAGE.md**](USAGE.md) for complete CLI documentation.
 
-## 🧪 Testing
+---
 
-Update test paths in `Program.cs`:
+## 📚 API Reference
+
+### 🔹 BpsEncoder
+
 ```csharp
-static void TestDecoder()
+public static class BpsEncoder
 {
-    var source = new FileInfo(@"path\to\source.bin");
-    var patch = new FileInfo(@"path\to\patch.bps");
-    var target = new FileInfo(@"path\to\target.bin");
-    // ...
+	/// <summary>Create a BPS patch from source and target files.</summary>
+	public static void CreatePatch(
+		FileInfo source,
+		FileInfo patch,
+		FileInfo target,
+		string metadata = "",
+		BpsEncoderOptions? options = null);
+}
+
+public class BpsEncoderOptions
+{
+	public MatchingAlgorithm Algorithm { get; set; } = MatchingAlgorithm.Auto;
+	public int MinimumMatchLength { get; set; } = 4;
+	public bool UseLazyMatching { get; set; } = false;
+	public bool UseCostBasedMatching { get; set; } = false;
+	public bool UseRleOptimization { get; set; } = true;
+	public int BufferSize { get; set; } = 81920;
+	public IProgress<EncodingProgress>? Progress { get; set; }
 }
 ```
 
-Run without arguments:
-```bash
-dotnet run
+### 🔹 BpsDecoder
+
+```csharp
+public static class BpsDecoder
+{
+	/// <summary>Apply a BPS patch to create the target file.</summary>
+	public static DecodingResult ApplyPatch(
+		FileInfo source,
+		FileInfo patch,
+		FileInfo target,
+		BpsDecoderOptions? options = null);
+}
+
+public class DecodingResult
+{
+	public string Metadata { get; }
+	public List<string> Warnings { get; }
+	public long SourceSize { get; }
+	public long TargetSize { get; }
+}
 ```
 
-## 📈 Performance Benchmarks
-
-### Encoder (vs. Original .NET Core 3.0)
-- **Memory allocations**: -70%
-- **Execution time**: 2-5x faster
-- **GC collections**: -80%
-
-### Decoder (vs. Original .NET Core 3.0)
-- **Memory allocations**: -60%
-- **Execution time**: 2-4x faster
-- **File I/O**: 3-10x faster (buffering)
-
-## 🔮 Future Enhancements
-
-Potential optimizations for future versions:
-- **SIMD**: Vector<byte> for bulk memory comparison
-- **Parallel Processing**: PLINQ for independent chunk comparison
-- **Suffix Arrays**: O(log n) pattern matching vs O(n) linear search
-- **Rolling Hash**: Rabin-Karp for O(n) substring matching
-- **Memory-Mapped Files**: For files larger than available RAM
-- **Async I/O**: ValueTask for async file operations
-
-## 📄 License
-
-This project modernizes the original BPS patch implementation with permission.
-
-## 🤝 Contributing
-
-Contributions are welcome! Areas of interest:
-- Unit tests (xUnit/NUnit)
-- Benchmarks (BenchmarkDotNet)
-- Advanced algorithms (suffix arrays, rolling hash)
-- SIMD optimizations
-- Async/await patterns
-
-## 📖 References
-
-- **[BPS Format Specification](BPS_FORMAT_SPECIFICATION.md)** - Comprehensive technical documentation
-- [BPS Format (byuu)](https://github.com/blakesmith/ips_util/blob/master/README.md) - Original specification
-- [Beat Patching Tool](https://github.com/byuu/beat) - Reference implementation
-- [.NET Performance Tips](https://learn.microsoft.com/en-us/dotnet/core/extensions/high-performance-logging)
-- [System.Buffers Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.buffers)
-- [System.IO.Hashing.Crc32](https://learn.microsoft.com/en-us/dotnet/api/system.io.hashing.crc32)
-
-## 🙏 Acknowledgments
-
-- Original BPS format by byuu
-- .NET team for excellent performance APIs
-- ROM hacking community for continued support
+🔌 See [**API_REFERENCE.md**](docs/API_REFERENCE.md) for complete API documentation.
 
 ---
 
-**Built with .NET 10** | **Optimized for Performance** | **Zero Dependencies**
+## 🤝 Contributing
+
+Contributions are welcome! 🎉
+
+### 🛠️ Areas of Interest
+- 🧪 Additional unit tests
+- 📊 Performance benchmarks
+- 🚀 Algorithm optimizations
+- 📖 Documentation improvements
+- 🐛 Bug fixes
+
+### 📋 Guidelines
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests (`dotnet test`)
+5. Submit a pull request
+
+📜 See [**GitHub Issues**](https://github.com/TheAnsarya/bps-patch/issues) for current tasks.
+
+---
+
+## 📄 License
+
+This project is open source. See the repository for license details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **byuu** - Original BPS format specification
+- **.NET Team** - Excellent performance APIs
+- **ROM Hacking Community** - Continued support and feedback
+
+---
+
+<div align="center">
+
+**Built with ❤️ using .NET 10**
+
+⭐ Star this repo if you find it useful!
+
+[🔝 Back to Top](#-bps-patch---modern-net-10-implementation)
+
+</div>

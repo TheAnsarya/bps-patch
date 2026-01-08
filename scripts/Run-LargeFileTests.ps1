@@ -88,32 +88,32 @@ function Get-AlgorithmsToTest {
 
 function New-TestFile {
     param([int]$SizeMB, [string]$Name)
-    
+
     $FilePath = Join-Path $TempPath $Name
     $SizeBytes = $SizeMB * 1024 * 1024
-    
+
     Write-Log "Generating $SizeMB MB test file: $Name"
-    
+
     # Generate file with pattern (sequential + random sections)
     $Buffer = New-Object byte[] (1024 * 1024) # 1MB buffer
     $Random = [System.Random]::new(42)
-    
+
     $Stream = [System.IO.File]::Create($FilePath)
     try {
         for ($i = 0; $i -lt $SizeMB; $i++) {
             # Alternating pattern: sequential, random, repeating
             switch ($i % 3) {
-                0 { 
+                0 {
                     # Sequential data
                     for ($j = 0; $j -lt $Buffer.Length; $j++) {
                         $Buffer[$j] = [byte](($i * 1024 * 1024 + $j) % 256)
                     }
                 }
-                1 { 
+                1 {
                     # Random data
                     $Random.NextBytes($Buffer)
                 }
-                2 { 
+                2 {
                     # Repeating pattern
                     $Pattern = [byte[]](0xAB, 0xCD, 0xEF, 0x12)
                     for ($j = 0; $j -lt $Buffer.Length; $j++) {
@@ -127,26 +127,26 @@ function New-TestFile {
     finally {
         $Stream.Dispose()
     }
-    
+
     return $FilePath
 }
 
 function New-ModifiedFile {
     param([string]$SourcePath, [string]$Name, [double]$ChangePercent = 5.0)
-    
+
     $TargetPath = Join-Path $TempPath $Name
     $SourceData = [System.IO.File]::ReadAllBytes($SourcePath)
-    
+
     Write-Log "Creating modified file with $ChangePercent% changes: $Name"
-    
+
     $Random = [System.Random]::new(99)
     $ChangeCount = [int]($SourceData.Length * ($ChangePercent / 100.0))
-    
+
     for ($i = 0; $i -lt $ChangeCount; $i++) {
         $Pos = $Random.Next($SourceData.Length)
         $SourceData[$Pos] = [byte]($SourceData[$Pos] -bxor 0xFF)
     }
-    
+
     [System.IO.File]::WriteAllBytes($TargetPath, $SourceData)
     return $TargetPath
 }
@@ -158,10 +158,10 @@ function Test-Encoding {
         [string]$Algorithm,
         [hashtable]$Options = @{}
     )
-    
+
     $PatchPath = Join-Path $TempPath "patch-$Algorithm-$(Get-Random).bps"
     $OutputPath = Join-Path $TempPath "output-$Algorithm-$(Get-Random).bin"
-    
+
     $Result = @{
         Algorithm = $Algorithm
         SourceSize = (Get-Item $SourcePath).Length
@@ -173,7 +173,7 @@ function Test-Encoding {
         Error = $null
         Options = ($Options | ConvertTo-Json -Compress)
     }
-    
+
     try {
         # Build CLI arguments
         $EncodeArgs = @(
@@ -183,48 +183,48 @@ function Test-Encoding {
             $TargetPath,
             "--algorithm", $Algorithm
         )
-        
+
         if ($Options.UseLazyMatching) { $EncodeArgs += "--lazy-matching" }
         if ($Options.UseCostBasedMatching) { $EncodeArgs += "--cost-based" }
         if (-not $Options.UseRleOptimization) { $EncodeArgs += "--no-rle" }
-        
+
         # Measure encoding time
         $CliPath = Join-Path $ProjectRoot "src\BpsPatch.Cli\bin\Debug\net10.0\bps-patch.exe"
         if (-not (Test-Path $CliPath)) {
             $CliPath = Join-Path $ProjectRoot "bin\Debug\net10.0\bps-patch.exe"
         }
-        
+
         $EncodeStart = Get-Date
         $EncodeOutput = & $CliPath $EncodeArgs 2>&1
         $EncodeEnd = Get-Date
         $Result.EncodeTime = ($EncodeEnd - $EncodeStart).TotalMilliseconds
-        
+
         if ($LASTEXITCODE -ne 0) {
             throw "Encoding failed: $EncodeOutput"
         }
-        
+
         $Result.PatchSize = (Get-Item $PatchPath).Length
-        
+
         # Measure decoding time
         $DecodeArgs = @("decode", $SourcePath, $PatchPath, $OutputPath)
-        
+
         $DecodeStart = Get-Date
         $DecodeOutput = & $CliPath $DecodeArgs 2>&1
         $DecodeEnd = Get-Date
         $Result.DecodeTime = ($DecodeEnd - $DecodeStart).TotalMilliseconds
-        
+
         if ($LASTEXITCODE -ne 0) {
             throw "Decoding failed: $DecodeOutput"
         }
-        
+
         # Verify output matches target
         $TargetHash = (Get-FileHash $TargetPath -Algorithm SHA256).Hash
         $OutputHash = (Get-FileHash $OutputPath -Algorithm SHA256).Hash
-        
+
         if ($TargetHash -ne $OutputHash) {
             throw "Output file does not match target file!"
         }
-        
+
         $Result.Success = $true
     }
     catch {
@@ -238,7 +238,7 @@ function Test-Encoding {
             Remove-Item $OutputPath -ErrorAction SilentlyContinue
         }
     }
-    
+
     return $Result
 }
 
@@ -287,13 +287,13 @@ foreach ($SizeMB in $FileSizes) {
     Write-Log "-" * 60
     Write-Log "Testing $SizeMB MB files"
     Write-Log "-" * 60
-    
+
     # Generate source file
     $SourcePath = New-TestFile -SizeMB $SizeMB -Name "source-$SizeMB.bin"
-    
+
     # Generate target file (5% changes)
     $TargetPath = New-ModifiedFile -SourcePath $SourcePath -Name "target-$SizeMB.bin" -ChangePercent 5.0
-    
+
     foreach ($Algorithm in $AlgorithmsToTest) {
         foreach ($Options in $OptionCombinations) {
             $CompletedTests++
@@ -306,22 +306,22 @@ foreach ($SizeMB in $FileSizes) {
             } else {
                 "Default"
             }
-            
+
             Write-Log "[$CompletedTests/$TotalTests] $SizeMB MB, $Algorithm, $OptionsDesc"
-            
+
             $Result = Test-Encoding -SourcePath $SourcePath -TargetPath $TargetPath -Algorithm $Algorithm -Options $Options
-            
+
             # Calculate compression ratio
             $CompressionRatio = if ($Result.PatchSize -gt 0) {
                 [math]::Round($Result.TargetSize / $Result.PatchSize, 2)
             } else {
                 0
             }
-            
+
             # Write to CSV
             $CsvLine = "$SizeMB,$Algorithm,`"$OptionsDesc`",$($Result.PatchSize),$([int]$Result.EncodeTime),$([int]$Result.DecodeTime),$CompressionRatio,$($Result.Success),`"$($Result.Error -replace '"', '""')`""
             Add-Content -Path $ResultsFile -Value $CsvLine
-            
+
             if ($Result.Success) {
                 $RatioDisplay = "{0:N2}x" -f $CompressionRatio
                 $EncodeSpeed = "{0:N2}" -f ($SizeMB * 1024 / ($Result.EncodeTime / 1000))
@@ -331,7 +331,7 @@ foreach ($SizeMB in $FileSizes) {
             }
         }
     }
-    
+
     # Cleanup source and target files
     if (-not $SkipCleanup) {
         Remove-Item $SourcePath -ErrorAction SilentlyContinue

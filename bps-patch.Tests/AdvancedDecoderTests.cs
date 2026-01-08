@@ -55,7 +55,9 @@ public class AdvancedDecoderTests : TestBase {
 		} finally {
 			File.Delete(source);
 			File.Delete(patch);
-			if (File.Exists(target)) File.Delete(target);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
 		}
 	}
 
@@ -87,7 +89,9 @@ public class AdvancedDecoderTests : TestBase {
 		} finally {
 			File.Delete(source);
 			File.Delete(patch);
-			if (File.Exists(target)) File.Delete(target);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
 		}
 	}
 
@@ -127,7 +131,9 @@ public class AdvancedDecoderTests : TestBase {
 		} finally {
 			File.Delete(source);
 			File.Delete(patch);
-			if (File.Exists(target)) File.Delete(target);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
 		}
 	}
 
@@ -159,15 +165,17 @@ public class AdvancedDecoderTests : TestBase {
 			// Act: Apply patch with wrong source
 			var warnings = Decoder.ApplyPatch(new FileInfo(source2), new FileInfo(patch), new FileInfo(target2));
 
-		// Assert: Should have CRC32 warning
-		Assert.NotEmpty(warnings);
-		Assert.Contains(warnings, w => w.Contains("hash", StringComparison.OrdinalIgnoreCase));
-	} finally {
+			// Assert: Should have CRC32 warning
+			Assert.NotEmpty(warnings);
+			Assert.Contains(warnings, w => w.Contains("hash", StringComparison.OrdinalIgnoreCase));
+		} finally {
 			File.Delete(source1);
 			File.Delete(source2);
 			File.Delete(target1);
 			File.Delete(patch);
-			if (File.Exists(target2)) File.Delete(target2);
+			if (File.Exists(target2)) {
+				File.Delete(target2);
+			}
 		}
 	}
 
@@ -214,7 +222,9 @@ public class AdvancedDecoderTests : TestBase {
 			File.Delete(source);
 			File.Delete(target1);
 			File.Delete(patch);
-			if (File.Exists(target2)) File.Delete(target2);
+			if (File.Exists(target2)) {
+				File.Delete(target2);
+			}
 		}
 	}
 
@@ -244,7 +254,9 @@ public class AdvancedDecoderTests : TestBase {
 		} finally {
 			File.Delete(source);
 			File.Delete(patch);
-			if (File.Exists(target)) File.Delete(target);
+			if (File.Exists(target)) {
+				File.Delete(target);
+			}
 		}
 	}
 
@@ -283,7 +295,9 @@ public class AdvancedDecoderTests : TestBase {
 			File.Delete(source);
 			File.Delete(target1);
 			File.Delete(patch);
-			if (File.Exists(target2)) File.Delete(target2);
+			if (File.Exists(target2)) {
+				File.Delete(target2);
+			}
 		}
 	}
 
@@ -330,7 +344,9 @@ public class AdvancedDecoderTests : TestBase {
 			File.Delete(source);
 			File.Delete(target1);
 			File.Delete(patch);
-			if (File.Exists(target2)) File.Delete(target2);
+			if (File.Exists(target2)) {
+				File.Delete(target2);
+			}
 		}
 	}
 

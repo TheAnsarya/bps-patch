@@ -162,7 +162,10 @@ public class SuffixArray {
 		int len = Math.Min(a.Length, b.Length);
 
 		for (int i = 0; i < len; i++) {
-			if (a[i] != b[i]) break;
+			if (a[i] != b[i]) {
+				break;
+			}
+
 			count++;
 		}
 

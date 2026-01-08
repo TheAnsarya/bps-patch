@@ -30,34 +30,30 @@ namespace BpsPatch.Core;
 /// </para>
 /// </remarks>
 [Serializable]
-public class BpsFormatException : Exception
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BpsFormatException"/> class.
-    /// </summary>
-    public BpsFormatException()
-        : base("Invalid BPS patch format")
-    {
-    }
+public class BpsFormatException : Exception {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="BpsFormatException"/> class.
+	/// </summary>
+	public BpsFormatException()
+		: base("Invalid BPS patch format") {
+	}
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BpsFormatException"/> class
-    /// with a specified error message.
-    /// </summary>
-    /// <param name="message">The message that describes the error.</param>
-    public BpsFormatException(string message)
-        : base(message)
-    {
-    }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="BpsFormatException"/> class
+	/// with a specified error message.
+	/// </summary>
+	/// <param name="message">The message that describes the error.</param>
+	public BpsFormatException(string message)
+		: base(message) {
+	}
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BpsFormatException"/> class
-    /// with a specified error message and a reference to the inner exception.
-    /// </summary>
-    /// <param name="message">The message that describes the error.</param>
-    /// <param name="inner">The exception that caused this exception.</param>
-    public BpsFormatException(string message, Exception inner)
-        : base(message, inner)
-    {
-    }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="BpsFormatException"/> class
+	/// with a specified error message and a reference to the inner exception.
+	/// </summary>
+	/// <param name="message">The message that describes the error.</param>
+	/// <param name="inner">The exception that caused this exception.</param>
+	public BpsFormatException(string message, Exception inner)
+		: base(message, inner) {
+	}
 }

@@ -387,49 +387,49 @@ public class IntegrationTests : TestBase {
 			}
 			WriteAllBytesWithSharing(sourceFile, originalRom);
 
-		// Total conversion: Completely different data
-		byte[] convertedRom = new byte[16384];
-		Random.Shared.NextBytes(convertedRom);
-		WriteAllBytesWithSharing(targetFile, convertedRom);
+			// Total conversion: Completely different data
+			byte[] convertedRom = new byte[16384];
+			Random.Shared.NextBytes(convertedRom);
+			WriteAllBytesWithSharing(targetFile, convertedRom);
 
-		// Verify files were written correctly
-		var sourceInfo = new FileInfo(sourceFile);
-		var targetInfo = new FileInfo(targetFile);
-		sourceInfo.Refresh();
-		targetInfo.Refresh();
-		Assert.Equal(16384, sourceInfo.Length);
-		Assert.Equal(16384, targetInfo.Length);
+			// Verify files were written correctly
+			var sourceInfo = new FileInfo(sourceFile);
+			var targetInfo = new FileInfo(targetFile);
+			sourceInfo.Refresh();
+			targetInfo.Refresh();
+			Assert.Equal(16384, sourceInfo.Length);
+			Assert.Equal(16384, targetInfo.Length);
 
-		// Act: Create and apply patch
-		Encoder.CreatePatch(
-				new FileInfo(sourceFile),
-				new FileInfo(patchFile),
-				new FileInfo(targetFile),
-				"Total Conversion: Complete game overhaul");
+			// Act: Create and apply patch
+			Encoder.CreatePatch(
+					new FileInfo(sourceFile),
+					new FileInfo(patchFile),
+					new FileInfo(targetFile),
+					"Total Conversion: Complete game overhaul");
 
 			var warnings = Decoder.ApplyPatch(
 				new FileInfo(sourceFile),
 				new FileInfo(patchFile),
 				new FileInfo(outputFile));
 
-		// Assert: Complete replacement
-		byte[] output = ReadAllBytesWithSharing(outputFile);
-		Assert.Equal(convertedRom.Length, output.Length);
+			// Assert: Complete replacement
+			byte[] output = ReadAllBytesWithSharing(outputFile);
+			Assert.Equal(convertedRom.Length, output.Length);
 
-		// Check if output matches expected (should match for valid patch)
-		bool dataMatches = convertedRom.SequenceEqual(output);
-		Assert.True(dataMatches, "Decoded output doesn't match expected target");
+			// Check if output matches expected (should match for valid patch)
+			bool dataMatches = convertedRom.SequenceEqual(output);
+			Assert.True(dataMatches, "Decoded output doesn't match expected target");
 
-		// Patch should exist and be reasonable size
-		var patchInfo = new FileInfo(patchFile);
-		Assert.True(patchInfo.Length > 0, "Patch file is empty");
+			// Patch should exist and be reasonable size
+			var patchInfo = new FileInfo(patchFile);
+			Assert.True(patchInfo.Length > 0, "Patch file is empty");
 
-		// TODO: Investigate why patch is so small (65 bytes for 16KB replacement)
-		// This might be related to Rabin-Karp finding spurious matches
-		// For now, just verify the patch works correctly
+			// TODO: Investigate why patch is so small (65 bytes for 16KB replacement)
+			// This might be related to Rabin-Karp finding spurious matches
+			// For now, just verify the patch works correctly
 
-		Assert.Empty(warnings);
-	} finally {
+			Assert.Empty(warnings);
+		} finally {
 			// Cleanup
 			File.Delete(sourceFile);
 			File.Delete(targetFile);
@@ -457,10 +457,10 @@ public class IntegrationTests : TestBase {
 			WriteAllBytesWithSharing(targetFile, target);
 
 			string metadata = "ROM Hack Name: Super Game DX\n" +
-			                 "Author: TheHacker\n" +
-			                 "Version: 2.0\n" +
-			                 "Release: 2025-10-29\n" +
-			                 "Description: Enhanced graphics and gameplay";
+							 "Author: TheHacker\n" +
+							 "Version: 2.0\n" +
+							 "Release: 2025-10-29\n" +
+							 "Description: Enhanced graphics and gameplay";
 
 			// Act: Create patch with metadata
 			Encoder.CreatePatch(
@@ -545,47 +545,47 @@ public class IntegrationTests : TestBase {
 			Array.Copy(v11, v12, v11.Length);
 			v12[100] = 3; // Version marker
 			v12[1000] = 0xAA; // Feature addition
-			WriteAllBytesWithSharing(v12File, v12);			Encoder.CreatePatch(
+			WriteAllBytesWithSharing(v12File, v12); Encoder.CreatePatch(
 				new FileInfo(v11File),
 				new FileInfo(patch2File),
 				new FileInfo(v12File),
 				"Update v1.1 -> v1.2");
 
-		// Apply patches sequentially
-		var warnings1 = Decoder.ApplyPatch(
-			new FileInfo(v10File),
-			new FileInfo(patch1File),
-			new FileInfo(temp1File));
+			// Apply patches sequentially
+			var warnings1 = Decoder.ApplyPatch(
+				new FileInfo(v10File),
+				new FileInfo(patch1File),
+				new FileInfo(temp1File));
 
-		// Verify temp1 matches v11
-		byte[] temp1Data = ReadAllBytesWithSharing(temp1File);
-		byte[] v11Data = ReadAllBytesWithSharing(v11File);
-		Assert.Equal(v11Data.Length, temp1Data.Length);
+			// Verify temp1 matches v11
+			byte[] temp1Data = ReadAllBytesWithSharing(temp1File);
+			byte[] v11Data = ReadAllBytesWithSharing(v11File);
+			Assert.Equal(v11Data.Length, temp1Data.Length);
 
-		// Find first difference
-		int firstDiff = -1;
-		for (int i = 0; i < temp1Data.Length; i++) {
-			if (temp1Data[i] != v11Data[i]) {
-				firstDiff = i;
-				break;
+			// Find first difference
+			int firstDiff = -1;
+			for (int i = 0; i < temp1Data.Length; i++) {
+				if (temp1Data[i] != v11Data[i]) {
+					firstDiff = i;
+					break;
+				}
 			}
-		}
 
-		if (firstDiff != -1) {
-			var patch1Info = new FileInfo(patch1File);
-			throw new Exception($"First patch application failed at byte {firstDiff}: " +
-				$"expected 0x{v11Data[firstDiff]:X2}, got 0x{temp1Data[firstDiff]:X2}. " +
-				$"Patch size: {patch1Info.Length} bytes. " +
-				$"Expected changes: v10[100]=1->2, v10[500]={v10[500]:X2}->0xFF");
-		}
+			if (firstDiff != -1) {
+				var patch1Info = new FileInfo(patch1File);
+				throw new Exception($"First patch application failed at byte {firstDiff}: " +
+					$"expected 0x{v11Data[firstDiff]:X2}, got 0x{temp1Data[firstDiff]:X2}. " +
+					$"Patch size: {patch1Info.Length} bytes. " +
+					$"Expected changes: v10[100]=1->2, v10[500]={v10[500]:X2}->0xFF");
+			}
 
-		bool temp1MatchesV11 = temp1Data.SequenceEqual(v11Data);
-		Assert.True(temp1MatchesV11, "First patch application didn't recreate v1.1 correctly");
+			bool temp1MatchesV11 = temp1Data.SequenceEqual(v11Data);
+			Assert.True(temp1MatchesV11, "First patch application didn't recreate v1.1 correctly");
 
-		var warnings = Decoder.ApplyPatch(
-			new FileInfo(temp1File),
-			new FileInfo(patch2File),
-			new FileInfo(temp2File));			// Assert: Final version is correct
+			var warnings = Decoder.ApplyPatch(
+				new FileInfo(temp1File),
+				new FileInfo(patch2File),
+				new FileInfo(temp2File));           // Assert: Final version is correct
 			byte[] output = ReadAllBytesWithSharing(temp2File);
 			Assert.Equal(3, output[100]);
 			Assert.Equal(0xFF, output[500]);
