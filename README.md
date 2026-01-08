@@ -122,12 +122,24 @@ bps-patch/
 
 ## 📚 Documentation
 
+### Core Documentation
+
 | Document | Description |
 |----------|-------------|
-| **[USAGE.md](USAGE.md)** | Complete usage guide (CLI & library API) |
-| **[IMPLEMENTATION.md](IMPLEMENTATION.md)** | Architecture, algorithms, optimizations |
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System design, components, data flow |
+| **[docs/ALGORITHMS.md](docs/ALGORITHMS.md)** | Pattern matching algorithms explained |
+| **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)** | Performance tuning guide |
+| **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** | Complete API documentation |
+
+### Additional Resources
+
+| Document | Description |
+|----------|-------------|
 | **[BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md)** | Binary format specification |
-| **[BENCHMARKS_SETUP.md](BENCHMARKS_SETUP.md)** | Performance benchmark details |
+| **[USAGE.md](USAGE.md)** | CLI & library usage examples |
+| **[IMPLEMENTATION.md](IMPLEMENTATION.md)** | Implementation details |
+| **[TODO.md](TODO.md)** | Project roadmap & task tracking |
+| **[CHANGELOG.md](CHANGELOG.md)** | Version history & changes |
 
 ---
 

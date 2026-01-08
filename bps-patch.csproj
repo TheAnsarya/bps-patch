@@ -17,6 +17,9 @@
 		<Compile Remove="bps-patch.Benchmarks\**" />
 		<EmbeddedResource Remove="bps-patch.Benchmarks\**" />
 		<None Remove="bps-patch.Benchmarks\**" />
+		<Compile Remove="src\**" />
+		<EmbeddedResource Remove="src\**" />
+		<None Remove="src\**" />
 	</ItemGroup>
 
 	<ItemGroup>
