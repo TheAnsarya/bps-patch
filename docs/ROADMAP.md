@@ -2,7 +2,8 @@
 
 A comprehensive development roadmap for achieving a stable 1.0 release.
 
-**Created**: January 7, 2026
+**Created**: January 7, 2026  
+**Last Updated**: January 7, 2026
 
 ---
 
@@ -12,7 +13,28 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 
 ---
 
-## Phase 1: Foundation (Current Phase) ✅ ~80% Complete
+## GitHub Issues Summary
+
+| Issue | Title | Status |
+|-------|-------|--------|
+| [#1](https://github.com/TheAnsarya/bps-patch/issues/1) | External bug report | Open |
+| [#2](https://github.com/TheAnsarya/bps-patch/issues/2) | Implement SA-IS suffix array | Open |
+| [#3](https://github.com/TheAnsarya/bps-patch/issues/3) | Add lazy matching optimization | Open |
+| [#4](https://github.com/TheAnsarya/bps-patch/issues/4) | Large file integration tests | Open |
+| [#5](https://github.com/TheAnsarya/bps-patch/issues/5) | Fuzz testing infrastructure | Open |
+| [#6](https://github.com/TheAnsarya/bps-patch/issues/6) | GitHub Actions CI/CD | ✅ Closed |
+| [#7](https://github.com/TheAnsarya/bps-patch/issues/7) | Code coverage reporting | Open |
+| [#8](https://github.com/TheAnsarya/bps-patch/issues/8) | XML documentation | Open |
+| [#9](https://github.com/TheAnsarya/bps-patch/issues/9) | Streaming encoder/decoder | Open |
+| [#10](https://github.com/TheAnsarya/bps-patch/issues/10) | Project folder restructure | ✅ Closed |
+| [#11](https://github.com/TheAnsarya/bps-patch/issues/11) | Test timeouts | ✅ Closed |
+| [#12](https://github.com/TheAnsarya/bps-patch/issues/12) | BPS file format documentation | ✅ Closed |
+| [#13](https://github.com/TheAnsarya/bps-patch/issues/13) | Best-in-class compression | Open |
+| [#14](https://github.com/TheAnsarya/bps-patch/issues/14) | Stable v1.0 release | Open |
+
+---
+
+## Phase 1: Foundation ✅ COMPLETE
 
 ### Goals
 - Establish core library architecture
@@ -29,12 +51,11 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 - [x] Project structure (`BpsPatch.Core`, `BpsPatch.Cli`, Tests, Benchmarks)
 - [x] 70+ unit tests passing
 - [x] Architecture documentation
-
-### Remaining
-- [ ] Add test timeouts (CancellationToken patterns for long-running tests)
-- [ ] Project folder restructure (move legacy files to `legacy/`)
-- [ ] Git commits for all changes
-- [ ] Create GitHub issues for tracked items
+- [x] Test timeout configuration (Issue #11 ✅)
+- [x] Project folder restructure - legacy files moved to `legacy/` (Issue #10 ✅)
+- [x] GitHub Actions CI/CD workflows created - disabled by default (Issue #6 ✅)
+- [x] BPS file format documentation (Issue #12 ✅)
+- [x] Git commits in logical batches on `feature/library-restructure` branch
 
 ---
 
