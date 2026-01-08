@@ -10,6 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Comprehensive compression strategy comparison tests (29 tests)
+  - Covers Linear, Rabin-Karp, and Suffix Array matching strategies
+  - Validates identical output across all strategies
+  - Compression ratio benchmarks
+- Code coverage verification infrastructure
+
+### Fixed
+- **Critical encoder bug**: TargetRead command was double-counting targetPosition
+  - The `WriteTargetReadCommand` function incremented position after already
+    tracking it during byte accumulation, causing bytes to be skipped
+  - This manifested as incorrect patches for files with scattered byte changes
+  - All 99 new tests + 122 legacy tests now pass
+
+### Changed
+- Benchmark runtime moniker updated for .NET 10 compatibility
+- Performance timing tests now skipped in CI to avoid coverage overhead
+- Updated documentation with current coverage metrics (88.72% line, 82.09% branch)
+
+---
+
+## [1.0.0-beta] - 2026-01-07
+
+### Added
 - Comprehensive documentation suite
   - [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System design documentation
   - [ALGORITHMS.md](docs/ALGORITHMS.md) - Algorithm explanations

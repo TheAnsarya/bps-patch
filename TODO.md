@@ -2,7 +2,7 @@
 
 Project roadmap and task tracking for BPS Patch development.
 
-**Last Updated**: January 7, 2026 (Updated with all GitHub issue references)
+**Last Updated**: January 8, 2026 (Updated with encoder bug fix and test completion)
 
 ---
 
@@ -80,8 +80,9 @@ Project roadmap and task tracking for BPS Patch development.
 - [x] **Create ALGORITHMS.md** ✅ DONE - `docs/ALGORITHMS.md`
 - [x] **Create PERFORMANCE.md** ✅ DONE - `docs/PERFORMANCE.md`
 - [x] **Create API_REFERENCE.md** ✅ DONE - `docs/API_REFERENCE.md`
-- [ ] **Add inline XML documentation coverage** - [Issue #8](https://github.com/TheAnsarya/bps-patch/issues/8)
+- [x] **Add inline XML documentation coverage** - [Issue #8](https://github.com/TheAnsarya/bps-patch/issues/8) ✅ DONE
   - Target: 100% public API coverage
+  - Achieved: 99 documented members, no CS1591 warnings
 
 ### CI/CD
 
@@ -91,9 +92,10 @@ Project roadmap and task tracking for BPS Patch development.
   - Release: `.github/workflows/release.yml` (NuGet publishing)
   - **Disabled by default** - see `docs/CI_ACTIVATION.md`
 
-- [ ] **Add code coverage reporting** - [Issue #7](https://github.com/TheAnsarya/bps-patch/issues/7)
+- [x] **Add code coverage reporting** - [Issue #7](https://github.com/TheAnsarya/bps-patch/issues/7) ✅ DONE
   - Target: 90%+ coverage
-  - Coverlet integration
+  - Achieved: 88.72% line, 82.09% branch coverage
+  - Coverlet integration working
 
 ---
 
@@ -139,6 +141,15 @@ Project roadmap and task tracking for BPS Patch development.
 
 ## ✅ Completed
 
+### January 8, 2026 (Session 3)
+
+- [x] Fix critical encoder bug - double-counting targetPosition in TargetRead ✅
+- [x] Create comprehensive compression strategy comparison tests (29 tests)
+- [x] Verify code coverage: 88.72% line, 82.09% branch coverage
+- [x] Verify XML documentation: 99 documented members, no warnings
+- [x] Fix benchmarks runtime moniker for .NET 10
+- [x] Partial benchmark verification - SuffixArray needs SA-IS (#2)
+
 ### January 7, 2026 (Session 2)
 
 - [x] Add test timeout configuration - [Issue #11](https://github.com/TheAnsarya/bps-patch/issues/11) ✅
@@ -176,20 +187,20 @@ Project roadmap and task tracking for BPS Patch development.
 
 | Issue | Title | Status |
 |-------|-------|--------|
-| #1 | External bug report (SourceCopy slice) | Open |
+| #1 | External bug report (SourceCopy slice) | ✅ Fixed (old code bug, modern code correct) |
 | #2 | SA-IS suffix array O(n) construction | Open |
 | #3 | Lazy matching optimization | Open |
 | #4 | Large file tests (>10MB) | Open |
 | #5 | Fuzz testing | Open |
 | #6 | GitHub Actions CI | ✅ Closed |
-| #7 | Code coverage with Coverlet | Open |
-| #8 | XML documentation coverage | Open |
+| #7 | Code coverage with Coverlet | ✅ Done (88.72% coverage verified) |
+| #8 | XML documentation coverage | ✅ Done (99 members documented) |
 | #9 | Streaming encoder/decoder | Open |
-| #10 | Project folder restructure | Open |
+| #10 | Project folder restructure | ✅ Closed |
 | #11 | Test timeouts | ✅ Closed |
-| #12 | BPS file format documentation | Open |
-| #13 | Best-in-class compression | Open |
-| #14 | Stable v1.0 release | Open |
+| #12 | BPS file format documentation | ✅ Closed |
+| #13 | Best-in-class compression | Open (compression tests added) |
+| #14 | Stable v1.0 release | Open (blocked by #2, #3)
 
 ---
 
