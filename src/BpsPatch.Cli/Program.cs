@@ -64,20 +64,98 @@ public static class Program
     {
         if (args.Length < 3)
         {
-            Console.Error.WriteLine("Usage: bps-patch encode <source> <target> <patch> [metadata]");
+            Console.Error.WriteLine("Usage: bps-patch encode <source> <target> <patch> [options]");
             Console.Error.WriteLine();
             Console.Error.WriteLine("Arguments:");
             Console.Error.WriteLine("  source    Original file");
             Console.Error.WriteLine("  target    Modified file");
             Console.Error.WriteLine("  patch     Output patch file (.bps)");
-            Console.Error.WriteLine("  metadata  Optional metadata string");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("Options:");
+            Console.Error.WriteLine("  -m, --metadata <text>     Patch metadata");
+            Console.Error.WriteLine("  -a, --algorithm <name>    Matching algorithm: Auto, Linear, RabinKarp, SuffixArray");
+            Console.Error.WriteLine("  -l, --lazy-matching       Enable lazy matching for better compression");
+            Console.Error.WriteLine("  -c, --cost-based          Enable cost-based match selection");
+            Console.Error.WriteLine("  --no-rle                  Disable RLE optimization");
+            Console.Error.WriteLine("  --min-match <n>           Minimum match length (default: 4)");
             return 1;
         }
 
-        var sourceFile = new FileInfo(args[0]);
-        var targetFile = new FileInfo(args[1]);
-        var patchFile = new FileInfo(args[2]);
-        var metadata = args.Length > 3 ? args[3] : "";
+        // Parse positional arguments
+        var positionalArgs = new List<string>();
+        var metadata = "";
+        var algorithm = MatchingAlgorithm.Auto;
+        var useLazyMatching = false;
+        var useCostBasedMatching = false;
+        var useRleOptimization = true;
+        var minMatchLength = 4;
+
+        for (int i = 0; i < args.Length; i++)
+        {
+            var arg = args[i];
+            if (arg.StartsWith("-"))
+            {
+                switch (arg.ToLowerInvariant())
+                {
+                    case "-m":
+                    case "--metadata":
+                        if (i + 1 < args.Length) metadata = args[++i];
+                        break;
+                    case "-a":
+                    case "--algorithm":
+                        if (i + 1 < args.Length)
+                        {
+                            var algName = args[++i];
+                            algorithm = algName.ToLowerInvariant() switch
+                            {
+                                "auto" => MatchingAlgorithm.Auto,
+                                "linear" => MatchingAlgorithm.Linear,
+                                "rabinkarp" or "rabin-karp" => MatchingAlgorithm.RabinKarp,
+                                "suffixarray" or "suffix-array" => MatchingAlgorithm.SuffixArray,
+                                _ => throw new ArgumentException($"Unknown algorithm: {algName}")
+                            };
+                        }
+                        break;
+                    case "-l":
+                    case "--lazy-matching":
+                        useLazyMatching = true;
+                        break;
+                    case "-c":
+                    case "--cost-based":
+                        useCostBasedMatching = true;
+                        break;
+                    case "--no-rle":
+                        useRleOptimization = false;
+                        break;
+                    case "--min-match":
+                        if (i + 1 < args.Length && int.TryParse(args[++i], out var minMatch))
+                            minMatchLength = minMatch;
+                        break;
+                    default:
+                        throw new ArgumentException($"Unknown option: {arg}");
+                }
+            }
+            else
+            {
+                positionalArgs.Add(arg);
+            }
+        }
+
+        if (positionalArgs.Count < 3)
+        {
+            Console.Error.WriteLine("Error: source, target, and patch files are required");
+            return 1;
+        }
+
+        var sourceFile = new FileInfo(positionalArgs[0]);
+        var targetFile = new FileInfo(positionalArgs[1]);
+        var patchFile = new FileInfo(positionalArgs[2]);
+
+        // Legacy: metadata as 4th positional arg
+        if (positionalArgs.Count > 3 && string.IsNullOrEmpty(metadata))
+        {
+            metadata = positionalArgs[3];
+        }
 
         if (!sourceFile.Exists)
         {
@@ -97,9 +175,24 @@ public static class Program
 
         var options = new BpsEncoderOptions
         {
-            Algorithm = MatchingAlgorithm.Auto,
+            Algorithm = algorithm,
+            UseLazyMatching = useLazyMatching,
+            UseCostBasedMatching = useCostBasedMatching,
+            UseRleOptimization = useRleOptimization,
+            MinimumMatchLength = minMatchLength,
             Progress = new ConsoleProgress("Encoding")
         };
+
+        // Show options if non-default
+        if (useLazyMatching || useCostBasedMatching || !useRleOptimization || algorithm != MatchingAlgorithm.Auto)
+        {
+            var optionsDesc = new List<string>();
+            if (algorithm != MatchingAlgorithm.Auto) optionsDesc.Add($"Algorithm={algorithm}");
+            if (useLazyMatching) optionsDesc.Add("LazyMatching");
+            if (useCostBasedMatching) optionsDesc.Add("CostBased");
+            if (!useRleOptimization) optionsDesc.Add("NoRLE");
+            Console.WriteLine($"  Options: {string.Join(", ", optionsDesc)}");
+        }
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         BpsEncoder.CreatePatch(sourceFile, patchFile, targetFile, metadata, options);

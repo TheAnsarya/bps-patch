@@ -130,16 +130,30 @@ bps-patch/
 | **[docs/ALGORITHMS.md](docs/ALGORITHMS.md)** | Pattern matching algorithms explained |
 | **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)** | Performance tuning guide |
 | **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** | Complete API documentation |
+| **[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md)** | Manual testing procedures |
 
-### Additional Resources
+### Format & Usage
 
 | Document | Description |
 |----------|-------------|
-| **[BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md)** | Binary format specification |
-| **[USAGE.md](USAGE.md)** | CLI & library usage examples |
-| **[IMPLEMENTATION.md](IMPLEMENTATION.md)** | Implementation details |
-| **[TODO.md](TODO.md)** | Project roadmap & task tracking |
+| **[docs/BPS_FORMAT_SPECIFICATION.md](docs/BPS_FORMAT_SPECIFICATION.md)** | Binary format specification |
+| **[docs/USAGE.md](docs/USAGE.md)** | CLI & library usage examples |
+| **[docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** | Implementation details |
+| **[docs/COMPRESSION_TESTING.md](docs/COMPRESSION_TESTING.md)** | Compression ratio analysis |
+
+### Project Management
+
+| Document | Description |
+|----------|-------------|
 | **[CHANGELOG.md](CHANGELOG.md)** | Version history & changes |
+| **[TODO.md](TODO.md)** | Project roadmap & task tracking |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines |
+
+### Testing Scripts
+
+| Script | Description |
+|--------|-------------|
+| **[scripts/Run-LargeFileTests.ps1](scripts/Run-LargeFileTests.ps1)** | Large file test automation |
 
 ---
 

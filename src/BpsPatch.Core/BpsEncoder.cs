@@ -40,6 +40,18 @@ public sealed class BpsEncoderOptions
     public bool UseLazyMatching { get; set; } = false;
 
     /// <summary>
+    /// Enable cost-based match selection for optimal compression.
+    /// Considers offset encoding overhead when selecting matches.
+    /// </summary>
+    public bool UseCostBasedMatching { get; set; } = false;
+
+    /// <summary>
+    /// Enable RLE optimization for detecting repeated patterns in target.
+    /// Improves compression for files with repeating byte sequences.
+    /// </summary>
+    public bool UseRleOptimization { get; set; } = true;
+
+    /// <summary>
     /// Progress callback invoked during encoding.
     /// </summary>
     public IProgress<EncodingProgress>? Progress { get; set; }
@@ -257,6 +269,9 @@ public static class BpsEncoder
             long sourceRelativeOffset = 0;
             long targetRelativeOffset = 0;
 
+            // Determine if using advanced matching
+            bool useAdvancedMatching = options.UseCostBasedMatching || options.UseRleOptimization;
+
             while (targetPosition < target.Length)
             {
                 // Report progress periodically
@@ -271,24 +286,46 @@ public static class BpsEncoder
                     lastProgressReport = targetPosition;
                 }
 
-                // Find best match
-                var (mode, length, start) = FindNextRun(
-                    source,
-                    target,
-                    targetPosition,
-                    strategy,
-                    options.MinimumMatchLength);
+                // Find best match (use advanced options if enabled)
+                var (mode, length, start) = useAdvancedMatching
+                    ? FindNextRunWithOptions(
+                        source,
+                        target,
+                        targetPosition,
+                        strategy,
+                        options.MinimumMatchLength,
+                        options.UseCostBasedMatching,
+                        options.UseRleOptimization,
+                        sourceRelativeOffset,
+                        targetRelativeOffset)
+                    : FindNextRun(
+                        source,
+                        target,
+                        targetPosition,
+                        strategy,
+                        options.MinimumMatchLength);
 
                 // Lazy matching: check if next position has a better match
                 // If so, emit one literal byte now and use the better match next iteration
                 if (options.UseLazyMatching && mode != BpsAction.TargetRead && targetPosition + 1 < target.Length)
                 {
-                    var (nextMode, nextLength, _) = FindNextRun(
-                        source,
-                        target,
-                        targetPosition + 1,
-                        strategy,
-                        options.MinimumMatchLength);
+                    var (nextMode, nextLength, _) = useAdvancedMatching
+                        ? FindNextRunWithOptions(
+                            source,
+                            target,
+                            targetPosition + 1,
+                            strategy,
+                            options.MinimumMatchLength,
+                            options.UseCostBasedMatching,
+                            options.UseRleOptimization,
+                            sourceRelativeOffset,
+                            targetRelativeOffset)
+                        : FindNextRun(
+                            source,
+                            target,
+                            targetPosition + 1,
+                            strategy,
+                            options.MinimumMatchLength);
 
                     // If next position has a significantly better match, emit literal and defer
                     // Use threshold of length + 2 to account for the extra literal byte cost
@@ -389,9 +426,28 @@ public static class BpsEncoder
         IMatchingStrategy strategy,
         int minimumMatchLength)
     {
+        return FindNextRunWithOptions(source, target, targetPosition, strategy, minimumMatchLength,
+            useCostBased: false, useRle: false, sourceRelOffset: 0, targetRelOffset: 0);
+    }
+
+    /// <summary>
+    /// Finds the optimal patch action for the current position with advanced options.
+    /// </summary>
+    private static (BpsAction Mode, int Length, int Start) FindNextRunWithOptions(
+        ReadOnlySpan<byte> source,
+        ReadOnlySpan<byte> target,
+        int targetPosition,
+        IMatchingStrategy strategy,
+        int minimumMatchLength,
+        bool useCostBased,
+        bool useRle,
+        long sourceRelOffset,
+        long targetRelOffset)
+    {
         BpsAction mode = BpsAction.TargetRead;
         int longestRun = minimumMatchLength - 1;
         int longestStart = -1;
+        int bestCost = int.MaxValue; // Lower is better: data_bytes + command_overhead
 
         ReadOnlySpan<byte> targetSlice = target[targetPosition..];
 
@@ -402,14 +458,20 @@ public static class BpsEncoder
                 source[targetPosition..],
                 targetSlice);
 
-            if (length > longestRun)
+            if (length >= minimumMatchLength)
             {
-                mode = BpsAction.SourceRead;
-                longestRun = length;
+                int cost = useCostBased ? CalculateMatchCost(BpsAction.SourceRead, length, 0) : -length;
 
-                if (reachedEnd)
+                if (useCostBased ? cost < bestCost : length > longestRun)
                 {
-                    return (mode, longestRun, -1);
+                    mode = BpsAction.SourceRead;
+                    longestRun = length;
+                    bestCost = cost;
+
+                    if (reachedEnd)
+                    {
+                        return (mode, longestRun, -1);
+                    }
                 }
             }
         }
@@ -419,17 +481,24 @@ public static class BpsEncoder
             var (length, start, reachedEnd) = strategy.FindBestMatch(
                 source,
                 targetSlice,
-                longestRun + 1);
+                minimumMatchLength);
 
-            if (length > longestRun)
+            if (length >= minimumMatchLength)
             {
-                mode = BpsAction.SourceCopy;
-                longestRun = length;
-                longestStart = start;
+                long offset = start - sourceRelOffset;
+                int cost = useCostBased ? CalculateMatchCost(BpsAction.SourceCopy, length, offset) : -length;
 
-                if (reachedEnd)
+                if (useCostBased ? cost < bestCost : length > longestRun)
                 {
-                    return (mode, longestRun, start);
+                    mode = BpsAction.SourceCopy;
+                    longestRun = length;
+                    longestStart = start;
+                    bestCost = cost;
+
+                    if (reachedEnd)
+                    {
+                        return (mode, longestRun, start);
+                    }
                 }
             }
         }
@@ -440,21 +509,97 @@ public static class BpsEncoder
             var (length, start, reachedEnd) = strategy.FindBestMatch(
                 target[..targetPosition],
                 targetSlice,
-                longestRun + 1);
+                minimumMatchLength);
 
-            if (length > longestRun)
+            if (length >= minimumMatchLength)
             {
-                mode = BpsAction.TargetCopy;
-                longestRun = length;
-                longestStart = start;
+                long offset = start - targetRelOffset;
+                int cost = useCostBased ? CalculateMatchCost(BpsAction.TargetCopy, length, offset) : -length;
 
-                if (reachedEnd)
+                if (useCostBased ? cost < bestCost : length > longestRun)
                 {
-                    return (mode, longestRun, start);
+                    mode = BpsAction.TargetCopy;
+                    longestRun = length;
+                    longestStart = start;
+                    bestCost = cost;
+
+                    if (reachedEnd)
+                    {
+                        return (mode, longestRun, start);
+                    }
+                }
+            }
+        }
+
+        // Check 4: RLE optimization - detect repeating byte sequences
+        if (useRle && targetPosition > 0)
+        {
+            int rleLength = DetectRlePattern(target, targetPosition);
+            if (rleLength >= minimumMatchLength && rleLength > longestRun)
+            {
+                // RLE can be encoded as TargetCopy from previous byte
+                int rleStart = targetPosition - 1;
+                long offset = rleStart - targetRelOffset;
+                int cost = useCostBased ? CalculateMatchCost(BpsAction.TargetCopy, rleLength, offset) : -rleLength;
+
+                if (useCostBased ? cost < bestCost : rleLength > longestRun)
+                {
+                    mode = BpsAction.TargetCopy;
+                    longestRun = rleLength;
+                    longestStart = rleStart;
                 }
             }
         }
 
         return (mode, longestRun, longestStart);
+    }
+
+    /// <summary>
+    /// Calculates the cost of a match in terms of patch bytes.
+    /// Lower cost is better.
+    /// </summary>
+    private static int CalculateMatchCost(BpsAction mode, int length, long offset)
+    {
+        // Cost = command_bytes + offset_bytes - data_saved
+        // We want to minimize patch size, so matches that save more data are better
+
+        // Command encoding: variable-length integer for ((length-1) << 2 | mode)
+        int commandBytes = VariableLengthInt.EncodedLength((ulong)((length - 1) << 2));
+
+        int offsetBytes = 0;
+        if (mode == BpsAction.SourceCopy || mode == BpsAction.TargetCopy)
+        {
+            // Offset encoding: variable-length integer for (abs(offset) << 1 | sign)
+            ulong encodedOffset = ((ulong)Math.Abs(offset) << 1) + (offset < 0 ? 1UL : 0);
+            offsetBytes = VariableLengthInt.EncodedLength(encodedOffset);
+        }
+
+        // Return negative savings (so lower is better)
+        // Savings = length bytes not written to patch
+        // Cost = overhead bytes added
+        // Net cost = overhead - savings (negative means good)
+        return commandBytes + offsetBytes - length;
+    }
+
+    /// <summary>
+    /// Detects RLE (Run-Length Encoding) patterns in the target.
+    /// Returns the length of the repeating sequence starting at targetPosition.
+    /// </summary>
+    private static int DetectRlePattern(ReadOnlySpan<byte> target, int targetPosition)
+    {
+        if (targetPosition <= 0 || targetPosition >= target.Length)
+            return 0;
+
+        byte previousByte = target[targetPosition - 1];
+        int length = 0;
+
+        while (targetPosition + length < target.Length &&
+               target[targetPosition + length] == previousByte &&
+               length < 0x7FFFFFFF) // Prevent overflow
+        {
+            length++;
+        }
+
+        return length;
     }
 }

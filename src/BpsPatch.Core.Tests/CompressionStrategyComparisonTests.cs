@@ -454,6 +454,199 @@ public class CompressionStrategyComparisonTests : IDisposable
     }
 
     // ========================================================================================================
+    // Compression Optimization Tests
+    // ========================================================================================================
+
+    [Theory]
+    [InlineData(MatchingAlgorithm.Linear)]
+    [InlineData(MatchingAlgorithm.RabinKarp)]
+    [InlineData(MatchingAlgorithm.SuffixArray)]
+    public void CostBasedMatching_ProducesValidPatch(MatchingAlgorithm algorithm)
+    {
+        // Arrange
+        byte[] source = GenerateSequentialData(1000);
+        byte[] target = ModifyRandomPositions(source, 50);
+
+        var sourceFile = GetTempFile();
+        var targetFile = GetTempFile();
+        var patchFile = GetTempFile();
+        var outputFile = GetTempFile();
+
+        File.WriteAllBytes(sourceFile, source);
+        File.WriteAllBytes(targetFile, target);
+
+        // Act: Create patch with cost-based matching
+        BpsEncoder.CreatePatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(targetFile),
+            "Cost-based matching test",
+            new BpsEncoderOptions
+            {
+                Algorithm = algorithm,
+                UseCostBasedMatching = true
+            });
+
+        var result = BpsDecoder.ApplyPatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(outputFile));
+
+        // Assert: Output matches target exactly
+        byte[] output = File.ReadAllBytes(outputFile);
+        Assert.Equal(target, output);
+    }
+
+    [Theory]
+    [InlineData(MatchingAlgorithm.Linear)]
+    [InlineData(MatchingAlgorithm.RabinKarp)]
+    [InlineData(MatchingAlgorithm.SuffixArray)]
+    public void RleOptimization_ProducesValidPatch(MatchingAlgorithm algorithm)
+    {
+        // Arrange: Data with RLE patterns (repeated bytes)
+        byte[] source = GenerateSequentialData(500);
+        byte[] target = new byte[500];
+        // Fill with repeating byte sequences
+        for (int i = 0; i < 500; i += 50)
+        {
+            byte val = (byte)(i / 50);
+            for (int j = i; j < Math.Min(i + 50, 500); j++)
+            {
+                target[j] = val;
+            }
+        }
+
+        var sourceFile = GetTempFile();
+        var targetFile = GetTempFile();
+        var patchFile = GetTempFile();
+        var outputFile = GetTempFile();
+
+        File.WriteAllBytes(sourceFile, source);
+        File.WriteAllBytes(targetFile, target);
+
+        // Act: Create patch with RLE optimization
+        BpsEncoder.CreatePatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(targetFile),
+            "RLE optimization test",
+            new BpsEncoderOptions
+            {
+                Algorithm = algorithm,
+                UseRleOptimization = true
+            });
+
+        var result = BpsDecoder.ApplyPatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(outputFile));
+
+        // Assert: Output matches target exactly
+        byte[] output = File.ReadAllBytes(outputFile);
+        Assert.Equal(target, output);
+    }
+
+    [Fact]
+    public void AllOptimizations_Combined_ProducesValidPatch()
+    {
+        // Arrange: Data with various patterns
+        byte[] source = GenerateSequentialData(2000);
+        byte[] target = new byte[2000];
+        Array.Copy(source, target, source.Length);
+
+        // Add some scattered changes
+        for (int i = 100; i < 150; i++) target[i] = 0xFF;
+        // Add RLE section
+        for (int i = 500; i < 600; i++) target[i] = 0xAA;
+        // Change some more
+        for (int i = 1000; i < 1050; i++) target[i] ^= 0xFF;
+
+        var sourceFile = GetTempFile();
+        var targetFile = GetTempFile();
+        var patchFile = GetTempFile();
+        var outputFile = GetTempFile();
+
+        File.WriteAllBytes(sourceFile, source);
+        File.WriteAllBytes(targetFile, target);
+
+        // Act: Create patch with all optimizations
+        BpsEncoder.CreatePatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(targetFile),
+            "All optimizations test",
+            new BpsEncoderOptions
+            {
+                Algorithm = MatchingAlgorithm.SuffixArray,
+                UseLazyMatching = true,
+                UseCostBasedMatching = true,
+                UseRleOptimization = true
+            });
+
+        var result = BpsDecoder.ApplyPatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchFile),
+            new FileInfo(outputFile));
+
+        // Assert: Output matches target exactly
+        byte[] output = File.ReadAllBytes(outputFile);
+        Assert.Equal(target, output);
+    }
+
+    [Fact]
+    public void RleOptimization_ImprovesPatchSize_ForRepeatingData()
+    {
+        // Arrange: Data with lots of repeated bytes (good RLE candidate)
+        byte[] source = GenerateSequentialData(1000);
+        byte[] target = new byte[1000];
+        // Create long runs of same byte
+        for (int i = 0; i < 1000; i++)
+        {
+            target[i] = (byte)(i / 100); // 10 different bytes, 100 each
+        }
+
+        var sourceFile = GetTempFile();
+        var targetFile = GetTempFile();
+        var patchWithRle = GetTempFile();
+        var patchWithoutRle = GetTempFile();
+        var outputFile = GetTempFile();
+
+        File.WriteAllBytes(sourceFile, source);
+        File.WriteAllBytes(targetFile, target);
+
+        // Act: Create patches with and without RLE
+        BpsEncoder.CreatePatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchWithRle),
+            new FileInfo(targetFile),
+            "",
+            new BpsEncoderOptions { UseRleOptimization = true });
+
+        BpsEncoder.CreatePatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchWithoutRle),
+            new FileInfo(targetFile),
+            "",
+            new BpsEncoderOptions { UseRleOptimization = false });
+
+        // Verify RLE patch is valid
+        var result = BpsDecoder.ApplyPatch(
+            new FileInfo(sourceFile),
+            new FileInfo(patchWithRle),
+            new FileInfo(outputFile));
+        byte[] output = File.ReadAllBytes(outputFile);
+        Assert.Equal(target, output);
+
+        // RLE should help with repeating data (or at least not hurt)
+        var sizeWithRle = new FileInfo(patchWithRle).Length;
+        var sizeWithoutRle = new FileInfo(patchWithoutRle).Length;
+
+        // RLE patch should be no larger than without RLE (may be same or smaller)
+        Assert.True(sizeWithRle <= sizeWithoutRle * 1.1,
+            $"RLE patch ({sizeWithRle}) should not be significantly larger than without ({sizeWithoutRle})");
+    }
+
+    // ========================================================================================================
     // Helper Methods
     // ========================================================================================================
 

@@ -90,6 +90,23 @@ public static class VariableLengthInt
     }
 
     /// <summary>
+    /// Calculates the number of bytes needed to encode a number without actually encoding it.
+    /// </summary>
+    /// <param name="number">The number to calculate encoding length for.</param>
+    /// <returns>Number of bytes needed to encode the number.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int EncodedLength(ulong number)
+    {
+        int length = 1;
+        while (number >= 0x80)
+        {
+            number = (number >> 7) - 1;
+            length++;
+        }
+        return length;
+    }
+
+    /// <summary>
     /// Decodes a variable-length encoded number from a stream.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
