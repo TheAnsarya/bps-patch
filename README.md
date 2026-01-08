@@ -4,7 +4,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-107%20Passing-success?style=for-the-badge)](docs/MANUAL_TESTING.md)
+[![Tests](https://img.shields.io/badge/Tests-229%20Passing-success?style=for-the-badge)](docs/MANUAL_TESTING.md)
 [![Coverage](https://img.shields.io/badge/Coverage-88%25-yellow?style=for-the-badge)](docs/COMPRESSION_TESTING.md)
 
 **A high-performance implementation of the BPS (Binary Patch System) format**
@@ -57,7 +57,7 @@
 ### 🔬 Quality Assurance
 | Metric | Value |
 |--------|-------|
-| 📊 **Unit Tests** | 107 tests (106 passing, 1 skipped) |
+| 📊 **Unit Tests** | 229 tests (107 modern + 122 legacy) |
 | 📊 **Code Coverage** | 88.72% line coverage |
 | 📊 **XML Documentation** | 99 documented members |
 | 📊 **Benchmarks** | 72+ performance benchmarks |
@@ -321,12 +321,11 @@ bps-patch/
 
 | Category | Tests | Status |
 |----------|-------|--------|
-| Encoder Tests | 25+ | ✅ Passing |
-| Decoder Tests | 20+ | ✅ Passing |
-| Strategy Tests | 30+ | ✅ Passing |
-| Integration Tests | 15+ | ✅ Passing |
-| Edge Case Tests | 15+ | ✅ Passing |
-| **Total** | **107** | **106 ✅ / 1 ⏭️** |
+| Modern Encoder/Decoder | 50+ | ✅ Passing |
+| Compression Strategy | 30+ | ✅ Passing |
+| Algorithm Tests | 20+ | ✅ Passing |
+| Legacy Tests | 122 | ✅ Passing |
+| **Total** | **229** | **✅ All Passing** |
 
 ### 🧪 Running Tests
 

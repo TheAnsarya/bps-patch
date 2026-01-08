@@ -32,7 +32,7 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 | [#11](https://github.com/TheAnsarya/bps-patch/issues/11) | Test timeouts | ✅ Closed |
 | [#12](https://github.com/TheAnsarya/bps-patch/issues/12) | BPS file format documentation | ✅ Closed |
 | [#13](https://github.com/TheAnsarya/bps-patch/issues/13) | Best-in-class compression | Open (tests added) |
-| [#14](https://github.com/TheAnsarya/bps-patch/issues/14) | Stable v1.0 release | Open |
+| [#14](https://github.com/TheAnsarya/bps-patch/issues/14) | Stable v1.0 release | 🟢 Ready |
 
 ---
 
@@ -51,7 +51,7 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 - [x] CRC32 validation
 - [x] Variable-length integer encoding
 - [x] Project structure (`BpsPatch.Core`, `BpsPatch.Cli`, Tests, Benchmarks)
-- [x] 70+ unit tests passing
+- [x] 229 unit tests passing (107 modern + 122 legacy)
 - [x] Architecture documentation
 - [x] Test timeout configuration (Issue #11 ✅)
 - [x] Project folder restructure - legacy files moved to `legacy/` (Issue #10 ✅)

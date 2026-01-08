@@ -201,7 +201,7 @@ Project roadmap and task tracking for BPS Patch development.
 | #11 | Test timeouts | ✅ Closed |
 | #12 | BPS file format documentation | ✅ Closed |
 | #13 | Best-in-class compression | Open (compression tests added) |
-| #14 | Stable v1.0 release | Open (blocked by #2, #3)
+| #14 | Stable v1.0 release | Ready (blockers resolved)
 
 ---
 

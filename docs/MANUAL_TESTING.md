@@ -35,7 +35,7 @@ dotnet build -c Debug
 dotnet test --no-build
 ```
 
-Expected: 107+ tests should pass (1 skipped for performance).
+Expected: 229+ tests should pass (107 modern + 122 legacy).
 
 ---
 
