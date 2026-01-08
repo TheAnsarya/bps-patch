@@ -2,7 +2,8 @@
 
 A practical guide to completing the BPS Patch library refactoring and achieving a stable release.
 
-**Created**: January 7, 2026
+**Created**: January 7, 2026  
+**Last Updated**: January 8, 2026
 
 ---
 
@@ -11,19 +12,23 @@ A practical guide to completing the BPS Patch library refactoring and achieving 
 ### What's Done ✅
 - Core library structure in `src/BpsPatch.Core/`
 - CLI application in `src/BpsPatch.Cli/`
-- Test suite in `src/BpsPatch.Core.Tests/` (70 tests passing)
+- Test suite in `src/BpsPatch.Core.Tests/` (99 tests passing)
+- Legacy tests in `bps-patch.Tests/` (122 tests passing)
 - Benchmarks in `src/BpsPatch.Core.Benchmarks/`
 - Documentation in `docs/`
 - Three matching algorithms (Linear, Rabin-Karp, Suffix Array)
 - SIMD byte comparison optimization
 - CRC32 validation
+- **Code coverage**: 88.72% line, 82.09% branch
+- **XML documentation**: 99 members documented, no CS1591 warnings
+- **Critical encoder bug fixed**: TargetRead double-counting issue
 
 ### What Needs Attention ⚠️
-- Git commits not organized by feature
-- Duplicate code in root folder vs `src/`
-- GitHub issues not created
-- Test coverage unknown
-- Benchmarks not complete
+- SA-IS algorithm for O(n) suffix array construction (#2)
+- Lazy matching optimization for smaller patches (#3)
+- Large file tests >10MB (#4)
+- Fuzz testing (#5)
+- Streaming encoder/decoder for large files (#9)
 
 ---
 

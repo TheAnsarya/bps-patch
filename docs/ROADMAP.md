@@ -3,7 +3,7 @@
 A comprehensive development roadmap for achieving a stable 1.0 release.
 
 **Created**: January 7, 2026  
-**Last Updated**: January 7, 2026
+**Last Updated**: January 8, 2026
 
 ---
 
@@ -17,19 +17,19 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 
 | Issue | Title | Status |
 |-------|-------|--------|
-| [#1](https://github.com/TheAnsarya/bps-patch/issues/1) | External bug report | Open |
+| [#1](https://github.com/TheAnsarya/bps-patch/issues/1) | External bug report | ✅ Fixed (modern code correct) |
 | [#2](https://github.com/TheAnsarya/bps-patch/issues/2) | Implement SA-IS suffix array | Open |
 | [#3](https://github.com/TheAnsarya/bps-patch/issues/3) | Add lazy matching optimization | Open |
 | [#4](https://github.com/TheAnsarya/bps-patch/issues/4) | Large file integration tests | Open |
 | [#5](https://github.com/TheAnsarya/bps-patch/issues/5) | Fuzz testing infrastructure | Open |
 | [#6](https://github.com/TheAnsarya/bps-patch/issues/6) | GitHub Actions CI/CD | ✅ Closed |
-| [#7](https://github.com/TheAnsarya/bps-patch/issues/7) | Code coverage reporting | Open |
-| [#8](https://github.com/TheAnsarya/bps-patch/issues/8) | XML documentation | Open |
+| [#7](https://github.com/TheAnsarya/bps-patch/issues/7) | Code coverage reporting | ✅ Done (88.72%) |
+| [#8](https://github.com/TheAnsarya/bps-patch/issues/8) | XML documentation | ✅ Done (99 members) |
 | [#9](https://github.com/TheAnsarya/bps-patch/issues/9) | Streaming encoder/decoder | Open |
 | [#10](https://github.com/TheAnsarya/bps-patch/issues/10) | Project folder restructure | ✅ Closed |
 | [#11](https://github.com/TheAnsarya/bps-patch/issues/11) | Test timeouts | ✅ Closed |
 | [#12](https://github.com/TheAnsarya/bps-patch/issues/12) | BPS file format documentation | ✅ Closed |
-| [#13](https://github.com/TheAnsarya/bps-patch/issues/13) | Best-in-class compression | Open |
+| [#13](https://github.com/TheAnsarya/bps-patch/issues/13) | Best-in-class compression | Open (tests added) |
 | [#14](https://github.com/TheAnsarya/bps-patch/issues/14) | Stable v1.0 release | Open |
 
 ---
