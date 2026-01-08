@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>BpsPatch.Cli</RootNamespace>
+		<AssemblyName>bps-patch</AssemblyName>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<!-- Enable AOT compilation for faster startup -->
+		<PublishAot>false</PublishAot>
+
+		<!-- Single-file deployment -->
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>false</SelfContained>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\BpsPatch.Core\BpsPatch.Core.csproj" />
+	</ItemGroup>
+
+</Project>
