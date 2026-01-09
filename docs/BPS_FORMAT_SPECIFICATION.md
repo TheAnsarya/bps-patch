@@ -1,6 +1,6 @@
 # 📜 BPS (Binary Patch System) File Format Specification
 
-> 📚 **Navigation**: [← Back to README](README.md) | [File Format Details](docs/FILE_FORMAT.md) | [Implementation](IMPLEMENTATION.md) | [Algorithms](docs/ALGORITHMS.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [File Format Details](FILE_FORMAT.md) | [Implementation](IMPLEMENTATION.md) | [Algorithms](ALGORITHMS.md)
 
 **Version**: 1.0
 **Date**: January 8, 2026

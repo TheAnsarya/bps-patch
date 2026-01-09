@@ -1,4 +1,6 @@
-# BenchmarkDotNet Setup - Complete ✅
+# 📊 BenchmarkDotNet Setup
+
+> 📚 **Navigation**: [← Back to README](../README.md) | [Performance](PERFORMANCE.md) | [Algorithms](ALGORITHMS.md)
 
 ## Summary
 Successfully set up BenchmarkDotNet performance benchmarking infrastructure for the BPS patch project.

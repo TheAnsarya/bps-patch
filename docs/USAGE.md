@@ -1,6 +1,6 @@
 # 📘 BPS Patch - Usage Guide
 
-> 📚 **Navigation**: [← Back to README](README.md) | [Manual Testing](docs/MANUAL_TESTING.md) | [API Reference](docs/API_REFERENCE.md) | [Algorithms](docs/ALGORITHMS.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Manual Testing](MANUAL_TESTING.md) | [API Reference](API_REFERENCE.md) | [Algorithms](ALGORITHMS.md)
 
 Complete guide for using the BPS patch tool from command line and as a library in your own applications.
 

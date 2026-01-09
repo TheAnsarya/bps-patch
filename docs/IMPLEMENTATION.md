@@ -1,6 +1,6 @@
 # 🔧 BPS Patch Implementation Guide
 
-> 📚 **Navigation**: [← Back to README](README.md) | [Architecture](docs/ARCHITECTURE.md) | [Algorithms](docs/ALGORITHMS.md) | [Format Spec](BPS_FORMAT_SPECIFICATION.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Architecture](ARCHITECTURE.md) | [Algorithms](ALGORITHMS.md) | [Format Spec](BPS_FORMAT_SPECIFICATION.md)
 
 ## Architecture Overview
 

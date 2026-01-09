@@ -129,56 +129,43 @@ BpsEncoder.CreatePatch(
 
 ### 📚 Complete Documentation Index
 
-All documentation is organized and accessible from this README. Click any link to learn more.
+All documentation is organized in the `docs/` folder. Click any link to learn more.
 
 #### 🏛️ Architecture & Design
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| 📐 [**ARCHITECTURE**](docs/ARCHITECTURE.md) | System design, components, data flow diagrams | ✅ Complete |
-| 🧮 [**ALGORITHMS**](docs/ALGORITHMS.md) | Pattern matching algorithms (Linear, Rabin-Karp, SA-IS) | ✅ Complete |
-| 📊 [**PERFORMANCE**](docs/PERFORMANCE.md) | Performance tuning, benchmarks, optimization guide | ✅ Complete |
-| 🔌 [**API_REFERENCE**](docs/API_REFERENCE.md) | Complete API documentation with examples | ✅ Complete |
-| 📖 [**REFERENCES**](docs/REFERENCES.md) | Academic papers, research, and resources | ✅ Complete |
+| Document | Description |
+|----------|-------------|
+| 📐 [**ARCHITECTURE**](docs/ARCHITECTURE.md) | System design, components, data flow diagrams |
+| 🧮 [**ALGORITHMS**](docs/ALGORITHMS.md) | Pattern matching algorithms (Linear, Rabin-Karp, SA-IS) |
+| 📊 [**PERFORMANCE**](docs/PERFORMANCE.md) | Performance tuning, benchmarks, optimization guide |
+| 🔌 [**API_REFERENCE**](docs/API_REFERENCE.md) | Complete API documentation with examples |
+| 📖 [**REFERENCES**](docs/REFERENCES.md) | Academic papers, research, and resources |
 
 #### 📋 Format & Specification
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| 📜 [**BPS_FORMAT_SPECIFICATION**](BPS_FORMAT_SPECIFICATION.md) | Official BPS binary format specification | ✅ Complete |
-| 📁 [**FILE_FORMAT**](docs/FILE_FORMAT.md) | Detailed file format breakdown | ✅ Complete |
-| 🔧 [**IMPLEMENTATION**](IMPLEMENTATION.md) | Implementation details and decisions | ✅ Complete |
+| Document | Description |
+|----------|-------------|
+| 📜 [**BPS_FORMAT_SPECIFICATION**](docs/BPS_FORMAT_SPECIFICATION.md) | Official BPS binary format specification |
+| 📁 [**FILE_FORMAT**](docs/FILE_FORMAT.md) | Detailed file format breakdown |
+| 🔧 [**IMPLEMENTATION**](docs/IMPLEMENTATION.md) | Implementation details and decisions |
 
 #### 🚀 Usage & Guides
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| 📘 [**USAGE**](USAGE.md) | CLI and library usage examples | ✅ Complete |
-| 🧪 [**MANUAL_TESTING**](docs/MANUAL_TESTING.md) | Manual testing procedures and scripts | ✅ Complete |
-| 📈 [**COMPRESSION_TESTING**](docs/COMPRESSION_TESTING.md) | Compression ratio analysis | ✅ Complete |
-| ⚙️ [**BENCHMARKS_SETUP**](BENCHMARKS_SETUP.md) | How to run benchmarks | ✅ Complete |
+| Document | Description |
+|----------|-------------|
+| 📘 [**USAGE**](docs/USAGE.md) | CLI and library usage examples |
+| 🧪 [**MANUAL_TESTING**](docs/MANUAL_TESTING.md) | Manual testing procedures and scripts |
+| 📈 [**COMPRESSION_TESTING**](docs/COMPRESSION_TESTING.md) | Compression ratio analysis |
+| ⚙️ [**BENCHMARKS_SETUP**](docs/BENCHMARKS_SETUP.md) | How to run benchmarks |
 
 #### 🛠️ Development & Contributing
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| 📝 [**CHANGELOG**](CHANGELOG.md) | Version history and changes | ✅ Complete |
-| 🗺️ [**ROADMAP**](docs/ROADMAP.md) | Future plans and milestones | ✅ Complete |
-| ✅ [**TODO**](TODO.md) | Current task tracking | ✅ Complete |
-| 🔄 [**CI_ACTIVATION**](docs/CI_ACTIVATION.md) | CI/CD pipeline setup | ✅ Complete |
-| 🏁 [**HOW_TO_FINISH**](docs/HOW_TO_FINISH.md) | Project completion checklist | ✅ Complete |
-
-#### 📜 Session & History
-
-| Document | Description | Status |
-|----------|-------------|--------|
-| 📓 [**SESSION_2026-01-07**](docs/SESSION_2026-01-07.md) | Development session notes | 📝 Archive |
-| 📓 [**SESSION_2025-10-29_SUMMARY**](SESSION_2025-10-29_SUMMARY.md) | Session summary | 📝 Archive |
-| 📓 [**SESSION_COMPLETE**](SESSION_COMPLETE.md) | Session completion notes | 📝 Archive |
-| 📓 [**MODERNIZATION_SUMMARY**](MODERNIZATION_SUMMARY.md) | .NET 10 modernization notes | 📝 Archive |
-| 📓 [**DOCUMENTATION_SUMMARY**](DOCUMENTATION_SUMMARY.md) | Documentation overview | 📝 Archive |
-| 📓 [**QUICK_REFERENCE**](QUICK_REFERENCE.md) | Quick reference card | 📝 Archive |
-| 📓 [**TESTING**](TESTING.md) | Testing notes | 📝 Archive |
+| Document | Description |
+|----------|-------------|
+| 📝 [**CHANGELOG**](CHANGELOG.md) | Version history and changes |
+| 🗺️ [**ROADMAP**](docs/ROADMAP.md) | Future plans and milestones |
+| ✅ [**TODO**](TODO.md) | Current task tracking |
+| 🔄 [**CI_ACTIVATION**](docs/CI_ACTIVATION.md) | CI/CD pipeline setup |
 
 #### 🔧 Scripts & Tools
 
@@ -193,7 +180,7 @@ All documentation is organized and accessible from this README. Click any link t
 |----------|-------------|
 | 🤖 [**.github/copilot-instructions.md**](.github/copilot-instructions.md) | AI assistant instructions |
 | 📁 [**legacy/**](legacy/) | Original implementation reference |
-| 📁 [**logs/**](logs/) | Development session logs (tracked in git) |
+| 📁 [**logs/**](logs/) | Development session logs (history) |
 
 ---
 

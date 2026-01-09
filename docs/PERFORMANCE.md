@@ -1,6 +1,6 @@
 # ⚡ BPS Patch Performance Guide
 
-> 📚 **Navigation**: [← Back to README](../README.md) | [Algorithms](ALGORITHMS.md) | [Architecture](ARCHITECTURE.md) | [Benchmarks Setup](../BENCHMARKS_SETUP.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Algorithms](ALGORITHMS.md) | [Architecture](ARCHITECTURE.md) | [Benchmarks Setup](BENCHMARKS_SETUP.md)
 
 This document covers performance characteristics, optimization techniques, benchmarking methodology, and tuning recommendations for the BPS Patch library.
 

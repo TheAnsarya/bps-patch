@@ -1,6 +1,6 @@
 # 📖 References & Research
 
-> 📚 **Navigation**: [← Back to README](../README.md) | [Algorithms](ALGORITHMS.md) | [Performance](PERFORMANCE.md) | [BPS Format](../BPS_FORMAT_SPECIFICATION.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Algorithms](ALGORITHMS.md) | [Performance](PERFORMANCE.md) | [BPS Format](BPS_FORMAT_SPECIFICATION.md)
 
 A comprehensive collection of references, research papers, and resources used in developing the BPS Patch library.
 

@@ -523,7 +523,7 @@ Hierarchical hash tables for O(1) expected lookup:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 - [PERFORMANCE.md](PERFORMANCE.md) - Performance tuning
-- [BPS_FORMAT_SPECIFICATION.md](../BPS_FORMAT_SPECIFICATION.md) - Format details
+- [BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md) - Format details
 
 ## Quick References
 

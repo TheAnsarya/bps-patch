@@ -1,6 +1,6 @@
 # 🔌 BPS Patch API Reference
 
-> 📚 **Navigation**: [← Back to README](../README.md) | [Usage Guide](../USAGE.md) | [Architecture](ARCHITECTURE.md) | [Algorithms](ALGORITHMS.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Usage Guide](USAGE.md) | [Architecture](ARCHITECTURE.md) | [Algorithms](ALGORITHMS.md)
 
 Complete API documentation for the BPS Patch library.
 

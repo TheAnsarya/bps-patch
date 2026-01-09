@@ -1,6 +1,6 @@
 # 🧪 Manual Testing Guide
 
-> 📚 **Navigation**: [← Back to README](../README.md) | [Usage Guide](../USAGE.md) | [Compression Testing](COMPRESSION_TESTING.md) | [Benchmarks](../BENCHMARKS_SETUP.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Usage Guide](USAGE.md) | [Compression Testing](COMPRESSION_TESTING.md) | [Benchmarks](BENCHMARKS_SETUP.md)
 
 This guide provides step-by-step instructions for manually testing the BPS Patch library. These tests are designed to complement the automated test suite and verify real-world behavior.
 
@@ -437,8 +437,8 @@ $env:BPS_DEBUG = "1"
 
 ### Getting Help
 
-1. Check [ALGORITHMS.md](docs/ALGORITHMS.md) for algorithm details
-2. Check [BPS_FORMAT_SPECIFICATION.md](docs/BPS_FORMAT_SPECIFICATION.md) for format details
+1. Check [ALGORITHMS.md](ALGORITHMS.md) for algorithm details
+2. Check [BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md) for format details
 3. Run automated tests to verify environment
 4. Check GitHub issues for known problems
 

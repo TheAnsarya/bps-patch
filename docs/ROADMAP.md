@@ -1,6 +1,6 @@
 # 🗺️ BPS Patch Library - Roadmap
 
-> 📚 **Navigation**: [← Back to README](../README.md) | [Changelog](../CHANGELOG.md) | [TODO](../TODO.md) | [How to Finish](HOW_TO_FINISH.md)
+> 📚 **Navigation**: [← Back to README](../README.md) | [Changelog](../CHANGELOG.md) | [TODO](../TODO.md) | [Algorithms](ALGORITHMS.md)
 
 A comprehensive development roadmap for achieving a stable 1.0 release.
 
@@ -240,7 +240,7 @@ Create a high-performance, well-documented BPS (Binary Patch System) library for
 
 ## Resources
 
-- [BPS Format Specification](../BPS_FORMAT_SPECIFICATION.md)
+- [BPS Format Specification](BPS_FORMAT_SPECIFICATION.md)
 - [Architecture Documentation](ARCHITECTURE.md)
 - [Algorithm Details](ALGORITHMS.md)
 - [Performance Guide](PERFORMANCE.md)

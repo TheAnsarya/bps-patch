@@ -384,4 +384,4 @@ var patch = new BpsPatchBuilder()
 - [ALGORITHMS.md](ALGORITHMS.md) - Detailed algorithm descriptions
 - [PERFORMANCE.md](PERFORMANCE.md) - Performance optimization guide
 - [API_REFERENCE.md](API_REFERENCE.md) - Complete API documentation
-- [BPS_FORMAT_SPECIFICATION.md](../BPS_FORMAT_SPECIFICATION.md) - BPS format details
+- [BPS_FORMAT_SPECIFICATION.md](BPS_FORMAT_SPECIFICATION.md) - BPS format details
