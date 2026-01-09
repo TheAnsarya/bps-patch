@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-01-08
 
 ### Added
 - Comprehensive compression strategy comparison tests (29 tests)
