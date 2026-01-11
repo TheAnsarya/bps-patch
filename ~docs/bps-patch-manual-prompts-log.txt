@@ -27,6 +27,7 @@ No, I do want the session logs tracked in git; flush out more documentation and 
 
 work on more issues especially all of those that increase performance, continue updating documentation; make the 1.0 release full featured; speaking of, we are on a random branch, not the main/master branch why? what the hell? fix this and commit everything and push back to main merg
 
+several docs are in the root folder, but should be in the `docs` folder, fix that and the documentation links and organize and review the documentation and make it complete but remove any old or out of date documentation;
 
 
 
