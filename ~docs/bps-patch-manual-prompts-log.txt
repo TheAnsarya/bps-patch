@@ -29,9 +29,9 @@ work on more issues especially all of those that increase performance, continue 
 
 several docs are in the root folder, but should be in the `docs` folder, fix that and the documentation links and organize and review the documentation and make it complete but remove any old or out of date documentation;
 
+update `ALGORITHMS.md` and other doumentation with current state (for instance ALGORITHMS.md says we're not using sa-is); comprehensive updating of readme files and `md` files and other docs;
 
-
-
+git commit everything
 
 
 
