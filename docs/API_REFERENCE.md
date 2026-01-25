@@ -6,20 +6,24 @@ Complete API documentation for the BPS Patch library.
 
 ## Table of Contents
 
-- [Encoder Class](#encoder-class)
-- [Decoder Class](#decoder-class)
-- [RabinKarp Class](#rabinkarp-class)
-- [SuffixArray Class](#suffixarray-class)
-- [Utilities Class](#utilities-class)
-- [PatchAction Enum](#patchaction-enum)
-- [PatchFormatException Class](#patchformatexception-class)
+- [BpsEncoder Class](#bpsencoder-class)
+- [BpsEncoderOptions Class](#bpsencoderoptions-class)
+- [BpsDecoder Class](#bpsdecoder-class)
+- [DecodingResult Class](#decodingresult-class)
+- [IMatchingStrategy Interface](#imatchingstrategy-interface)
+- [Matching Strategies](#matching-strategies)
+- [VariableLengthInt Class](#variablelengthint-class)
+- [Crc32Calculator Class](#crc32calculator-class)
+- [BpsAction Enum](#bpsaction-enum)
+- [BpsFormatException Class](#bpsformatexception-class)
+- [Legacy API (Reference Only)](#legacy-api-reference-only)
 
 ---
 
-## Encoder Class
+## BpsEncoder Class
 
-**Namespace**: `bps_patch`  
-**Assembly**: `bps-patch.dll`
+**Namespace**: `BpsPatch.Core`  
+**Assembly**: `BpsPatch.Core.dll`
 
 Creates BPS patch files by analyzing differences between source and target files.
 
@@ -32,7 +36,8 @@ public static void CreatePatch(
 	FileInfo sourceFile,
 	FileInfo patchFile,
 	FileInfo targetFile,
-	string manifest)
+	string metadata = "",
+	BpsEncoderOptions? options = null)
 ```
 
 Creates a BPS patch file by comparing source and target files.
@@ -43,18 +48,68 @@ Creates a BPS patch file by comparing source and target files.
 | `sourceFile` | `FileInfo` | Original file to patch from |
 | `patchFile` | `FileInfo` | Output patch file to create |
 | `targetFile` | `FileInfo` | Desired result file after patching |
-| `manifest` | `string` | Metadata string (typically XML) |
+| `metadata` | `string` | Optional metadata string (default: empty) |
+| `options` | `BpsEncoderOptions?` | Encoding options (null for defaults) |
 
 **Exceptions**:
 - `ArgumentException`: File exceeds `int.MaxValue` bytes
+- `IOException`: Error reading/writing files
 
 **Example**:
 ```csharp
-Encoder.CreatePatch(
+using BpsPatch.Core;
+
+// Simple usage
+BpsEncoder.CreatePatch(
 	new FileInfo("original.bin"),
 	new FileInfo("patch.bps"),
 	new FileInfo("modified.bin"),
 	"My Patch v1.0");
+
+// With options
+BpsEncoder.CreatePatch(
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("modified.bin"),
+	"My Patch v1.0",
+	new BpsEncoderOptions {
+		Algorithm = MatchingAlgorithm.SuffixArray,
+		UseLazyMatching = true,
+		UseCostBasedMatching = true
+	});
+```
+
+---
+
+## BpsEncoderOptions Class
+
+**Namespace**: `BpsPatch.Core`
+
+Configuration options for BPS patch encoding.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Algorithm` | `MatchingAlgorithm` | `Auto` | Pattern matching algorithm |
+| `MinimumMatchLength` | `int` | `4` | Minimum match length to consider |
+| `BufferSize` | `int` | `81920` | I/O buffer size in bytes (80KB) |
+| `UseLazyMatching` | `bool` | `false` | Check next position for better match |
+| `UseCostBasedMatching` | `bool` | `false` | Consider offset encoding cost |
+| `UseRleOptimization` | `bool` | `true` | Detect repeated patterns |
+| `UseParallelProcessing` | `bool` | `false` | Enable multi-core processing |
+| `MaxDegreeOfParallelism` | `int` | `0` | Thread limit (0 = all cores) |
+| `Progress` | `IProgress<EncodingProgress>?` | `null` | Progress callback |
+
+### MatchingAlgorithm Enum
+
+```csharp
+public enum MatchingAlgorithm {
+	Auto,        // Select based on file size
+	Linear,      // O(n²) - best for < 64KB
+	RabinKarp,   // O(n) avg - best for 64KB-1MB
+	SuffixArray  // O(n) build, O(log n) query - best for > 1MB
+}
 ```
 
 ---
@@ -253,96 +308,243 @@ if (warnings.Count > 0) {
 
 ---
 
-## RabinKarp Class
+## BpsDecoder Class
 
-**Namespace**: `bps_patch`  
-**Assembly**: `bps-patch.dll`
+**Namespace**: `BpsPatch.Core`  
+**Assembly**: `BpsPatch.Core.dll`
 
-Rabin-Karp rolling hash implementation for fast substring matching.
+Applies BPS patches to reconstruct target files from source files.
 
 ### Methods
 
-#### FindBestRun
+#### ApplyPatch
 
 ```csharp
-public static (int Length, int Start, bool ReachedEnd) FindBestRun(
-	ReadOnlySpan<byte> source,
-	ReadOnlySpan<byte> target,
-	int minimumLongestRun = 4,
-	int checkUntilMax = -1)
+public static DecodingResult ApplyPatch(
+	FileInfo sourceFile,
+	FileInfo patchFile,
+	FileInfo targetFile,
+	BpsDecoderOptions? options = null)
 ```
 
-Finds the best matching substring using rolling hash.
+Applies a BPS patch to a source file to create the target file.
 
-**Time Complexity**: O(n) average, O(nm) worst case
+**Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sourceFile` | `FileInfo` | Original file to patch |
+| `patchFile` | `FileInfo` | BPS patch file |
+| `targetFile` | `FileInfo` | Output file to create |
+| `options` | `BpsDecoderOptions?` | Decoding options (null for defaults) |
+
+**Returns**: `DecodingResult` - Result containing metadata and any warnings
+
+**Exceptions**:
+- `BpsFormatException`: Invalid patch format or header
+- `ArgumentException`: Source size mismatch or target too large
 
 **Example**:
 ```csharp
-var (length, start, reachedEnd) = RabinKarp.FindBestRun(
-	sourceData, 
-	targetPattern,
-	minimumLongestRun: 4);
+using BpsPatch.Core;
+
+var result = BpsDecoder.ApplyPatch(
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("patched.bin"));
+
+Console.WriteLine($"Metadata: {result.Metadata}");
+Console.WriteLine($"Target size: {result.TargetSize}");
+
+if (result.Warnings.Count > 0) {
+	Console.WriteLine("Warnings:");
+	foreach (var w in result.Warnings)
+		Console.WriteLine($"  - {w}");
+}
 ```
 
 ---
 
-## SuffixArray Class
+## DecodingResult Class
 
-**Namespace**: `bps_patch`  
-**Assembly**: `bps-patch.dll`
+**Namespace**: `BpsPatch.Core`
 
-Suffix array data structure for fast pattern matching.
-
-### Constructors
-
-#### SuffixArray(ReadOnlySpan<byte>)
-
-```csharp
-public SuffixArray(ReadOnlySpan<byte> data)
-```
-
-Creates a suffix array from the given data.
-
-**Time Complexity**: O(n² log n) - naive implementation
+Result of a BPS patch decoding operation.
 
 ### Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `Data` | `ReadOnlySpan<byte>` | Underlying data |
-| `Suffixes` | `ReadOnlySpan<int>` | Sorted suffix indices |
-| `LCP` | `ReadOnlySpan<int>` | Longest common prefix array |
+| `Metadata` | `string` | Metadata string from patch |
+| `Warnings` | `List<string>` | Warning messages (CRC mismatches, etc.) |
+| `SourceSize` | `long` | Expected source file size |
+| `TargetSize` | `long` | Expected target file size |
+
+---
+
+## IMatchingStrategy Interface
+
+**Namespace**: `BpsPatch.Core`
+
+Interface for pattern matching algorithm implementations.
+
+```csharp
+public interface IMatchingStrategy {
+	string Name { get; }
+	void Prepare(ReadOnlySpan<byte> sourceData);
+	(int Length, int Start, bool ReachedEnd) FindBestMatch(
+		ReadOnlySpan<byte> searchData,
+		ReadOnlySpan<byte> pattern,
+		int minimumLength = 4);
+}
+```
+
+### Implementations
+
+| Class | Algorithm | Best For |
+|-------|-----------|----------|
+| `LinearMatchingStrategy` | O(n²) linear search | < 64KB files |
+| `RabinKarpMatchingStrategy` | O(n) rolling hash | 64KB - 1MB files |
+| `SuffixArrayMatchingStrategy` | O(n) SA-IS + O(log n) query | > 1MB files |
+
+---
+
+## Matching Strategies
+
+### LinearMatchingStrategy
+
+Simple linear search for pattern matching. No preprocessing required.
+
+**Complexity**: O(n × m)
+
+### RabinKarpMatchingStrategy
+
+Dual-hash rolling hash for virtually zero false positives.
+
+**Complexity**: O(n + m) average
+
+**Features**:
+- Uses two independent hash functions (primes 2^31-1 and 1073741789)
+- False positive probability: ~1:2^62
+
+### SuffixArrayMatchingStrategy
+
+SA-IS suffix array construction with LCP array for efficient queries.
+
+**Complexity**: O(n) construction, O(log n) query
+
+**Features**:
+- Linear-time SA-IS algorithm (Nong, Zhang, Chan 2009)
+- Kasai's algorithm for LCP array construction
+- Binary search with match extension
+
+---
+
+## VariableLengthInt Class
+
+**Namespace**: `BpsPatch.Core`
+
+Variable-length integer encoding/decoding (BPS VLQ format).
 
 ### Methods
 
-#### FindLongestMatch
+#### Encode
 
 ```csharp
-public (int Length, int Start, bool ReachedEnd) FindLongestMatch(
-	ReadOnlySpan<byte> pattern,
-	int minimumLength = 4)
+public static int Encode(ulong value, Span<byte> buffer)
 ```
 
-Finds the longest matching substring in the suffix array.
+Encodes a value into BPS variable-length format.
 
-**Time Complexity**: O(log n) search + O(m) match extension
+**Returns**: Number of bytes written
 
-**Example**:
+#### Decode
+
 ```csharp
-var suffixArray = new SuffixArray(sourceData);
-var (length, start, reachedEnd) = suffixArray.FindLongestMatch(pattern);
+public static ulong Decode(ReadOnlySpan<byte> buffer, out int bytesRead)
+public static ulong Decode(Stream stream)
+```
+
+Decodes a BPS variable-length integer.
+
+---
+
+## Crc32Calculator Class
+
+**Namespace**: `BpsPatch.Core`
+
+CRC32 checksum calculation using System.IO.Hashing.
+
+### Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `ResultConstant` | `0x2144df1c` | Expected CRC residue for validation |
+
+### Methods
+
+#### Compute
+
+```csharp
+public static uint Compute(ReadOnlySpan<byte> data)
+public static uint Compute(FileInfo file)
+public static byte[] ComputeBytes(FileInfo file)
+```
+
+Computes CRC32 checksum of data or file.
+
+---
+
+## BpsAction Enum
+
+**Namespace**: `BpsPatch.Core`
+
+Defines the four patch operations in BPS format.
+
+```csharp
+public enum BpsAction {
+	SourceRead = 0,   // Copy from same position in source
+	TargetRead = 1,   // Read new bytes from patch
+	SourceCopy = 2,   // Copy from different position in source
+	TargetCopy = 3    // Copy from earlier in target (RLE-like)
+}
 ```
 
 ---
 
-## Utilities Class
+## BpsFormatException Class
+
+**Namespace**: `BpsPatch.Core`
+
+Exception thrown when a patch file has invalid format.
+
+```csharp
+public class BpsFormatException : Exception {
+	public BpsFormatException(string message);
+	public BpsFormatException(string message, Exception innerException);
+}
+```
+
+---
+
+## Legacy API (Reference Only)
+
+The following classes are available in the `legacy/` folder for reference but are not part of the modern `BpsPatch.Core` library:
+
+### Encoder Class (Legacy)
 
 **Namespace**: `bps_patch`  
-**Assembly**: `bps-patch.dll`
+**Location**: `legacy/Encoder.cs`
 
-Utility methods for CRC32 computation and validation.
+Original flat implementation with static methods for pattern matching.
 
-### Constants
+### Decoder Class (Legacy)
+
+**Namespace**: `bps_patch`  
+**Location**: `legacy/Decoder.cs`
+
+Original decoder returning `List<string>` warnings.
+
+### RabinKarp Class (Legacy)
 
 | Constant | Value | Description |
 |----------|-------|-------------|

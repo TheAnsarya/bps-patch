@@ -4,7 +4,7 @@
 
 Complete guide for using the BPS patch tool from command line and as a library in your own applications.
 
-**Last Updated**: January 8, 2026
+**Last Updated**: January 25, 2026
 
 ---
 
@@ -31,7 +31,7 @@ Complete guide for using the BPS patch tool from command line and as a library i
 **From Source**:
 ```powershell
 git clone https://github.com/TheAnsarya/bps-patch.git
-cd bps-patch/bps-patch
+cd bps-patch
 dotnet build -c Release
 ```
 
@@ -39,7 +39,12 @@ dotnet build -c Release
 
 **Create a patch**:
 ```powershell
-bps-patch encode original.bin modified.bin patch.bps "v1.0 - Bug fixes"
+bps-patch encode original.bin modified.bin patch.bps -m "v1.0 - Bug fixes"
+```
+
+**Create a patch with optimizations**:
+```powershell
+bps-patch encode original.bin modified.bin patch.bps -m "v1.0" --lazy-matching --cost-based
 ```
 
 **Apply a patch**:
@@ -132,13 +137,13 @@ Completed in 98ms
 
 **NuGet** (when published):
 ```powershell
-dotnet add package BpsPatch
+dotnet add package BpsPatch.Core
 ```
 
 **Project Reference**:
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\bps-patch\bps-patch.csproj" />
+  <ProjectReference Include="..\src\BpsPatch.Core\BpsPatch.Core.csproj" />
 </ItemGroup>
 ```
 
@@ -147,14 +152,14 @@ dotnet add package BpsPatch
 #### Create Patch
 
 ```csharp
-using bps_patch;
+using BpsPatch.Core;
 
 // Simple patch creation
 var sourceFile = new FileInfo("original.bin");
 var targetFile = new FileInfo("modified.bin");
 var patchFile = new FileInfo("patch.bps");
 
-Encoder.CreatePatch(
+BpsEncoder.CreatePatch(
 	sourceFile,
 	patchFile,
 	targetFile,
@@ -164,26 +169,51 @@ Encoder.CreatePatch(
 Console.WriteLine($"Patch created: {patchFile.Length} bytes");
 ```
 
+#### Create Patch with Options
+
+```csharp
+using BpsPatch.Core;
+
+var options = new BpsEncoderOptions {
+	Algorithm = MatchingAlgorithm.SuffixArray,  // Best for large files
+	UseLazyMatching = true,                     // Smaller patches
+	UseCostBasedMatching = true,                // Optimal decisions
+	MinimumMatchLength = 4
+};
+
+BpsEncoder.CreatePatch(
+	new FileInfo("original.bin"),
+	new FileInfo("patch.bps"),
+	new FileInfo("modified.bin"),
+	"My Patch v1.0",
+	options
+);
+```
+
 #### Apply Patch
 
 ```csharp
-using bps_patch;
+using BpsPatch.Core;
 
 // Simple patch application
 var sourceFile = new FileInfo("original.bin");
 var patchFile = new FileInfo("patch.bps");
 var outputFile = new FileInfo("patched.bin");
 
-List<string> warnings = Decoder.ApplyPatch(
+DecodingResult result = BpsDecoder.ApplyPatch(
 	sourceFile,
 	patchFile,
 	outputFile
 );
 
+// Access metadata
+Console.WriteLine($"Patch metadata: {result.Metadata}");
+Console.WriteLine($"Target size: {result.TargetSize} bytes");
+
 // Check for warnings
-if (warnings.Count > 0) {
+if (result.Warnings.Count > 0) {
 	Console.WriteLine("Warnings:");
-	foreach (var warning in warnings) {
+	foreach (var warning in result.Warnings) {
 		Console.WriteLine($"  - {warning}");
 	}
 }
@@ -194,13 +224,15 @@ if (warnings.Count > 0) {
 #### Custom Error Handling
 
 ```csharp
+using BpsPatch.Core;
+
 try {
-	var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
+	var result = BpsDecoder.ApplyPatch(sourceFile, patchFile, outputFile);
 	
-	if (warnings.Any(w => w.Contains("CRC32"))) {
+	if (result.Warnings.Any(w => w.Contains("CRC32"))) {
 		Console.WriteLine("Warning: File hash mismatch - file may be corrupted");
 	}
-} catch (PatchFormatException ex) {
+} catch (BpsFormatException ex) {
 	Console.WriteLine($"Invalid patch file: {ex.Message}");
 } catch (IOException ex) {
 	Console.WriteLine($"File error: {ex.Message}");
@@ -210,6 +242,8 @@ try {
 #### Batch Processing
 
 ```csharp
+using BpsPatch.Core;
+
 var patchDirectory = new DirectoryInfo("patches");
 var sourceFile = new FileInfo("base.bin");
 
@@ -218,12 +252,12 @@ foreach (var patchFile in patchDirectory.GetFiles("*.bps")) {
 	
 	Console.WriteLine($"Applying {patchFile.Name}...");
 	
-	var warnings = Decoder.ApplyPatch(sourceFile, patchFile, outputFile);
+	var result = BpsDecoder.ApplyPatch(sourceFile, patchFile, outputFile);
 	
-	if (warnings.Count == 0) {
+	if (result.Warnings.Count == 0) {
 		Console.WriteLine($"  ✓ Success");
 	} else {
-		Console.WriteLine($"  ⚠ Completed with {warnings.Count} warning(s)");
+		Console.WriteLine($"  ⚠ Completed with {result.Warnings.Count} warning(s)");
 	}
 }
 ```
@@ -231,18 +265,20 @@ foreach (var patchFile in patchDirectory.GetFiles("*.bps")) {
 #### Verify Patch Before Applying
 
 ```csharp
+using BpsPatch.Core;
+
 // Read patch header to check compatibility
 using var patchStream = patchFile.OpenRead();
 byte[] header = new byte[4];
 patchStream.Read(header, 0, 4);
 
 if (Encoding.UTF8.GetString(header) != "BPS1") {
-	throw new PatchFormatException("Not a valid BPS patch file");
+	throw new BpsFormatException("Not a valid BPS patch file");
 }
 
 // Decode sizes
-ulong sourceSize = ReadVarInt(patchStream);
-ulong targetSize = ReadVarInt(patchStream);
+ulong sourceSize = VariableLengthInt.Decode(patchStream);
+ulong targetSize = VariableLengthInt.Decode(patchStream);
 
 Console.WriteLine($"Patch expects source size: {sourceSize} bytes");
 Console.WriteLine($"Your file size: {sourceFile.Length} bytes");

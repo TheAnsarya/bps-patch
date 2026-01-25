@@ -200,30 +200,31 @@ for (int i = startIdx; i <= endIdx; i++) {
 ```
 
 **Complexity**:
-- **Construction**: O(n² log n) naive, O(n) with SA-IS algorithm
+- **Construction**: O(n) using SA-IS algorithm
 - **Query**: O(log n) binary search + O(m) match extension
 - **Space**: O(n) for suffix array + O(n) for LCP array
 
 **Advantages**:
+- ✅ O(n) construction using SA-IS (linear time!)
 - ✅ O(log n) query time after construction
 - ✅ Excellent for multiple queries on same source
 - ✅ Finds true longest match efficiently
 
 **Disadvantages**:
-- ❌ High construction cost (O(n²) current implementation)
 - ❌ 2× memory overhead for arrays
 - ❌ Overkill for small files or single query
 
-**Future Optimization: SA-IS Algorithm**
+**Implementation: SA-IS Algorithm (Implemented)**
 
-The current implementation uses naive O(n² log n) sorting. The SA-IS (Induced Sorting) algorithm achieves O(n) construction:
+The implementation uses the SA-IS (Suffix Array - Induced Sorting) algorithm for O(n) construction:
 
 1. Classify suffixes as S-type or L-type
 2. Find LMS (leftmost S-type) substrings
 3. Induced sort from LMS positions
 4. Recursively solve reduced problem
 
-Reference: [Linear Suffix Array Construction](https://www.researchgate.net/publication/224176324)
+Reference: Nong, Zhang, Chan (2009) "Two Efficient Algorithms for Linear Time Suffix Array Construction"
+[DOI: 10.1109/TC.2010.188](https://doi.org/10.1109/TC.2010.188)
 
 ---
 
@@ -410,23 +411,44 @@ public static (int, int, bool) FindBestRunAuto(
 
 ---
 
-## Future Optimizations
+## Implemented Optimizations
 
-### 1. ✅ SA-IS Suffix Array Construction (IMPLEMENTED)
+### 1. ✅ SA-IS Suffix Array Construction
 
-The O(n) SA-IS algorithm is now implemented in `SuffixArrayMatchingStrategy.cs`.
+The O(n) SA-IS algorithm is implemented in `SuffixArrayMatchingStrategy.cs`.
 - **Paper**: Nong, Zhang, Chan (2009) "Two Efficient Algorithms for Linear Time Suffix Array Construction"
 - **Performance**: ~3x faster than naive O(n² log n) for 65KB files, greater improvement for larger files
 - **Implementation**: Induced sorting with S/L-type classification
+- **Code**: `src/BpsPatch.Core/SuffixArrayMatchingStrategy.cs`
 
-### 2. ✅ Lazy Matching (IMPLEMENTED)
+### 2. ✅ Lazy Matching
 
 Lazy matching is available via `BpsEncoderOptions.UseLazyMatching = true`:
 - Checks if next position has a better match before committing
 - Trade-off: slower encoding for potentially 5-15% smaller patches
 - Based on DEFLATE/gzip lazy match evaluation strategy
+- **Code**: `src/BpsPatch.Core/BpsEncoder.cs`
 
-### 3. Parallel Pattern Matching
+### 3. ✅ Dual-Hash Rabin-Karp
+
+Virtually eliminates false positive hash collisions:
+- Uses two independent hash functions with different primes
+- False positive probability reduced from ~1:2^31 to ~1:2^62
+- No measurable performance impact
+- **Code**: `src/BpsPatch.Core/RabinKarpMatchingStrategy.cs`
+
+### 4. ✅ Cost-Based Match Selection
+
+Optimal match decisions considering encoding overhead:
+- Available via `BpsEncoderOptions.UseCostBasedMatching = true`
+- Considers variable-length encoding costs for offset/length
+- Produces smaller patches when match distances vary significantly
+
+---
+
+## Future Optimizations
+
+### 1. Parallel Pattern Matching
 
 Use PLINQ for independent chunk searches:
 

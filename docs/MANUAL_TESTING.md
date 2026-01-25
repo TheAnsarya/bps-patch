@@ -54,11 +54,11 @@ $target[100] = 0xFF  # Modify one byte
 [System.IO.File]::WriteAllBytes("source.bin", $source)
 [System.IO.File]::WriteAllBytes("target.bin", $target)
 
-# Create patch
-.\bin\Debug\net10.0\bps-patch.exe encode source.bin patch.bps target.bin
+# Create patch (using CLI from src/BpsPatch.Cli)
+dotnet run --project src\BpsPatch.Cli -- encode source.bin target.bin patch.bps
 
 # Apply patch
-.\bin\Debug\net10.0\bps-patch.exe decode source.bin patch.bps output.bin
+dotnet run --project src\BpsPatch.Cli -- decode source.bin patch.bps output.bin
 
 # Verify
 if ((Get-FileHash target.bin).Hash -eq (Get-FileHash output.bin).Hash) {

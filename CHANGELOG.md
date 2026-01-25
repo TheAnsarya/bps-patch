@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-01-25
+
+### Changed
+- **Comprehensive documentation update** to reflect current state
+  - Updated `ALGORITHMS.md` - SA-IS now documented as implemented (not future)
+  - Updated `ARCHITECTURE.md` - Project structure reflects modular `src/` layout
+  - Updated `ROADMAP.md` - Phase 3 marked complete with all algorithm work done
+  - Updated `PERFORMANCE.md` - SA-IS O(n) construction times documented
+  - Updated `IMPLEMENTATION.md` - Current SA-IS implementation details
+  - Updated `API_REFERENCE.md` - Modern `BpsPatch.Core` API documentation
+  - Updated `USAGE.md` - Current API examples with `BpsEncoder`/`BpsDecoder`
+  - Updated `.github/copilot-instructions.md` - Modular architecture guide
+
+### Documentation
+- All docs now reference `BpsPatch.Core` namespace instead of legacy `bps_patch`
+- Algorithm complexity updated: Suffix Array construction is now O(n) SA-IS
+- Added `BpsEncoderOptions` and `DecodingResult` class documentation
+- Added `IMatchingStrategy` interface documentation
+
+---
+
 ## [1.0.0] - 2026-01-08
 
 ### Added

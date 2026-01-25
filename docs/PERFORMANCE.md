@@ -24,7 +24,8 @@ This document covers performance characteristics, optimization techniques, bench
 |-----------|--------------|--------|-------------|
 | **Encoding (Linear)** | 1-5 MB/s | 2× file size | Low (ArrayPool) |
 | **Encoding (Rabin-Karp)** | 5-15 MB/s | 2× file size | Low |
-| **Encoding (Suffix Array)** | 10-50 MB/s | 4× file size | Medium |
+| **Encoding (Suffix Array)** | 3-10 MB/s | 4× file size | Medium |
+| **Encoding (SA-IS + Lazy)** | 2-8 MB/s | 4× file size | Medium |
 | **Decoding** | 50-200 MB/s | 2× target size | Low |
 | **CRC32** | 500+ MB/s | < 1 KB | None |
 
@@ -262,16 +263,16 @@ using var fs = new FileStream(path, FileMode.Open,
 
 **Note**: Near-linear growth, but higher constant factor than suffix array for queries.
 
-### Suffix Array Performance
+### Suffix Array Performance (SA-IS)
 
 | Source Size | Construction | Query (avg) |
 |-------------|--------------|-------------|
-| 1 KB | 1 ms | < 0.1 ms |
-| 10 KB | 50 ms | < 0.1 ms |
-| 100 KB | 1 second | < 0.1 ms |
-| 1 MB | 30+ seconds | < 0.1 ms |
+| 1 KB | < 1 ms | < 0.1 ms |
+| 10 KB | 1-5 ms | < 0.1 ms |
+| 100 KB | 10-50 ms | < 0.1 ms |
+| 1 MB | 100-500 ms | < 0.1 ms |
 
-**Note**: High construction cost (O(n²) current implementation), but O(log n) queries.
+**Note**: O(n) SA-IS construction is implemented - ~3x faster than naive O(n² log n) sorting.
 
 ### SIMD Speedup
 

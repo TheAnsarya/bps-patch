@@ -50,96 +50,110 @@ The BPS Patch library implements the Binary Patch System (BPS) format, a delta e
 
 ## Project Structure
 
-### Current Layout (Flat)
+### Current Layout (Modular)
 
 ```
 bps-patch/
-├── Encoder.cs           # Patch creation
-├── Decoder.cs           # Patch application
-├── RabinKarp.cs         # Rolling hash algorithm
-├── SuffixArray.cs       # Binary search pattern matching
-├── Utilities.cs         # CRC32, helpers
-├── PatchAction.cs       # Enum for patch commands
-├── PatchFormatException.cs
-├── Program.cs           # CLI entry point
-└── GlobalUsings.cs
-```
-
-### Recommended Layout (Modular)
-
-```
-src/
-├── BpsPatch.Core/           # Class library (netstandard2.1+)
-│   ├── Encoding/
-│   │   ├── BpsEncoder.cs
-│   │   ├── IMatchingStrategy.cs
+├── src/
+│   ├── BpsPatch.Core/              # 🎯 Core library
+│   │   ├── BpsEncoder.cs            # Patch creation with options
+│   │   ├── BpsDecoder.cs            # Patch application
+│   │   ├── BpsAction.cs             # Enum: SourceRead/TargetRead/SourceCopy/TargetCopy
+│   │   ├── BpsFormatException.cs    # Custom exception for malformed patches
+│   │   ├── VariableLengthInt.cs     # VLQ encoding/decoding
+│   │   ├── Crc32Calculator.cs       # CRC32 using System.IO.Hashing
+│   │   ├── ByteComparison.cs        # SIMD-optimized byte comparison
+│   │   ├── IMatchingStrategy.cs     # Strategy pattern interface
 │   │   ├── LinearMatchingStrategy.cs
 │   │   ├── RabinKarpMatchingStrategy.cs
-│   │   └── SuffixArrayMatchingStrategy.cs
-│   ├── Decoding/
-│   │   └── BpsDecoder.cs
-│   ├── Format/
-│   │   ├── BpsAction.cs
-│   │   ├── BpsHeader.cs
-│   │   ├── BpsFooter.cs
-│   │   └── VariableLengthInteger.cs
-│   ├── Hashing/
-│   │   ├── Crc32Calculator.cs
-│   │   └── RollingHash.cs
-│   └── Exceptions/
-│       └── BpsFormatException.cs
-└── BpsPatch.Cli/            # Console application
-	└── Program.cs
+│   │   └── SuffixArrayMatchingStrategy.cs  # SA-IS O(n) construction
+│   ├── BpsPatch.Cli/               # 💻 Command-line interface
+│   │   └── Program.cs               # CLI entry point with top-level statements
+│   ├── BpsPatch.Core.Tests/        # 🧪 Unit tests
+│   │   ├── BpsEncoderDecoderTests.cs
+│   │   ├── MatchingStrategyTests.cs
+│   │   ├── VariableLengthIntTests.cs
+│   │   └── ... (107 modern tests)
+│   └── BpsPatch.Core.Benchmarks/   # 📊 Performance benchmarks
+├── docs/                           # 📖 Documentation
+├── legacy/                         # 📦 Original flat implementation (reference)
+├── logs/                           # 📝 Session logs and history
+└── scripts/                        # 🔧 Automation scripts
+```
+
+### Legacy Layout (Reference)
+
+```
+legacy/
+├── Encoder.cs           # Original flat implementation
+├── Decoder.cs           
+├── RabinKarp.cs
+├── SuffixArray.cs
+├── Utilities.cs
+└── ...
 ```
 
 ---
 
 ## Core Components
 
-### 1. Encoder (`Encoder.cs`)
+### 1. Encoder (`BpsEncoder.cs`)
 
 The encoder is responsible for creating BPS patches by analyzing differences between source and target files.
 
 ```csharp
-public static class Encoder
+public static class BpsEncoder
 {
-	// Main entry point
-	public static void CreatePatch(FileInfo source, FileInfo patch, FileInfo target, string manifest);
-	
-	// Pattern matching
-	public static (PatchAction Mode, int Length, int Start) FindNextRun(...);
-	
-	// Algorithm selection
-	public static (int Length, int Start, bool ReachedEnd) FindBestRun(...);
-	public static (int Length, int Start, bool ReachedEnd) FindBestRunLinear(...);
-	public static (int Length, int Start, bool ReachedEnd) FindBestRunRabinKarp(...);
-	public static (int Length, int Start, bool ReachedEnd) FindBestRunSuffixArray(...);
-	
-	// Utility
-	public static byte[] EncodeNumber(ulong number);
-	public static (int Length, bool ReachedEnd) CheckRun(...);
+	// Main entry point with options
+	public static void CreatePatch(
+		FileInfo sourceFile,
+		FileInfo patchFile,
+		FileInfo targetFile,
+		string metadata = "",
+		BpsEncoderOptions? options = null);
+}
+
+public sealed class BpsEncoderOptions
+{
+	public MatchingAlgorithm Algorithm { get; set; } = MatchingAlgorithm.Auto;
+	public int MinimumMatchLength { get; set; } = 4;
+	public bool UseLazyMatching { get; set; } = false;
+	public bool UseCostBasedMatching { get; set; } = false;
+	public bool UseRleOptimization { get; set; } = true;
+	public bool UseParallelProcessing { get; set; } = false;
+	public IProgress<EncodingProgress>? Progress { get; set; }
 }
 ```
 
 **Key Design Decisions:**
 
 - **Static class**: No state required between calls
+- **Options pattern**: All encoder settings encapsulated in `BpsEncoderOptions`
 - **ArrayPool**: Reduces GC pressure for large files
-- **Multiple algorithms**: Linear, Rabin-Karp, Suffix Array options
-- **SIMD optimization**: `CheckRun()` uses `Vector<byte>` for bulk comparison
+- **Strategy pattern**: `IMatchingStrategy` for algorithm selection
+- **SIMD optimization**: `ByteComparison` class uses `Vector<byte>` for bulk comparison
 
-### 2. Decoder (`Decoder.cs`)
+### 2. Decoder (`BpsDecoder.cs`)
 
 The decoder applies BPS patches to reconstruct target files from source files.
 
 ```csharp
-public static class Decoder
+public static class BpsDecoder
 {
-	// Main entry point - returns warnings for non-fatal issues
-	public static List<string> ApplyPatch(FileInfo source, FileInfo patch, FileInfo target);
-	
-	// Variable-length integer decoding
-	private static ulong DecodeNumber(Stream stream);
+	// Main entry point - returns result with metadata and warnings
+	public static DecodingResult ApplyPatch(
+		FileInfo sourceFile,
+		FileInfo patchFile,
+		FileInfo targetFile,
+		BpsDecoderOptions? options = null);
+}
+
+public class DecodingResult
+{
+	public string Metadata { get; }
+	public List<string> Warnings { get; }
+	public long SourceSize { get; }
+	public long TargetSize { get; }
 }
 ```
 

@@ -6,16 +6,29 @@
 Successfully set up BenchmarkDotNet performance benchmarking infrastructure for the BPS patch project.
 
 ## Date
-October 29, 2025
+January 25, 2026 (Updated for modular architecture)
 
 ## What We Built
 
 ### 1. Project Structure
-- Created `bps-patch.Benchmarks` project targeting .NET 10
-- Added to solution alongside `bps-patch` (main) and `bps-patch.Tests`
-- Configured InternalsVisibleTo for access to internal classes
+- Created `BpsPatch.Core.Benchmarks` project in `src/` folder targeting .NET 10
+- Added to solution alongside `BpsPatch.Core` (library), `BpsPatch.Cli`, and `BpsPatch.Core.Tests`
+- Benchmarks reference `BpsPatch.Core` project
 
-### 2. Benchmark Coverage (28 benchmarks)
+### 2. Running Benchmarks
+
+```powershell
+# Run all benchmarks
+cd src/BpsPatch.Core.Benchmarks
+dotnet run -c Release
+
+# Run specific benchmark class
+dotnet run -c Release --filter "*EncoderBenchmarks*"
+dotnet run -c Release --filter "*SimdBenchmarks*"
+dotnet run -c Release --filter "*RabinKarpBenchmarks*"
+```
+
+### 3. Benchmark Coverage (72+ benchmarks)
 
 #### CRC32 Benchmarks (7 benchmarks)
 - **File size variations**: 1KB, 10KB, 100KB, 1MB, 10MB

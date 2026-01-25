@@ -6,7 +6,7 @@
 
 This document describes the implementation details, algorithms, and optimizations used in the modern .NET 10 BPS patch implementation.
 
-**Last Updated**: January 8, 2026
+**Last Updated**: January 25, 2026
 
 ---
 
@@ -202,14 +202,16 @@ for (int i = patternLength; i < sourceLength; i++) {
 
 **Impact**: 10-100x speedup for large files with repetitive patterns.
 
-### 4. Suffix Array Pattern Matching
+### 4. Suffix Array Pattern Matching (SA-IS)
 
 **Why**: O(log n) binary search for longest matching substring.
 
-**Construction**: Naive O(n² log n) sorting (suitable for moderate files):
+**Construction**: O(n) SA-IS (Suffix Array - Induced Sorting) algorithm:
 ```csharp
-int[] suffixes = Enumerable.Range(0, data.Length).ToArray();
-Array.Sort(suffixes, (a, b) => CompareSuffixes(data, a, b));
+// SA-IS achieves linear time through induced sorting of LMS suffixes
+// Reference: Nong, Zhang, Chan (2009)
+int[] suffixArray = BuildSuffixArray(data); // O(n)
+int[] lcpArray = BuildLcpArray(data, suffixArray); // O(n) Kasai's algorithm
 ```
 
 **Query**: Binary search for first byte, then linear scan nearby suffixes:
@@ -221,7 +223,8 @@ for (int i = startIdx; i <= endIdx; i++) {
 }
 ```
 
-**Impact**: O(log n + k) where k = number of suffixes starting with same byte.
+**Impact**: O(log n + k) query where k = number of suffixes starting with same byte.
+Construction is now linear time (~3x faster than naive O(n² log n) sorting).
 
 ### 5. Buffered I/O
 
@@ -312,28 +315,30 @@ byte[] patchCrc = Utilities.ComputeCRC32Bytes(patchFile);
 ### Linear Search
 
 **Complexity**: O(n × m) worst case
-**Best for**: Small files (< 1MB), random data
-**Code**: `FindBestRunLinear()`
+**Best for**: Small files (< 64KB), random data
+**Code**: `LinearMatchingStrategy.cs`
 
-### Rabin-Karp Rolling Hash
+### Rabin-Karp Rolling Hash (Dual-Hash)
 
 **Complexity**: O(n + m) average, O(n × m) worst
 **Best for**: Large files with patterns, repetitive data
-**Code**: `FindBestRunRabinKarp()`
-**Parameters**: PRIME=2147483647, BASE=257
+**Code**: `RabinKarpMatchingStrategy.cs`
+**Parameters**: Dual hash with PRIME1=2147483647, PRIME2=1073741789, BASE1=257, BASE2=263
+**Collision probability**: ~1:2^62 (virtually zero false positives)
 
-### Suffix Array
+### Suffix Array (SA-IS)
 
-**Complexity**: O(n² log n) construction, O(log n + k) query
+**Complexity**: O(n) construction (SA-IS), O(log n + k) query
 **Best for**: Multiple queries on same source, structured data
-**Code**: `FindBestRunSuffixArray()`
+**Code**: `SuffixArrayMatchingStrategy.cs`
+**Features**: SA-IS construction + Kasai's LCP array algorithm
 
-### Algorithm Selection Heuristic
+### Algorithm Selection Heuristic (Auto mode)
 
 ```
-if (sourceSize < 1MB) use Linear
-else if (sourceSize < 100MB) use RabinKarp
-else use SuffixArray (if multiple patches from same source)
+if (sourceSize < 64KB) use Linear
+else if (sourceSize < 1MB) use RabinKarp
+else use SuffixArray
 ```
 
 ---
